@@ -1,0 +1,31 @@
+.vscode/*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Dependencies
+/vendor/
+/node_modules/
+/composer.phar
+
+# Cache and logs
+*.log
+/storage/
+/bootstrap/cache/
+/coverage/
+/phpunit.xml.cache
+.phpunit.result.cache
+
+# IDE and tooling
+/.idea/
+/.vscode/
+*.iml
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# User uploads and generated assets
+/public/uploads/
