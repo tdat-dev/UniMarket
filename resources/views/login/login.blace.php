@@ -313,7 +313,9 @@
         <div class="monitor">
             <h3 class="Theo-doi">Theo dõi</h3>
             <ul>
-                <li><a href="#">Facebook</a></li>
+                <li>
+                    <i class="fa-brands fa-facebook"></i>
+                    <a href="#">Facebook</a></li>
                 <li><a href="#">Instagram</a></li>
                 <li><a href="#">LinkedIn</a></li>
             </ul>
