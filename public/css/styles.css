@@ -1,0 +1,357 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: Arial, sans-serif;
+  background-color: #ffffff;
+  color: #333;
+}
+.logo {
+  background-color: #ffffff;
+  padding: 14px 32px 10px;
+}
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.login-logo img {
+  height: 100px;
+  width: auto;
+}
+.name-logo {
+  font-size: 26px;
+  font-weight: 700;
+  color: #2f7dc4;
+}
+.main-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 48px 40px;
+  gap: 56px;
+  min-height: calc(100vh - 240px);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.main-img {
+  flex: 1;
+  max-width: 520px;
+}
+.main-img img {
+  width: 100%;
+  height: auto;
+}
+.main-login {
+  flex: 1;
+  max-width: 420px;
+  background-color: #fff;
+  padding: 42px 38px;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  border: 1px solid #e0e0e0;
+}
+.main-login h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.main-login input[type="text"],
+.main-login input[type="password"] {
+  width: 100%;
+  padding: 13px 14px;
+  margin-bottom: 15px;
+  border: 1px solid #b8c4d2;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+}
+.main-login input[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  background-color: #4a7ba7;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  margin-bottom: 15px;
+  transition: background-color 0.2s ease;
+}
+.main-login input[type="submit"]:hover {
+  background-color: #3a6a97;
+}
+.or {
+  text-align: center;
+  color: #666;
+  margin: 20px 0;
+  position: relative;
+  font-size: 13px;
+}
+.or::before,
+.or::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background-color: #ccc;
+}
+.or::before {
+  left: 0;
+}
+.or::after {
+  right: 0;
+}
+.google-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  background-color: #fff;
+  text-decoration: none;
+  color: #3c4043;
+  font-size: 14px;
+  font-weight: 500;
+  gap: 12px;
+  transition: background-color 0.2s, box-shadow 0.2s;
+  margin-bottom: 20px;
+}
+.google-login:hover {
+  background-color: #f8f9fa;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.google-login img {
+  width: 18px;
+  height: 18px;
+}
+.links {
+  text-align: center;
+}
+.forgot-password,
+.Register {
+  text-decoration: none;
+  font-size: 14px;
+  margin: 0 10px;
+}
+.forgot-password {
+  color: #4a7ba7;
+}
+.Register {
+  color: #4a7ba7;
+}
+.Register:hover {
+  text-decoration: underline;
+}
+a[name="forgot-password"] {
+  color: #4a7ba7;
+  text-decoration: none;
+  font-size: 14px;
+  display: block;
+  margin-bottom: 15px;
+  max-width: 100px;
+}
+.links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+.hhh {
+  font-size: 14px;
+  color: #666;
+}
+.footer {
+  background-color: #ffffff;
+  padding: 36px 32px 48px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 48px;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.service h3 {
+  font-size: 13px;
+  margin-bottom: 14px;
+  color: #333;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+}
+.service ul {
+  list-style: none;
+}
+.service ul li {
+  margin-bottom: 8px;
+}
+.service ul li a {
+  color: #444;
+  text-decoration: none;
+  font-size: 13px;
+}
+.service ul li a:hover {
+  color: #4a7ba7;
+}
+.pay h3 {
+  font-size: 13px;
+  margin-bottom: 14px;
+  color: #333;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+}
+.pay ul {
+  list-style: none;
+}
+.pay ul li {
+  margin-bottom: 8px;
+}
+.pay ul li a {
+  color: #444;
+  text-decoration: none;
+  font-size: 13px;
+}
+.pay ul li a:hover {
+  color: #4a7ba7;
+}
+.monitor h3 {
+  font-size: 13px;
+  margin-bottom: 14px;
+  color: #333;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+}
+.monitor ul {
+  list-style: none;
+}
+.monitor ul li {
+  margin-bottom: 8px;
+}
+.monitor ul li a {
+  color: #444;
+  text-decoration: none;
+  font-size: 13px;
+}
+.monitor ul li a:hover {
+  color: #4a7ba7;
+}
+.download h3 {
+  font-size: 13px;
+  margin-bottom: 14px;
+  color: #333;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+}
+.download ul {
+  list-style: none;
+}
+.download ul li {
+  margin-bottom: 8px;
+}
+.download ul li a {
+  color: #444;
+  text-decoration: none;
+  font-size: 13px;
+}
+.download ul li a:hover {
+  color: #4a7ba7;
+}
+
+@media (max-width: 1024px) {
+  .logo {
+    padding: 16px 24px;
+  }
+  .main-content {
+    padding: 36px 24px;
+    gap: 36px;
+    min-height: auto;
+  }
+  .main-login {
+    max-width: 480px;
+  }
+  .footer {
+    gap: 36px;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-logo {
+    justify-content: center;
+    padding: 0 8px;
+  }
+  .name-logo {
+    font-size: 24px;
+  }
+  .main-content {
+    flex-direction: column;
+    padding: 28px 18px;
+    gap: 24px;
+  }
+  .main-img {
+    max-width: 360px;
+    order: -1;
+  }
+  .main-login {
+    width: 100%;
+    max-width: 520px;
+    padding: 28px 24px;
+  }
+  .main-login h2 {
+    text-align: center;
+  }
+  .or::before,
+  .or::after {
+    width: 35%;
+  }
+  .footer {
+    padding: 32px 18px;
+    gap: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo {
+    padding: 14px 16px;
+  }
+  .login-logo img {
+    height: 48px;
+  }
+  .name-logo {
+    font-size: 20px;
+  }
+  .main-content {
+    padding: 20px 14px;
+  }
+  .main-img {
+    max-width: 280px;
+  }
+  .main-login {
+    padding: 22px 18px;
+  }
+  .main-login input[type="text"],
+  .main-login input[type="password"],
+  .main-login input[type="submit"],
+  .google-login {
+    padding: 12px 10px;
+    font-size: 14px;
+  }
+  .or {
+    margin: 16px 0;
+  }
+  .footer h3 {
+    font-size: 16px;
+  }
+  .footer ul li a {
+    font-size: 13px;
+  }
+}
