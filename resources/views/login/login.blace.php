@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -15,30 +16,6 @@
             font-family: Arial, sans-serif;
             background-color: #f5f5f5;
         }
-        .logo {
-            background-color: #ffffff;
-            padding: 20px 50px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .login-logo {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            position: relative;
-            left: 80px;
-            top: 10px;
-
-        }
-        .login-logo img {
-            height: 45px;
-            width: auto;
-            transform: scale(4.0);
-        }
-        .name-logo {
-            font-size: 28px;
-            font-weight: bold;
-            color: #4a7ba7;
-        }
         .main-content {
             display: flex;
             justify-content: center;
@@ -46,14 +23,21 @@
             padding: 50px;
             gap: 50px;
             min-height: calc(100vh - 85px);
+            
         }
         .main-img{
+            background: linear-gradient(90deg, #2C67C8 0%, #1990AA 100%);
             flex: 1;
-            max-width: 500px;
+            width: 350px;
+            height: 550px;
+            overflow: hidden;
+            
         } 
         .main-img img{
             width: 100%;
-            height: auto;
+            height: 100%;
+            object-fit: cover;
+
         }
         .main-login{
             flex: 1;
@@ -205,14 +189,21 @@
         }
         .pay ul {
             list-style: none;
+            display: flex;
+            gap: 15px;
+            align-items: center;
         }
         .pay ul li {
-            margin-bottom: 10px;
+            margin-bottom: 0;
         }
         .pay ul li a {
             color: #666;
             text-decoration: none;
             font-size: 14px;
+        }
+        .pay ul li a img {
+            width: 50px;
+            height: auto;
         }
         .pay ul li a:hover {
             color: #4a7ba7;
@@ -241,46 +232,128 @@
             margin-bottom: 15px;
             color: #333;
         }
-        .download ul {
-            list-style: none;
+        .download-content {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
         }
-        .download ul li {
-            margin-bottom: 10px;
+        .qr-code {
+            width: 80px;
+            height: 80px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 5px;
         }
-        .download ul li a {
-            color: #666;
-            text-decoration: none;
-            font-size: 14px;
+        .qr-code img {
+            width: 100%;
+            height: 100%;
         }
-        .download ul li a:hover {
-            color: #4a7ba7;
+        .store-links {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .store-links a {
+            display: block;
+        }
+        .store-links a img {
+            width: 120px;
+            height: auto;
         }
         .footer{
             position: relative;
             left: 250px;
 
         }
+        .login-logo{
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .login-form h2{
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .copyright {
+            background-color: #f5f5f5;
+            padding: 20px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #e0e0e0;
+            font-size: 14px;
+            color: #666;
+        }
+        .copyright-text {
+            margin: 0;
+        }
+        .country {
+            margin: 0;
+            position: relative;
+            right: 700px;
 
-    </style>
+        }
+        .chan-trang{
+            background-color: #f5f5f5;
+        }
+        .policies {
+            padding: 20px 50px;
+        }
+        .policies ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 0;
+            padding: 0;
+        }
+        .policies ul li a {
+            color: #666;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .policies ul li a:hover {
+            color: #4a7ba7;
+        }
+        .footer-bottom {
+            background-color: #f5f5f5;
+            padding: 20px 50px;
+            /* border-top: 1px solid #e0e0e0; */
+        }
+        .company-info {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            line-height: 1.8;
+        }
+        .company-info p {
+            margin: 5px 0;
+        }
+        .policies, .footer-bottom {
+            background-color: rgba(184, 177, 177, 0.65);;
+            
+        }
+  
+  </style>
 </head>
 <body>
-    <header class="logo">
-        <div class="login-logo">
-            <img src="../../../public/images/logo.svg" alt="logo">
-            <span class="name-logo">UniMarket</span>
-        </div>
-    </header>
-    <main class="main-content">
+    
+    <header class="main-content">
         <div class="main-img">
             <img src="../../../public/images/homepage-with-text.png  " alt="login image">
         </div>
         <div class="main-login">
+            <div class="login-logo">
+                <img src="../../../public/images/UniMarketHead.svg" alt="UniMarket Logo" width="150">
+            </div>
+            <div class="login-form">
             <h2>Đăng nhập</h2>
             <form action="" method="post">
                 <input type="text" name="username" placeholder="Email/Số điện thoại/Tên đăng nhập">
                 <br>
                 <input type="password" name="password" placeholder="Mật khẩu">
                 <input type="submit" name="submit" value="Đăng nhập">
+            </div>
                 <a href="" name="forgot-password">Quên mật khẩu</a>
                 <p class="or">Hoặc</p>
                 <a href="" class="google-login">
@@ -293,8 +366,8 @@
                 </div>
             </form>
         </div>
-    </main>
-    <footer class="footer">
+    </header>
+    <main class="footer">
         <div class="service">
             <h3 class="dich-vu">Dịch vụ khách hàng</h3>
             <ul>
@@ -309,6 +382,10 @@
         </div>
         <div class="pay">
             <h3 class="thanh-toan">Thanh toán</h3>
+            <ul>
+                <li><a href="#"><img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa"></a></li>
+                <li><a href="#"><img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard"></a></li>
+                <li><a href="#"><img src="https://upload.wikimedia.org/wikipedia/commons/4/40/JCB_logo.svg" alt="JCB"></a></li>
         </div>
         <div class="monitor">
             <h3 class="Theo-doi">Theo dõi</h3>
@@ -316,14 +393,59 @@
                 <li>
                     <i class="fa-brands fa-facebook"></i>
                     <a href="#">Facebook</a></li>
-                <li><a href="#">Instagram</a></li>
-                <li><a href="#">LinkedIn</a></li>
+                <li>
+                    <i class="fa-brands fa-square-instagram"></i>    
+                    <a href="#">Instagram</a></li>
+                <li>
+                    <i class="fa-brands fa-linkedin"></i>
+                    <a href="#">LinkedIn</a></li>
             </ul>
         </div>
         <div class="download">
-            <h3 class="tai">Tải ứng dụng</h3>
+            <h3 class="tai">Tải ứng dụng UniMarket</h3>
+            <div class="download-content">
+                <div class="qr-code">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://unimarket.test" alt="QR Code">
+                </div>
+                <div class="store-links">
+                    <a href="#">
+                        <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="App Store">
+                    </a>
+                    <a href="#">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play">
+                    </a>
+                    <a href="#">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/9/94/Huawei_AppGallery_Logo.svg" alt="AppGallery">
+                    </a>
+                </div>
+            </div>
         </div>
-    </footer>
+    </main>
+        <div class="copyright">
+        <p class="copyright-text">© 2025 UniMarket. Tất cả các quyền được bảo lưu.</p>
+        <p class="country">Quốc gia & Khu vực: Việt Nam</p>
+    </div>
+   <footer class="chan-trang">
+    <div class="policies">
+        <ul>
+            <li><a href="#">CHÍNH SÁCH BẢO MẬT</a></li>
+            <li><a href="#">QUY CHẾ HOẠT ĐỘNG</a></li>
+            <li><a href="#">CHÍNH SÁCH VẬN CHUYỂN</a></li>
+            <li><a href="#">CHÍNH SÁCH TRẢ HÀNG VÀ HOÀN TIỀN</a></li>
+        </ul>
+    </div>
+    <div class="footer-bottom">
+        <div class="company-info">
+            <p><strong>Công ty TNHH Shopee</strong></p>
+            <p>Địa chỉ: Tầng 4-5-6, Tòa nhà Capital Place, số 29 đường Liễu Giai, Phường Ngọc Hà, Thành phố Hà Nội, Việt Nam</p>
+            <p>Chăm sóc khách hàng: Gọi tổng đài Shopee (miễn phí) hoặc Trò chuyện với Shopee ngay trên Trung tâm trợ giúp</p>
+            <p>Chịu Trách Nhiệm Quản Lý Nội Dung: Nguyễn Bùi Anh Tuấn</p>
+            <p>Mã số doanh nghiệp: 0106773786 do Sở Kế hoạch và Đầu tư TP Hà Nội cấp lần đầu ngày 10/02/2015</p>
+            <p>© 2015 - Bản quyền thuộc về Công ty TNHH Shopee</p>
+        </div>
+    </div>
+   </footer>
+
 </body> 
 </html>
 <!-- dhndhhhshh --
