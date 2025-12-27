@@ -42,7 +42,7 @@
                     </a>
                     <div class="links">
                         <p class="hhh">Chưa có tài khoản?</p>
-                        <a href="register.php" class="Register">Đăng ký</a>
+                        <a href="../register" class="Register">Đăng ký</a>
                     </div>
                 </form>
             </div>

@@ -56,7 +56,7 @@
                     </a>
                     <div class="links">
                         <p class="hhh">Đã có tài khoản?</p>
-                        <a href="login.php" class="Register">Đăng nhập</a>
+                        <a href="../login" class="Register">Đăng nhập</a>
                     </div>
                 </form>
             </div>
@@ -120,10 +120,7 @@
                             <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
                                 alt="Google Play">
                         </a>
-                        <a href="#">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/9/94/Huawei_AppGallery_Logo.svg"
-                                alt="AppGallery">
-                        </a>
+                        
                     </div>
                 </div>
             </div>

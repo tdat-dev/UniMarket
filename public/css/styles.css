@@ -38,8 +38,8 @@ body {
 }
 
 .main-illustration {
-    max-width: 120%;
-    width: 120%;
+    max-width: 100%;
+    width: 100%;
     height: auto;
     filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.2));
 }
