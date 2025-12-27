@@ -6,7 +6,7 @@ class AuthController extends BaseController
 {
     public function login()
     {
-        // Gọi view resources/views/auth/index.php
+        // Gọi view resources/views/auth/login.php
         $this->view('auth/login');
     }
 

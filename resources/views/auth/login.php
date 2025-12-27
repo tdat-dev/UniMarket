@@ -14,7 +14,7 @@
     <header class="main-content">
         <div class="main-img">
             <div class="main-img-content">
-                <img src="../../../images/homepage-with-text.png" alt="login image" class="main-illustration">
+                <img src="../../../images/homepage-with-text.svg" alt="login image" class="main-illustration">
             </div>
         </div>
         <div class="main-login">
@@ -33,7 +33,7 @@
                     </div>
                     <input type="submit" name="submit" value="ĐĂNG NHẬP">
                     <a href="" name="forgot-password">Quên mật khẩu</a>
-                    <p class="or"><span>hoặc</span></p>
+                    <p class="or"><span>HOẶC</span></p>
                     <a href="" class="google-login">
                         <div class="google-g">
                             <img src="../../../images/google.png" alt="Google">
@@ -42,7 +42,7 @@
                     </a>
                     <div class="links">
                         <p class="hhh">Chưa có tài khoản?</p>
-                        <a href="register.php" class="Register">Đăng ký</a>
+                        <a href="../register" class="Register">Đăng ký</a>
                     </div>
                 </form>
             </div>
@@ -117,10 +117,8 @@
     </main>
     <div class="copyright">
         <div class="copyright-container">
-            <p class="copyright-text">© 2025 UniMarket. Tất cả các quyền được bảo lưu.</p>
-            <div class="country-section">
-                <p class="country-label">Quốc gia & Khu vực:</p>
-                <p class="country-value">Việt Nam</p>
+            <p class="copyright-text">© 2025 UniMarket. Tất cả các quyền được bảo lưu.</p>               
+            <p class="country-label">Quốc gia & Khu vực: Việt Nam</p>
             </div>
         </div>
     </div>

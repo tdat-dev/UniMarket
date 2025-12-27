@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Ký</title>
+    <title>Đăng kí</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../../css/styles.css">
@@ -56,7 +56,7 @@
                     </a>
                     <div class="links">
                         <p class="hhh">Đã có tài khoản?</p>
-                        <a href="login.php" class="Register">Đăng nhập</a>
+                        <a href="../login" class="Register">Đăng nhập</a>
                     </div>
                 </form>
             </div>
@@ -120,10 +120,7 @@
                             <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
                                 alt="Google Play">
                         </a>
-                        <a href="#">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/9/94/Huawei_AppGallery_Logo.svg"
-                                alt="AppGallery">
-                        </a>
+
                     </div>
                 </div>
             </div>
