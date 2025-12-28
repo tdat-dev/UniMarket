@@ -48,17 +48,20 @@
 ## ✨ Tính Năng
 
 ### 👤 Người Dùng
+
 - [x] Đăng ký / Đăng nhập
 - [x] Quản lý hồ sơ cá nhân
 - [ ] Đăng nhập bằng Google OAuth
 
 ### 🛍️ Mua Sắm
+
 - [x] Tìm kiếm sản phẩm
 - [x] Lọc theo danh mục, giá
 - [ ] Giỏ hàng
 - [ ] Hệ thống gợi ý sản phẩm
 
 ### 📦 Bán Hàng
+
 - [x] Đăng bán sản phẩm
 - [ ] Quản lý sản phẩm đã đăng
 - [ ] Theo dõi đơn hàng
@@ -68,20 +71,23 @@
 ## 🛠️ Công Nghệ Sử Dụng
 
 ### Backend
-| Công nghệ | Phiên bản | Mô tả |
-|-----------|-----------|-------|
-| PHP | 8.0+ | Ngôn ngữ lập trình chính |
-| MySQL | 8.0+ | Cơ sở dữ liệu |
-| Composer | 2.x | Quản lý dependencies |
+
+| Công nghệ | Phiên bản | Mô tả                    |
+| --------- | --------- | ------------------------ |
+| PHP       | 8.0+      | Ngôn ngữ lập trình chính |
+| MySQL     | 8.0+      | Cơ sở dữ liệu            |
+| Composer  | 2.x       | Quản lý dependencies     |
 
 ### Frontend
-| Công nghệ | Phiên bản | Mô tả |
-|-----------|-----------|-------|
-| Tailwind CSS | 3.x | CSS Framework |
-| JavaScript | ES6+ | Ngôn ngữ scripting |
-| Font Awesome | 6.x | Icon library |
+
+| Công nghệ    | Phiên bản | Mô tả              |
+| ------------ | --------- | ------------------ |
+| Tailwind CSS | 3.x       | CSS Framework      |
+| JavaScript   | ES6+      | Ngôn ngữ scripting |
+| Font Awesome | 6.x       | Icon library       |
 
 ### Môi Trường Phát Triển
+
 - **Laragon** - Local development environment
 - **VS Code** - Code editor
 - **Git** - Version control
@@ -91,6 +97,7 @@
 ## 🚀 Cài Đặt
 
 ### Yêu Cầu
+
 - PHP >= 8.0
 - MySQL >= 8.0
 - Composer >= 2.0
@@ -160,29 +167,32 @@ UniMarket/
 
 ## 👥 Thành Viên Nhóm
 
-| STT | Họ và Tên | MSSV | Vai trò |
-|:---:|-----------|------|---------|
-| 1 | [Tên thành viên 1] | [MSSV] | Nhóm trưởng |
-| 2 | [Tên thành viên 2] | [MSSV] | Thành viên |
-| 3 | [Tên thành viên 3] | [MSSV] | Thành viên |
+| STT | Họ và Tên          | MSSV   | Vai trò     |
+| :-: | ------------------ | ------ | ----------- |
+|  1  | [Tên thành viên 1] | [MSSV] | Nhóm trưởng |
+|  2  | [Tên thành viên 2] | [MSSV] | Thành viên  |
+|  3  | [Tên thành viên 3] | [MSSV] | Thành viên  |
 
 ---
 
 ## 📝 Phân Công Công Việc
 
 ### Thành viên 1 - [Tên] (Nhóm trưởng)
+
 - Thiết kế cơ sở dữ liệu
 - Xây dựng backend API
 - Chức năng đăng nhập/đăng ký
 - Quản lý dự án
 
 ### Thành viên 2 - [Tên]
+
 - Thiết kế giao diện UI/UX
 - Xây dựng trang chủ
 - Trang chi tiết sản phẩm
 - Responsive design
 
 ### Thành viên 3 - [Tên]
+
 - Xây dựng Header/Footer
 - Trang tìm kiếm sản phẩm
 - Tích hợp frontend-backend
@@ -192,12 +202,12 @@ UniMarket/
 
 ## 📅 Tiến Độ Dự Án
 
-| Tuần | Công việc | Trạng thái |
-|:----:|-----------|:----------:|
-| 1-2 | Phân tích yêu cầu, thiết kế CSDL | ✅ Hoàn thành |
-| 3-4 | Xây dựng giao diện cơ bản | ✅ Hoàn thành |
-| 5-6 | Phát triển chức năng chính | 🔄 Đang thực hiện |
-| 7-8 | Testing & hoàn thiện | ⏳ Chưa bắt đầu |
+| Tuần | Công việc                        |    Trạng thái     |
+| :--: | -------------------------------- | :---------------: |
+| 1-2  | Phân tích yêu cầu, thiết kế CSDL |   ✅ Hoàn thành   |
+| 3-4  | Xây dựng giao diện cơ bản        |   ✅ Hoàn thành   |
+| 5-6  | Phát triển chức năng chính       | 🔄 Đang thực hiện |
+| 7-8  | Testing & hoàn thiện             |  ⏳ Chưa bắt đầu  |
 
 ---
 
