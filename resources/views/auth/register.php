@@ -4,77 +4,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng kí</title>
+    <title>Đăng ký</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../../../css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+    body {
+        font-family: 'Roboto', sans-serif;
+    }
+    </style>
 </head>
 
-<body>
+<body class="flex flex-col min-h-screen">
 
-    <header class="main-content">
-        <div class="main-img">
-            <div class="main-img-content">
-                <img src="../../../images/homepage-with-text.png" alt="register image" class="main-illustration">
+    <?php include __DIR__ . '/../partials/header.php'; ?>
+
+    <div class="bg-[#4e89ff] flex-grow flex items-center justify-center py-10">
+        <div
+            class="container mx-auto px-4 max-w-6xl flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12">
+
+            <div class="hidden lg:flex flex-col items-center justify-center lg:w-1/2">
+                <div class="relative w-full max-w-xl">
+                    <img src="../../../images/homepage-with-text.svg" alt="UniMarket Illustration"
+                        class="w-full h-auto object-contain drop-shadow-2xl opacity-90 hover:opacity-100 transition-opacity">
+                </div>
+                <div class="mt-8 text-center text-white">
+                    <h3 class="text-3xl font-bold mb-2">Tham gia UniMarket</h3>
+                    <p class="text-blue-100 text-lg">Cộng đồng trao đổi đồ cũ sinh viên lớn nhất</p>
+                </div>
             </div>
-        </div>
-        <div class="main-login">
-            <div class="login-logo">
-                <img src="../../../images/UniMarketHead.svg" alt="UniMarket Logo">
-            </div>
-            <div class="login-form">
-                <h2>Đăng ký</h2>
-                <form action="" method="post" class="register-form">
-                    <div class="input-row">
-                        <div class="input-wrapper">
-                            <input type="text" name="username" placeholder="Tên đăng nhập">
+
+            <div class="w-full max-w-lg bg-white rounded-3xl shadow-2xl p-8 md:p-10">
+                <div class="text-center mb-6">
+                    <img src="../../../images/UniMarketHead.svg" alt="UniMarket Logo" class="h-20 mx-auto mb-3">
+                    <h2 class="text-2xl font-bold text-gray-800">Tạo tài khoản mới</h2>
+                </div>
+
+                <form action="" method="post" class="space-y-4">
+
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="w-full">
+                            <input type="text" name="username" placeholder="Tên đăng nhập" required
+                                class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-700">
                         </div>
-                        <div class="input-wrapper">
-                            <input type="text" name="branch" placeholder="Ngành học">
+                        <div class="w-full">
+                            <input type="text" name="branch" placeholder="Ngành học"
+                                class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-700">
                         </div>
                     </div>
-                    <div class="input-wrapper">
-                        <input type="text" name="school" placeholder="Trường học">
+
+                    <div>
+                        <input type="text" name="school" placeholder="Trường học"
+                            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-700">
                     </div>
-                    <div class="input-wrapper">
-                        <input type="email" name="email" placeholder="Email">
+
+                    <div>
+                        <input type="email" name="email" placeholder="Email sinh viên" required
+                            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-700">
                     </div>
-                    <div class="input-wrapper">
-                        <input type="number" name="phone" placeholder="Số điện thoại">
+
+                    <div>
+                        <input type="number" name="phone" placeholder="Số điện thoại" required
+                            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-700">
                     </div>
-                    <div class="input-wrapper password-wrapper">
-                        <input type="password" name="password" id="password-register" placeholder="Mật khẩu">
-                        <span class="eye-icon" id="togglePasswordRegister">👁️</span>
+
+                    <div class="relative">
+                        <input type="password" name="password" id="password-register" placeholder="Mật khẩu" required
+                            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-700">
+                        <span
+                            class="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600"
+                            id="togglePasswordRegister">
+                            <i class="fa-regular fa-eye"></i>
+                        </span>
                     </div>
-                    <input type="submit" name="submit" value="ĐĂNG KÝ">
-                    <p class="or"><span>hoặc</span></p>
-                    <a href="" class="google-login">
-                        <div class="google-g">
-                            <img src="../../../images/google.png" alt="Google">
-                        </div>
-                        <span>Google</span>
+
+                    <input type="submit" name="submit" value="ĐĂNG KÝ NGAY"
+                        class="w-full bg-[#5A88FF] text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition duration-300 cursor-pointer shadow-md mt-2">
+
+                    <div class="flex items-center my-4">
+                        <div class="flex-grow border-t border-gray-200"></div>
+                        <span class="mx-4 text-gray-400 text-xs font-medium uppercase">HOẶC</span>
+                        <div class="flex-grow border-t border-gray-200"></div>
+                    </div>
+
+                    <a href=""
+                        class="flex items-center justify-center w-full border border-gray-300 py-3 rounded-lg hover:bg-gray-50 transition duration-300 group bg-white">
+                        <img src="../../../images/google.png" alt="Google" class="w-5 h-5 mr-3">
+                        <span class="text-gray-700 font-medium group-hover:text-gray-900">Đăng ký bằng Google</span>
                     </a>
-                    <div class="links">
-                        <p class="hhh">Đã có tài khoản?</p>
-                        <a href="../login" class="Register">Đăng nhập</a>
+
+                    <div class="text-center mt-6">
+                        <p class="text-gray-500 text-sm">Đã có tài khoản? <a href="../login"
+                                class="text-[#5A88FF] font-bold hover:underline">Đăng nhập</a></p>
                     </div>
                 </form>
             </div>
         </div>
-    </header>
+    </div>
+
     <?php include __DIR__ . '/../partials/footer.php'; ?>
+
     <script>
-        // Toggle password visibility
-        const togglePassword = document.getElementById('togglePasswordRegister');
-        const password = document.getElementById('password-register');
-        
-        if (togglePassword && password) {
-            togglePassword.addEventListener('click', function() {
-                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-                password.setAttribute('type', type);
-                this.textContent = type === 'password' ? '👁️' : '🙈';
-            });
-        }
+    // Script ẩn hiện mật khẩu
+    const togglePassword = document.getElementById('togglePasswordRegister');
+    const password = document.getElementById('password-register');
+
+    if (togglePassword && password) {
+        togglePassword.addEventListener('click', function() {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+
+            // Xử lý icon FontAwesome
+            const icon = this.querySelector('i');
+            if (icon) {
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
+            }
+        });
+    }
     </script>
 
 </body>
