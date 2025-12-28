@@ -1,9 +1,11 @@
 {
   "name": "unimarket",
   "version": "1.0.0",
-  "description": "",
+  "description": "Nền tảng mua bán đồ cũ dành cho sinh viên",
   "main": "index.js",
   "scripts": {
+    "dev": "npx tailwindcss -i ./resources/css/app.css -o ./public/css/app.css --watch",
+    "build": "npx tailwindcss -i ./resources/css/app.css -o ./public/css/app.css --minify",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

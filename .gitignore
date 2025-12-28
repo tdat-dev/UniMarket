@@ -1,30 +1,100 @@
-.vscode/*
-
-# Environment files
-.env
-.env.*
-!.env.example
-
 # Dependencies
 /vendor/
 /node_modules/
-/composer.phar
-composer.lock
-package-lock.json
+/package-lock.json
+/composer.lock
 
-# Cache and logs
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+
+# Logs
 *.log
-/storage/
-/bootstrap/cache/
-/coverage/
-/phpunit.xml.cache
-.phpunit.result.cache
+/logs/
+/storage/logs/
 
-# IDE and tooling
-/.idea/
-/.vscode/
-*.iml
+# Cache
+/cache/
+/storage/cache/
+/storage/framework/cache/
+/storage/framework/sessions/
+/storage/framework/views/
 
-# OS generated files
+# Uploads (giữ cấu trúc thư mục nhưng ignore files)
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
+*.png
+*.jpg
+*.jpeg
+*.webm
+footer-screenshot.png
+no-footer-debug.png
+
+# OS Files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+desktop.ini
+
+# IDE Files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Build files
+/dist/
+/build/
+*.zip
+*.rar
+*.tar.gz
+UniMarket.zip
+UniMarket.rar
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*~
+
+# Database
+*.sql.backup
+*.sql.bak
+
+# PHP
+*.php~
+*.phps
+
+# Composer
+composer.phar
+
+# NPM
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage reports
+/coverage/
+*.lcov
+
+# System files
+.htaccess.local
+.htpasswd
