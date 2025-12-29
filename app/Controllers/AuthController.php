@@ -1,111 +1,81 @@
 <?php
-
 namespace App\Controllers;
+
+use App\Services\AuthService;
+use App\Validators\AuthValidator;
 
 class AuthController extends BaseController
 {
-    public function login()
-    {
-        // Chỉ hiển thị form đăng nhập
+    // --- LOGIN ---
+    public function login() {
+        if (isset($_SESSION['user'])) {
+            header('Location: /');
+            exit;
+        }
         $this->view('auth/login');
     }
 
-    public function processLogin()
-    {
-        $errors = [];
-        $success = false;
+    public function processLogin() {
+        // 1. Validate
+        $validator = new AuthValidator();
+        $errors = $validator->validateLogin($_POST);
 
+        if (!empty($errors)) {
+            $this->view('auth/login', ['errors' => $errors]);
+            return;
+        }
+
+        // 2. Xử lý Login qua Service
+        $authService = new AuthService();
         $email = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
 
-        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors['username'] = 'Email không hợp lệ';
+        if ($authService->loginUser($email, $password)) {
+            header('Location: /');
+            exit;
+        } else {
+            $this->view('auth/login', [
+                'errors' => ['login' => 'Email hoặc mật khẩu không chính xác'],
+                'old' => ['username' => $email]
+            ]);
         }
-        if ($password === '') {
-            $errors['password'] = 'Vui lòng nhập mật khẩu';
-        }
-
-        if (empty($errors)) {
-            $userModel = new \App\Models\User();
-            $user = $userModel->login($email, $password);
-            if ($user) {
-                if (session_status() === PHP_SESSION_NONE) {
-                    session_start();
-                }
-                $_SESSION['user'] = [
-                    'id' => $user['id'],
-                    'full_name' => $user['full_name'],
-                    'email' => $user['email'],
-                    'role' => $user['role']
-                ];
-                $success = true;
-                header('Location: /home/index');
-                exit;
-            } else {
-                $errors['login'] = 'Email hoặc mật khẩu không đúng';
-            }
-        }
-
-        $this->view('auth/login', [
-            'errors' => $errors,
-            'success' => $success
-        ]);
     }
 
-    public function register()
-    {
-        // Chỉ hiển thị form đăng ký
+    // --- REGISTER ---
+    public function register() {
         $this->view('auth/register');
     }
 
-    public function processRegister()
-    {
-        $errors = [];
-        $success = false;
+    public function processRegister() {
+        // 1. Validate
+        $validator = new AuthValidator();
+        $errors = $validator->validateRegister($_POST);
 
-        $full_name = trim($_POST['username'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
-        $password_confirm = $_POST['password_confirm'] ?? '';
-        $phone_number = trim($_POST['phone_number'] ?? '');
-        $address = trim($_POST['school'] ?? '');
-        $major_id = null;
-
-        if ($full_name === '') {
-            $errors['username'] = 'Vui lòng nhập họ tên';
-        }
-        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Email không hợp lệ';
-        }
-        if (strlen($password) < 6) {
-            $errors['password'] = 'Mật khẩu phải từ 6 ký tự';
-        }
-        if ($password !== $password_confirm) {
-            $errors['password_confirm'] = 'Mật khẩu nhập lại không khớp';
+        if (!empty($errors)) {
+            $this->view('auth/register', ['errors' => $errors]);
+            return;
         }
 
-        $userModel = new \App\Models\User();
-        if ($userModel->checkEmailExists($email)) {
-            $errors['email'] = 'Email đã được sử dụng';
-        }
+        // 2. Xử lý Register qua Service
+        $authService = new AuthService();
+        $result = $authService->registerUser($_POST);
 
-        if (empty($errors)) {
-            $userModel->register([
-                'full_name' => $full_name,
-                'email' => $email,
-                'password' => $password,
-                'phone_number' => $phone_number,
-                'address' => $address,
-                'major_id' => $major_id
-            ]);
-            $success = true;
-            header('Location: /home/index');
+        if ($result['success']) {
+            header('Location: /login'); // Đăng ký xong chuyển về Login
             exit;
+        } else {
+            // Lỗi nghiệp vụ (ví dụ: Trùng email)
+            $this->view('auth/register', [
+                'errors' => ['email' => $result['message']]
+            ]);
         }
+    }
 
-        $this->view('auth/register', [
-            'errors' => $errors,
-            'success' => $success
-        ]);
+    
+
+    public function logout() {
+        session_destroy();
+        header('Location: /');
+        exit;
     }
 }
