@@ -33,7 +33,7 @@
                     <h2 class="text-2xl font-bold text-gray-800">Tạo tài khoản mới</h2>
                 </div>
 
-                <form action="" method="post" class="space-y-4">
+                <form action="/register" method="post" class="space-y-4">
                     <div class="flex flex-col md:flex-row gap-4">
                         <div class="w-full">
                             <input type="text" name="username" placeholder="Họ và tên" required value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : '' ?>"
@@ -83,7 +83,7 @@
                     </a>
 
                     <div class="text-center mt-6">
-                        <p class="text-gray-500 text-sm">Đã có tài khoản? <a href="login.php" class="text-[#5A88FF] font-bold hover:underline">Đăng nhập</a></p>
+                        <p class="text-gray-500 text-sm">Đã có tài khoản? <a href="/login" class="text-[#5A88FF] font-bold hover:underline">Đăng nhập</a></p>
                     </div>
                 </form>
             </div>
