@@ -105,12 +105,8 @@ include __DIR__ . '/../partials/header.php';
                 <div
                     class="bg-white border border-gray-200 rounded-sm overflow-hidden shadow-sm hover:shadow-md transition">
                     <div class="aspect-square bg-gray-200 flex items-center justify-center">
-                        <?php
-                        $imageSrc = !empty($item['image_base64'])
-                            ? 'data:image/jpeg;base64,' . $item['image_base64']
-                            : 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='; // 1x1 transparent
-                        ?>
-                        <img src="<?= $imageSrc ?>" alt="<?= htmlspecialchars($item['title'] ?? $item['name']) ?>"
+                        <img src="/uploads/<?= $item['image'] ?? 'default.png' ?>"
+                            alt="<?= htmlspecialchars($item['title'] ?? $item['name']) ?>"
                             class="w-full h-full object-cover">
                     </div>
                     <div class="p-3 space-y-2">
@@ -118,7 +114,7 @@ include __DIR__ . '/../partials/header.php';
                             <?= htmlspecialchars($item['title'] ?? $item['name']) ?>
                         </p>
                         <div class="flex items-end justify-between">
-                            <span class="text-[#e11d48] font-semibold text-base">
+                            <span class="text-red-500 font-semibold text-base">
                                 <span
                                     class="text-xs underline">đ</span><?= number_format((float)($item['price'] ?? 0), 0, ',', '.') ?>
                             </span>

@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS products (
     name VARCHAR(255) NOT NULL,
     description TEXT,
     price DECIMAL(10,2) NOT NULL,
-    image_url VARCHAR(255),
+    image VARCHAR(255),
     quantity INT NOT NULL ,
     status ENUM('active', 'sold', 'hidden') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
