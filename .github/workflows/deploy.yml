@@ -1,4 +1,4 @@
-name: 🚀 Deploy to Hosting
+name: 🚀 Deploy to CloudPanel
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
       - name: 🚚 Get latest code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2 # Fetch 2 commits to compare changes
+          fetch-depth: 2
 
       - name: 📂 Sync files via FTP (only changed files)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -23,15 +23,12 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: ${{ secrets.FTP_SERVER_DIR }}
-          # Chỉ upload file thay đổi (incremental sync)
           state-name: .ftp-deploy-sync-state.json
-          # Loại trừ các file/folder không cần upload
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
             **/.github/**
-            **/vendor/**
             *.sql
             .env
             .env.example
@@ -41,4 +38,5 @@ jobs:
             README2.md
             ARCHITECTURE.md
             .gitignore
+            .rsyncignore
             .ftp-deploy-sync-state.json

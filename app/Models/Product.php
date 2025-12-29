@@ -18,7 +18,7 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
         // fetchOne = lấy 1 dòng
         // :id là placeholder (prepared statement) để tránh SQL injection
         return $this->db->fetchOne(
-            "SELECT * FROM products WHERE id = :id", 
+            "SELECT * FROM products WHERE id = :id",
             ['id' => $id]  // Gán giá trị $id vào :id
         );
     }
@@ -26,14 +26,17 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
     // Tạo sản phẩm mới
     public function create($data)
     {
-        $sql = "INSERT INTO products (name, price, description) 
-                VALUES (:name, :price, :description)";
-        
-        // insert() trả về ID của dòng vừa tạo
-        return $this->db->insert($sql, [
-            'name' => $data['name'],
-            'price' => $data['price'],
-            'description' => $data['description']
-        ]);
+    $sql = "INSERT INTO products (user_id, category_id, name, description, price, quantity, image_base64, status)
+            VALUES (:user_id, :category_id, :name, :description, :price, :quantity, :image_base64, 'active')";
+
+    return $this->db->insert($sql, [
+        'user_id' => $data['user_id'] ?? 1,
+        'category_id' => $data['category_id'] ?? 1,
+        'name' => $data['name'] ?? ($data['title'] ?? null),
+        'description' => $data['description'] ?? null,
+        'price' => $data['price'] ?? 0,
+        'quantity' => $data['quantity'] ?? 0,
+        'image_base64' => $data['image_base64'] ?? null,
+    ]);
     }
 }

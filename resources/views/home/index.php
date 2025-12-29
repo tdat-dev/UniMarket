@@ -96,9 +96,45 @@ include __DIR__ . '/../partials/header.php';
             </div>
         </div>
 
+        <div class="container mx-auto mt-10">
+            <h2 class="text-2xl font-bold mb-5">Sản phẩm mới nhất</h2>
+
+            <?php $products = $products ?? []; ?>
+            <div class="grid grid-cols-4 gap-6">
+                <?php foreach ($products as $item): ?>
+                <div
+                    class="bg-white border border-gray-200 rounded-sm overflow-hidden shadow-sm hover:shadow-md transition">
+                    <div class="aspect-square bg-gray-200 flex items-center justify-center">
+                        <?php
+                        $imageSrc = !empty($item['image_base64'])
+                            ? 'data:image/jpeg;base64,' . $item['image_base64']
+                            : 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='; // 1x1 transparent
+                        ?>
+                        <img src="<?= $imageSrc ?>" alt="<?= htmlspecialchars($item['title'] ?? $item['name']) ?>"
+                            class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-3 space-y-2">
+                        <p class="text-sm text-[#000000] line-clamp-2 min-h-[40px]">
+                            <?= htmlspecialchars($item['title'] ?? $item['name']) ?>
+                        </p>
+                        <div class="flex items-end justify-between">
+                            <span class="text-[#e11d48] font-semibold text-base">
+                                <span
+                                    class="text-xs underline">đ</span><?= number_format((float)($item['price'] ?? 0), 0, ',', '.') ?>
+                            </span>
+                            <span class="text-xs text-gray-500">
+                                Số lượng <?= (int)($item['quantity'] ?? 0) ?>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
         <!-- GỢI Ý HÔM NAY -->
         <div class="mt-10">
-            <div class="bg-white sticky top-[110px] z-40 border-b border-gray-200">
+            <div class="bg-white z-40 border-b border-gray-200">
                 <div class="flex justify-center">
                     <div class="py-4 px-10 border-b-4 border-[#2C67C8] cursor-pointer">
                         <h2 class="text-[#2C67C8] font-medium uppercase text-base">GỢI Ý HÔM NAY</h2>
@@ -127,7 +163,7 @@ include __DIR__ . '/../partials/header.php';
                             Sản phẩm demo gợi ý hôm nay chất lượng cao <?= $i ?>
                         </div>
                         <div class="flex justify-between items-end">
-                            <div class="text-[#ee4d2d] text-base font-medium">
+                            <div class="text-red-500 text-base font-medium">
                                 <span
                                     class="text-xs underline">đ</span><?= number_format(rand(10000, 500000), 0, ',', '.') ?>
                             </div>
