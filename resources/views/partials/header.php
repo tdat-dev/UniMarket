@@ -61,6 +61,7 @@
                             <i class="fa-solid fa-plus text-sm"></i>
                             <span>Đăng Bán</span>
                         </a>
+                        <?php endif; ?>
                     </div>
 
                 </div>
