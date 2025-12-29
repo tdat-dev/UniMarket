@@ -73,24 +73,68 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
     // Lấy sản phẩm theo từ khóa tìm kiếm phổ biến nhất
     public function getByTopKeywords($limit = 6)
     {
-        // Lấy top keyword
+        // Lấy 5 keyword phổ biến nhất
         $keywordModel = new SearchKeyword();
-        $topKeywords = $keywordModel->getTopKeywords(3); // Lấy 3 keyword phổ biến nhất
+        $topKeywords = $keywordModel->getTopKeywords(5);
 
-        if (empty($topKeywords)) {
-            return $this->getRandom($limit); // Fallback nếu chưa có data
+        $products = [];
+
+        // Nếu có keyword, thử tìm sản phẩm
+        if (!empty($topKeywords)) {
+            $allWords = [];
+            // Tách từng keyword thành các từ riêng lẻ
+            foreach ($topKeywords as $kw) {
+                $keyword = $kw['keyword'];
+                // Tách theo khoảng trắng
+                $words = explode(' ', trim($keyword));
+                foreach ($words as $word) {
+                    $word = trim($word);
+                    // Chỉ lấy từ có độ dài >= 3 ký tự (tránh từ như "c", "a"...)
+                    if (mb_strlen($word) >= 3) {
+                        $allWords[] = $word;
+                    }
+                }
+            }
+
+            // Loại bỏ từ trùng lặp
+            $allWords = array_unique($allWords);
+
+            if (!empty($allWords)) {
+                // Tạo điều kiện LIKE cho mỗi từ
+                $conditions = [];
+                foreach ($allWords as $word) {
+                    $conditions[] = "name LIKE '%$word%'";
+                }
+                $whereClause = implode(' OR ', $conditions);
+
+                $sql = "SELECT * FROM products WHERE status = 'active' AND ($whereClause) LIMIT $limit";
+                $products = $this->db->fetchAll($sql);
+            }
         }
 
-        // Tạo điều kiện LIKE cho mỗi keyword
-        $conditions = [];
-        foreach ($topKeywords as $kw) {
-            $keyword = $kw['keyword'];
-            $conditions[] = "name LIKE '%$keyword%'";
-        }
-        $whereClause = implode(' OR ', $conditions);
+        // Nếu số lượng sản phẩm tìm được < limit -> Lấy thêm ngẫu nhiên bù vào
+        // $count = count($products);
+        // if ($count < $limit) {
+        //     $needed = $limit - $count;
 
-        $sql = "SELECT * FROM products WHERE status = 'active' AND ($whereClause) LIMIT $limit";
-        return $this->db->fetchAll($sql);
+        //     // Lấy ID các sản phẩm đã có để loại trừ (tránh trùng)
+        //     $existingIds = array_column($products, 'id');
+        //     $excludeSql = "";
+        //     if (!empty($existingIds)) {
+        //         $ids = implode(',', $existingIds);
+        //         $excludeSql = "AND id NOT IN ($ids)";
+        //     }
+
+        //     // Query lấy thêm
+        //     $moreProducts = $this->db->fetchAll(
+        //         "SELECT * FROM products WHERE status = 'active' $excludeSql ORDER BY RAND() LIMIT $needed"
+        //     );
+
+        //     // Gộp lại
+        //     $products = array_merge($products, $moreProducts);
+        // }
+
+        return $products;
     }
 
     // Tìm kiếm sản phẩm theo keyword
