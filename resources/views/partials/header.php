@@ -1,24 +1,3 @@
-<!DOCTYPE html>
-<html lang="vi">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UniMarket Header</title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <style>
-    body {
-        font-family: 'Quicksand', sans-serif;
-    }
-    </style>
-</head>
-
-<body class="bg-gray-50">
-
     <header class="w-full sticky top-0 z-50 bg-white font-sans shadow-sm">
 
         <div class="bg-gray-100 border-b border-gray-200 hidden md:block">
@@ -45,24 +24,18 @@
             <div class="max-w-[1200px] mx-auto px-4 pt-4">
                 <div class="flex flex-col md:flex-row items-center gap-4 md:gap-8">
 
-                    <div class="flex justify-between w-full md:w-auto items-center">
-                        <a href="/" class="flex items-center gap-2 flex-shrink-0 group no-underline">
-                            <img src="/images/UniMarketHead.svg" alt="UniMarket" class="h-12 md:h-16 w-auto object-contain">
-                        </a>
-                        
-                        <div class="md:hidden flex items-center gap-4">
-                             <a href="#" class="relative group p-1">
-                                <i class="fa-solid fa-cart-shopping text-gray-600 text-xl"></i>
-                                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-white">2</span>
-                            </a>
-                        </div>
-                    </div>
+                    <a href="/" class="flex items-center gap-2 flex-shrink-0 group no-underline">
+                        <img src="/images/LogoHeader.png" alt="UniMarket" class="h-12 w-auto object-contain">
+                    </a>
 
-                    <div class="flex-1 w-full">
-                        <form class="flex h-[44px] border border-gray-300 rounded-lg overflow-hidden hover:border-[#2C67C8] focus-within:border-[#2C67C8] focus-within:ring-2 focus-within:ring-[#2C67C8]/20 transition-all">
-                            <input type="text" placeholder="Tìm giáo trình, đồ gia dụng..."
-                                class="flex-1 px-4 text-sm text-[#333] placeholder-gray-400 focus:outline-none bg-transparent min-w-0">
-                            <button class="w-[60px] md:w-[70px] bg-gradient-to-b from-[#2C67C8] to-[#1990AA] flex items-center justify-center hover:opacity-90 transition-opacity">
+                    <div class="flex-1">
+                        <form
+                            class="flex h-[44px] border border-gray-300 rounded-lg overflow-hidden hover:border-[#2C67C8] focus-within:border-[#2C67C8] focus-within:ring-2 focus-within:ring-[#2C67C8]/20 transition-all">
+                            <input type="text" placeholder="Tìm giáo trình, đồ gia dụng, quần áo..."
+                                class="flex-1 px-4 text-sm text-[#333] placeholder-gray-400 focus:outline-none bg-transparent">
+
+                            <button
+                                class="w-[70px] bg-gradient-to-b from-[#2C67C8] to-[#1990AA] flex items-center justify-center hover:opacity-90 transition-opacity">
                                 <i class="fa-solid fa-magnifying-glass text-white text-lg"></i>
                             </button>
                         </form>
@@ -91,5 +64,5 @@
             </div>
         </div>
     </header>
-</body>
-</html>
+
+    </html>
