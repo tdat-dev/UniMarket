@@ -13,7 +13,6 @@
         font-family: 'Roboto', sans-serif;
     }
 
-    /* CSS chặn kéo ảnh */
     .no-drag {
         -webkit-user-drag: none;
         user-drag: none;
@@ -39,19 +38,21 @@
 
             <div class="w-full lg:w-[40%] max-w-[450px] bg-white rounded-3xl shadow-2xl p-8 md:p-10">
                 <div class="text-center mb-6">
-                    <img src="/images/LogoHeader.png" alt="UniMarket Logo" class="h-16 mx-auto mb-4 no-drag">
+                    <img src="/images/LogoHeader.png" alt="UniMarket Logo"
+                        class="h-16 mx-auto mb-4 no-drag object-contain">
                     <h2 class="text-3xl font-bold text-gray-800">Chào mừng trở lại!</h2>
                     <p class="text-gray-400 text-sm mt-1">Đăng nhập để tiếp tục mua sắm</p>
                 </div>
 
                 <form action="" method="post" class="space-y-4">
                     <div>
-                        <input type="text" name="username" placeholder="Email/Số điện thoại/Tên đăng nhập"
+                        <input type="text" name="username" placeholder="Email hoặc Số điện thoại" required
+                            value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : '' ?>"
                             class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
                     </div>
 
                     <div class="relative">
-                        <input type="password" name="password" id="password" placeholder="Mật khẩu"
+                        <input type="password" name="password" id="password" placeholder="Mật khẩu" required
                             class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
                         <span
                             class="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600"
@@ -80,7 +81,7 @@
                     </a>
 
                     <div class="text-center mt-6">
-                        <p class="text-gray-500 text-sm">Chưa có tài khoản? <a href="/register"
+                        <p class="text-gray-500 text-sm">Chưa có tài khoản? <a href="register"
                                 class="text-[#5A88FF] font-bold hover:underline">Đăng ký ngay</a></p>
                     </div>
                 </form>

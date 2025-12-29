@@ -1,19 +1,16 @@
--- 1. Xóa Database cũ nếu có (Để tránh lỗi trùng)
-DROP DATABASE IF EXISTS UniMarket;
-
 -- 2. Tạo Database mới (Hỗ trợ tiếng Việt)
-CREATE DATABASE UniMarket CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS UniMarket CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE UniMarket;
 
 -- 3. Bảng Ngành học (Tạo trước)
-CREATE TABLE majors (
+CREATE TABLE IF NOT EXISTS majors (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     code VARCHAR(20) UNIQUE
 ) ENGINE=InnoDB;
 
 -- 4. Bảng Người dùng
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     full_name VARCHAR(100) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
@@ -27,21 +24,22 @@ CREATE TABLE users (
 ) ENGINE=InnoDB;
 
 -- 5. Bảng Danh mục
-CREATE TABLE categories (
+CREATE TABLE IF NOT EXISTS categories (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     icon VARCHAR(50)
 ) ENGINE=InnoDB;
 
 -- 6. Bảng Sản phẩm
-CREATE TABLE products (
+CREATE TABLE IF NOT EXISTS products (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     category_id INT NOT NULL,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     price DECIMAL(10,2) NOT NULL,
-    image_url VARCHAR(255),
+    image VARCHAR(255),
+    quantity INT NOT NULL ,
     status ENUM('active', 'sold', 'hidden') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id),
@@ -50,7 +48,7 @@ CREATE TABLE products (
 
 -- 7. Bảng Đơn hàng
 -- 5. Bảng Đơn hàng (Cập nhật thêm seller_id)
-CREATE TABLE orders (
+CREATE TABLE IF NOT EXISTS orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     buyer_id INT NOT NULL COMMENT 'Người mua',
     seller_id INT NOT NULL COMMENT 'Người bán - Thêm cái này vào cho dễ code',
@@ -62,7 +60,7 @@ CREATE TABLE orders (
 ) ENGINE=InnoDB;
 
 -- 8. Chi tiết Đơn hàng
-CREATE TABLE order_details (
+CREATE TABLE IF NOT EXISTS order_details (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,
     product_id INT NOT NULL,
@@ -73,7 +71,7 @@ CREATE TABLE order_details (
 ) ENGINE=InnoDB;
 
 -- 9. Tin nhắn
-CREATE TABLE messages (
+CREATE TABLE IF NOT EXISTS messages (
     id INT AUTO_INCREMENT PRIMARY KEY,
     sender_id INT NOT NULL,
     receiver_id INT NOT NULL,
@@ -85,7 +83,7 @@ CREATE TABLE messages (
 ) ENGINE=InnoDB;
 
 -- 10. Đánh giá
-CREATE TABLE reviews (
+CREATE TABLE IF NOT EXISTS reviews (
     id INT AUTO_INCREMENT PRIMARY KEY,
     reviewer_id INT NOT NULL,
     product_id INT NOT NULL,
@@ -97,7 +95,7 @@ CREATE TABLE reviews (
 ) ENGINE=InnoDB;
 
 -- 11. Yêu thích
-CREATE TABLE favorites (
+CREATE TABLE IF NOT EXISTS favorites (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     product_id INT NOT NULL,
@@ -107,7 +105,7 @@ CREATE TABLE favorites (
 ) ENGINE=InnoDB;
 
 -- 12. Tương tác (Gợi ý)
-CREATE TABLE interactions (
+CREATE TABLE IF NOT EXISTS interactions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     product_id INT NOT NULL,
@@ -119,7 +117,7 @@ CREATE TABLE interactions (
 ) ENGINE=InnoDB;
 
 -- 13. Thông báo
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     content VARCHAR(255) NOT NULL,
@@ -129,7 +127,7 @@ CREATE TABLE notifications (
 ) ENGINE=InnoDB;
 
 -- 14. Báo cáo vi phạm
-CREATE TABLE reports (
+CREATE TABLE IF NOT EXISTS reports (
     id INT AUTO_INCREMENT PRIMARY KEY,
     reporter_id INT NOT NULL,
     product_id INT NOT NULL,

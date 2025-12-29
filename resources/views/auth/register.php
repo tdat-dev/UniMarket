@@ -25,8 +25,8 @@
 
             <div class="hidden lg:flex flex-col items-center justify-center lg:w-1/2">
                 <div class="relative w-full max-w-xl">
-                    <img src="../../../images/homepage-with-text.svg" alt="UniMarket Illustration"
-                        class="w-full h-auto object-contain drop-shadow-2xl opacity-90 hover:opacity-100 transition-opacity">
+                    <img src="/images/homepage3.png" alt="UniMarket Illustration"
+                        class="w-full h-auto object-contain drop-shadow-2xl">
                 </div>
                 <div class="mt-8 text-center text-white">
                     <h3 class="text-3xl font-bold mb-2">Tham gia UniMarket</h3>
@@ -36,35 +36,39 @@
 
             <div class="w-full max-w-lg bg-white rounded-3xl shadow-2xl p-8 md:p-10">
                 <div class="text-center mb-6">
-                    <img src="../../../images/UniMarketHead.svg" alt="UniMarket Logo" class="h-20 mx-auto mb-3">
+                    <img src="/images/LogoHeader.png" alt="UniMarket Logo" class="h-16 mx-auto mb-3 object-contain">
                     <h2 class="text-2xl font-bold text-gray-800">Tạo tài khoản mới</h2>
                 </div>
 
                 <form action="" method="post" class="space-y-4">
-
                     <div class="flex flex-col md:flex-row gap-4">
                         <div class="w-full">
-                            <input type="text" name="username" placeholder="Tên đăng nhập" required
+                            <input type="text" name="username" placeholder="Họ và tên" required
+                                value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : '' ?>"
                                 class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-700">
                         </div>
                         <div class="w-full">
                             <input type="text" name="branch" placeholder="Ngành học"
+                                value="<?php echo isset($_POST['branch']) ? htmlspecialchars($_POST['branch']) : '' ?>"
                                 class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-700">
                         </div>
                     </div>
 
                     <div>
-                        <input type="text" name="school" placeholder="Trường học"
+                        <input type="text" name="school" placeholder="Địa chỉ / Trường học"
+                            value="<?php echo isset($_POST['school']) ? htmlspecialchars($_POST['school']) : '' ?>"
                             class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-700">
                     </div>
 
                     <div>
                         <input type="email" name="email" placeholder="Email sinh viên" required
+                            value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>"
                             class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-700">
                     </div>
 
                     <div>
-                        <input type="number" name="phone" placeholder="Số điện thoại" required
+                        <input type="text" name="phone" placeholder="Số điện thoại" required
+                            value="<?php echo isset($_POST['phone']) ? htmlspecialchars($_POST['phone']) : '' ?>"
                             class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-700">
                     </div>
 
@@ -87,14 +91,14 @@
                         <div class="flex-grow border-t border-gray-200"></div>
                     </div>
 
-                    <a href=""
+                    <a href="#"
                         class="flex items-center justify-center w-full border border-gray-300 py-3 rounded-lg hover:bg-gray-50 transition duration-300 group bg-white">
-                        <img src="../../../images/google.png" alt="Google" class="w-5 h-5 mr-3">
+                        <img src="/images/google.png" alt="Google" class="w-5 h-5 mr-3">
                         <span class="text-gray-700 font-medium group-hover:text-gray-900">Đăng ký bằng Google</span>
                     </a>
 
                     <div class="text-center mt-6">
-                        <p class="text-gray-500 text-sm">Đã có tài khoản? <a href="../login"
+                        <p class="text-gray-500 text-sm">Đã có tài khoản? <a href="login"
                                 class="text-[#5A88FF] font-bold hover:underline">Đăng nhập</a></p>
                     </div>
                 </form>
@@ -105,16 +109,13 @@
     <?php include __DIR__ . '/../partials/footer.php'; ?>
 
     <script>
-    // Script ẩn hiện mật khẩu
+    // Script ẩn hiện mật khẩu giữ nguyên
     const togglePassword = document.getElementById('togglePasswordRegister');
     const password = document.getElementById('password-register');
-
     if (togglePassword && password) {
         togglePassword.addEventListener('click', function() {
             const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
             password.setAttribute('type', type);
-
-            // Xử lý icon FontAwesome
             const icon = this.querySelector('i');
             if (icon) {
                 icon.classList.toggle('fa-eye');
@@ -123,7 +124,6 @@
         });
     }
     </script>
-
 </body>
 
 </html>
