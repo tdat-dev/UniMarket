@@ -41,16 +41,17 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
     public function create($data)
     {
         // Lưu ý: Cột trong DB nên đặt là 'image' hoặc 'thumbnail'
-        $sql = "INSERT INTO products (title, price, description, user_id, category_id, image, status) 
-                VALUES (:title, :price, :description, :user_id, :category_id, :image, 'active')";
+        $sql = "INSERT INTO products (name, price, description, user_id, category_id, image, quantity, status) 
+                VALUES (:name, :price, :description, :user_id, :category_id, :image, :quantity, 'active')";
 
         return $this->db->insert($sql, [
-            'title' => $data['title'],
+            'name' => $data['name'],
             'price' => $data['price'],
             'description' => $data['description'],
-            'user_id' => $data['user_id'] ?? 1, // Tạm thời set cứng nếu chưa login
+            'user_id' => $data['user_id'] ?? 1,
             'category_id' => $data['category_id'] ?? 1,
-            'image' => $data['image'] // <-- Chỉ lưu tên file
+            'image' => $data['image'],
+            'quantity' => $data['quantity'] ?? 1
         ]);
     }
 
