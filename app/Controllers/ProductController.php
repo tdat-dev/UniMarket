@@ -8,18 +8,27 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
 {
     public function index()
     {
-        $productModel = new Product();
-        $products = $productModel->all();
+        $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+        $limit = 22; // Số sản phẩm trên mỗi trang
+        $offset = ($page - 1) * $limit;
 
-        // Thay vì echo JSON, ta gọi View và truyền data
-        $this->view('home/index', ['products' => $products]);
+        $productModel = new Product();
+        $products = $productModel->getPaginated($limit, $offset);
+        $totalProducts = $productModel->countAll();
+        $totalPages = ceil($totalProducts / $limit);
+
+        $this->view('products/index', [
+            'products' => $products,
+            'currentPage' => $page,
+            'totalPages' => $totalPages
+        ]);
     }
 
     public function show()
     {
         // Lấy ID từ URL: product-detail?id=5
         $id = $_GET['id'] ?? null;
-        
+
         $productModel = new Product();
         $product = $productModel->find($id);
 
@@ -29,14 +38,16 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
 
         $this->view('products/detail', ['product' => $product]);
     }
-    
+
     // Hàm hiện form đăng tin
-    public function create() {
+    public function create()
+    {
         $this->view('products/create'); // Bạn cần tạo file view này
     }
 
     // Hàm xử lý lưu tin
-    public function store() {
+    public function store()
+    {
         // Code xử lý upload ảnh và gọi Model create() tại đây
     }
 }

@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Core;
 
@@ -9,12 +9,12 @@ class Database
 {
     private static $instance = null;
     private $connection;
-    
+
     // Constructor - Kết nối database khi khởi tạo
     private function __construct()
     {
         $config = require __DIR__ . '/../../config/database.php';
-        
+
         try {
             $dsn = "mysql:host={$config['host']};dbname={$config['db_name']};charset=utf8mb4";
 
@@ -25,7 +25,7 @@ class Database
             ];
 
             $this->connection = new PDO($dsn, $config['username'], $config['password'], $options);
-            
+
         } catch (PDOException $ex) {
             die("Database Connection Failed: " . $ex->getMessage());
         }
@@ -64,7 +64,7 @@ class Database
         $stmt = $this->query($sql, $params);
         return $stmt->fetchAll();
     }
-    
+
     // SELECT 1 dòng
     public function fetchOne($sql, $params = [])
     {
@@ -105,8 +105,10 @@ class Database
     }
 
     // Ngăn clone object
-    private function __clone() {}
-    
+    private function __clone()
+    {
+    }
+
     // Ngăn unserialize
     public function __wakeup()
     {

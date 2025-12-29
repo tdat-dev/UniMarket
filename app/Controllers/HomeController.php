@@ -7,8 +7,14 @@ class HomeController extends BaseController
     public function index()
     {
         $productModel = new Product();
-        $products = $productModel->all();
+        $latestProducts = $productModel->getLatest(8);
+        $suggestedProducts = $productModel->getRandom(12);
+        $topProducts = $productModel->getByTopKeywords(6);
 
-        $this->view('home/index', ['products' => $products ?? []]);
+        $this->view('home/index', [
+            'latestProducts' => $latestProducts,
+            'suggestedProducts' => $suggestedProducts,
+            'topProducts' => $topProducts
+        ]);
     }
 }

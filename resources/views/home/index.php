@@ -1,6 +1,6 @@
-<?php 
+<?php
 include __DIR__ . '/../partials/head.php';
-include __DIR__ . '/../partials/header.php'; 
+include __DIR__ . '/../partials/header.php';
 ?>
 
 <main class="bg-gray-100 min-h-screen pb-10">
@@ -39,15 +39,15 @@ include __DIR__ . '/../partials/header.php';
                         ['name' => 'Khác', 'img' => 'https://placehold.co/80x80/png?text=Khac'],
                     ];
                     foreach ($categories as $cat):
-                    ?>
-                    <a href="#"
-                        class="flex flex-col items-center justify-center h-[150px] border-r border-b border-gray-50 hover:shadow-md transition-shadow group/item">
-                        <div
-                            class="w-[70%] aspect-square rounded-full overflow-hidden mb-2 transition-transform group-hover/item:-translate-y-1">
-                            <img src="<?= $cat['img'] ?>" alt="<?= $cat['name'] ?>" class="w-full h-full object-cover">
-                        </div>
-                        <span class="text-[13px] text-gray-800 text-center px-2 leading-4"><?= $cat['name'] ?></span>
-                    </a>
+                        ?>
+                        <a href="#"
+                            class="flex flex-col items-center justify-center h-[150px] border-r border-b border-gray-50 hover:shadow-md transition-shadow group/item">
+                            <div
+                                class="w-[70%] aspect-square rounded-full overflow-hidden mb-2 transition-transform group-hover/item:-translate-y-1">
+                                <img src="<?= $cat['img'] ?>" alt="<?= $cat['name'] ?>" class="w-full h-full object-cover">
+                            </div>
+                            <span class="text-[13px] text-gray-800 text-center px-2 leading-4"><?= $cat['name'] ?></span>
+                        </a>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -63,35 +63,31 @@ include __DIR__ . '/../partials/header.php';
             </div>
 
             <div class="grid grid-cols-6 gap-4">
-                <?php
-                $topProducts = [
-                    ['name' => 'Áo Ngực Không Dây', 'sold' => '45k+', 'img' => 'https://placehold.co/200x200/png?text=Ao+Nguc'],
-                    ['name' => 'Áo Thun', 'sold' => '83k+', 'img' => 'https://placehold.co/200x200/png?text=Ao+Thun'],
-                    ['name' => 'Bao Cao Su', 'sold' => '54k+', 'img' => 'https://placehold.co/200x200/png?text=Bao+Cao+Su'],
-                    ['name' => 'Áo Lót Nữ Không Gọng', 'sold' => '66k+', 'img' => 'https://placehold.co/200x200/png?text=Ao+Lot'],
-                    ['name' => 'Bút Mực Gel', 'sold' => '77k+', 'img' => 'https://placehold.co/200x200/png?text=But+Bi'],
-                    ['name' => 'Áo Babydoll Nữ Tay Bèo', 'sold' => '71k+', 'img' => 'https://placehold.co/200x200/png?text=Ao+Babydoll'],
-                ];
-                foreach ($topProducts as $prod):
-                ?>
-                <a href="#" class="block relative group">
-                    <div class="relative aspect-square bg-gray-100 mb-3 overflow-hidden">
-                        <!-- HOT Badge -->
-                        <div class="absolute top-0 left-0 z-10 w-8 h-10 bg-gradient-to-b from-yellow-400 to-red-600 flex flex-col items-center justify-start pt-1"
-                            style="clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%);">
-                            <span class="text-white font-bold text-[10px] leading-3">HOT</span>
-                            <i class="fa-solid fa-fire text-white text-[10px]"></i>
-                        </div>
+                <?php foreach ($topProducts as $prod): ?>
+                    <a href="/product-detail?id=<?= $prod['id'] ?>" class="block relative group">
+                        <div class="relative aspect-square bg-gray-100 mb-3 overflow-hidden">
+                            <!-- HOT Badge -->
+                            <div class="absolute top-0 left-0 z-10 w-8 h-10 bg-gradient-to-b from-yellow-400 to-red-600 flex flex-col items-center justify-start pt-1"
+                                style="clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%);">
+                                <span class="text-white font-bold text-[10px] leading-3">HOT</span>
+                                <i class="fa-solid fa-fire text-white text-[10px]"></i>
+                            </div>
 
-                        <img src="<?= $prod['img'] ?>" alt="<?= $prod['name'] ?>" class="w-full h-full object-cover">
+                            <img src="/uploads/<?= !empty($prod['image']) ? $prod['image'] : 'default.png' ?>"
+                                alt="<?= htmlspecialchars($prod['name'] ?? $prod['title']) ?>"
+                                class="w-full h-full object-cover">
 
-                        <!-- Sold Overlay -->
-                        <div class="absolute bottom-0 left-0 w-full bg-gray-400/80 py-1">
-                            <p class="text-white text-center text-xs font-medium">Bán <?= $prod['sold'] ?> / tháng</p>
+                            <!-- Overlay hiển thị lượt tìm kiếm -->
+                            <div class="absolute bottom-0 left-0 w-full bg-gray-400/80 py-1">
+                                <p class="text-white text-center text-xs font-medium">
+                                    <?= number_format($prod['search_count'] ?? 0) ?> lượt tìm
+                                </p>
+                            </div>
                         </div>
-                    </div>
-                    <h3 class="text-gray-800 text-base font-medium capitalize line-clamp-2"><?= $prod['name'] ?></h3>
-                </a>
+                        <h3 class="text-gray-800 text-base font-medium capitalize line-clamp-2">
+                            <?= htmlspecialchars($prod['name'] ?? $prod['title']) ?>
+                        </h3>
+                    </a>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -100,85 +96,55 @@ include __DIR__ . '/../partials/header.php';
             <h2 class="text-2xl font-bold mb-5">Sản phẩm mới nhất</h2>
 
             <?php $products = $products ?? []; ?>
-            <div class="grid grid-cols-4 gap-6">
-                <?php foreach ($products as $item): ?>
-                <div
-                    class="bg-white border border-gray-200 rounded-sm overflow-hidden shadow-sm hover:shadow-md transition">
-                    <div class="aspect-square bg-gray-200 flex items-center justify-center">
-                        <img src="/uploads/<?= $item['image'] ?? 'default.png' ?>"
-                            alt="<?= htmlspecialchars($item['title'] ?? $item['name']) ?>"
-                            class="w-full h-full object-cover">
-                    </div>
-                    <div class="p-3 space-y-2">
-                        <p class="text-sm text-[#000000] line-clamp-2 min-h-[40px]">
-                            <?= htmlspecialchars($item['title'] ?? $item['name']) ?>
-                        </p>
-                        <div class="flex items-end justify-between">
-                            <span class="text-red-500 font-semibold text-base">
-                                <span
-                                    class="text-xs underline">đ</span><?= number_format((float)($item['price'] ?? 0), 0, ',', '.') ?>
-                            </span>
-                            <span class="text-xs text-gray-500">
-                                Số lượng <?= (int)($item['quantity'] ?? 0) ?>
-                            </span>
+            <div class="grid grid-cols-6 gap-3 mt-4">
+                <?php foreach ($latestProducts as $item): ?>
+                    <a href="/product-detail?id=<?= $item['id'] ?>" class="...">
+                        <div class="aspect-square relative">
+                            <img src="/uploads/<?= !empty($item['image']) ? $item['image'] : 'default.png' ?>"
+                                class="w-full h-full object-cover">
                         </div>
-                    </div>
-                </div>
+                        <div class="p-2">
+                            <div class="text-xs text-gray-800 line-clamp-2 mb-2 min-h-[32px]">
+                                <?= htmlspecialchars($item['name']) ?>
+                            </div>
+                            <div class="flex justify-between items-end">
+                                <div class="text-red-500 text-base font-medium">
+                                    <span
+                                        class="text-xs underline">đ</span><?= number_format((float) $item['price'], 0, ',', '.') ?>
+                                </div>
+                                <div class="text-xs text-gray-500">Còn: <?= $item['quantity'] ?></div>
+                            </div>
+                        </div>
+                    </a>
                 <?php endforeach; ?>
             </div>
-        </div>
 
-        <!-- GỢI Ý HÔM NAY -->
-        <div class="mt-10">
-            <div class="bg-white z-40 border-b border-gray-200">
-                <div class="flex justify-center">
-                    <div class="py-4 px-10 border-b-4 border-[#2C67C8] cursor-pointer">
-                        <h2 class="text-[#2C67C8] font-medium uppercase text-base">GỢI Ý HÔM NAY</h2>
+            <!-- GỢI Ý HÔM NAY -->
+            <div class="mt-10">
+                <div class="bg-white z-40 border-b border-gray-200 sticky top-[60px] md:top-[80px]">
+                    <!-- Added sticky header -->
+                    <div class="flex justify-center">
+                        <div class="py-4 px-10 border-b-4 border-[#2C67C8] cursor-pointer">
+                            <h2 class="text-[#2C67C8] font-medium uppercase text-base">GỢI Ý HÔM NAY</h2>
+                        </div>
                     </div>
+                </div>
+
+                <div id="suggested-products-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-4">
+                    <?php foreach ($suggestedProducts as $item): ?>
+                        <?php include __DIR__ . '/../partials/product_card.php'; ?>
+                    <?php endforeach; ?>
+                </div>
+
+                <div class="flex justify-center mt-8 pb-10">
+                    <a href="/products"
+                        class="bg-white border border-gray-300 text-gray-600 px-10 py-2 hover:bg-gray-50 transition-colors rounded-sm text-sm">
+                        Xem Thêm
+                    </a>
                 </div>
             </div>
 
-            <div class="grid grid-cols-6 gap-3 mt-4">
-                <?php
-                // Generate some random products for suggestions
-                for($i=1; $i<=12; $i++):
-                ?>
-                <a href="#"
-                    class="bg-white hover:shadow-md hover:-translate-y-[1px] transition-all duration-100 rounded-sm overflow-hidden border border-transparent hover:border-[#2C67C8]">
-                    <div class="aspect-square relative">
-                        <img src="https://placehold.co/200x200/png?text=Product+<?= $i ?>"
-                            class="w-full h-full object-cover">
-                        <?php if($i % 3 == 0): ?>
-                        <div class="absolute top-0 right-0 bg-yellow-400 text-white text-xs font-bold px-1 py-0.5">
-                            -43%
-                        </div>
-                        <?php endif; ?>
-                    </div>
-                    <div class="p-2">
-                        <div class="text-xs text-gray-800 line-clamp-2 mb-2 min-h-[32px]">
-                            Sản phẩm demo gợi ý hôm nay chất lượng cao <?= $i ?>
-                        </div>
-                        <div class="flex justify-between items-end">
-                            <div class="text-red-500 text-base font-medium">
-                                <span
-                                    class="text-xs underline">đ</span><?= number_format(rand(10000, 500000), 0, ',', '.') ?>
-                            </div>
-                            <div class="text-xs text-gray-500">Đã bán <?= rand(10, 999) ?></div>
-                        </div>
-                    </div>
-                </a>
-                <?php endfor; ?>
-            </div>
-
-            <div class="flex justify-center mt-8">
-                <a href="#"
-                    class="bg-white border border-gray-300 text-gray-600 px-10 py-2 hover:bg-gray-50 transition-colors rounded-sm text-sm">
-                    Xem Thêm
-                </a>
-            </div>
         </div>
-
-    </div>
 </main>
 
 <?php include __DIR__ . '/../partials/footer.php'; ?>
