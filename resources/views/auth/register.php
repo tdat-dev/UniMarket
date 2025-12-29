@@ -64,7 +64,13 @@
                         <input type="email" name="email" placeholder="Email sinh viên" required
                             value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>"
                             class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-700">
-                    </div>
+                    <?php if (isset($errors['email'])): ?>
+                            <p class="text-red-500 text-sm mt-1 italic">
+                                <i class="fa-solid fa-circle-exclamation mr-1"></i>
+                                <?php echo $errors['email']; ?>
+                            </p>
+                        <?php endif; ?>
+                        </div>
 
                     <div>
                         <input type="text" name="phone" placeholder="Số điện thoại" required
@@ -81,6 +87,7 @@
                             <i class="fa-regular fa-eye"></i>
                         </span>
                     </div>
+                    
 
                     <input type="submit" name="submit" value="ĐĂNG KÝ NGAY"
                         class="w-full bg-[#5A88FF] text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition duration-300 cursor-pointer shadow-md mt-2">

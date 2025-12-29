@@ -6,7 +6,7 @@ use App\Validators\AuthValidator;
 
 class AuthController extends BaseController
 {
-    // --- LOGIN ---
+    // --- LOGIN (HIỂN THỊ FORM) ---
     public function login() {
         if (isset($_SESSION['user'])) {
             header('Location: /');
@@ -15,8 +15,9 @@ class AuthController extends BaseController
         $this->view('auth/login');
     }
 
+    // --- XỬ LÝ ĐĂNG NHẬP ---
     public function processLogin() {
-        // 1. Validate
+        // 1. Validate dữ liệu đầu vào
         $validator = new AuthValidator();
         $errors = $validator->validateLogin($_POST);
 
@@ -25,12 +26,14 @@ class AuthController extends BaseController
             return;
         }
 
-        // 2. Xử lý Login qua Service
+        // 2. Gọi Service để kiểm tra đăng nhập
         $authService = new AuthService();
-        $email = trim($_POST['username'] ?? '');
+        $email = trim($_POST['username'] ?? ''); // Form Login name="username"
         $password = $_POST['password'] ?? '';
 
         if ($authService->loginUser($email, $password)) {
+            // Đăng nhập thành công -> Chuyển về Home (/)
+            // Lưu ý: Route '/' chính là HomeController::index (tương đương home/index)
             header('Location: /');
             exit;
         } else {
@@ -41,13 +44,18 @@ class AuthController extends BaseController
         }
     }
 
-    // --- REGISTER ---
+    // --- REGISTER (HIỂN THỊ FORM) ---
     public function register() {
+        if (isset($_SESSION['user'])) {
+            header('Location: /');
+            exit;
+        }
         $this->view('auth/register');
     }
 
+    // --- XỬ LÝ ĐĂNG KÝ (CÓ AUTO LOGIN) ---
     public function processRegister() {
-        // 1. Validate
+        // 1. Validate dữ liệu
         $validator = new AuthValidator();
         $errors = $validator->validateRegister($_POST);
 
@@ -56,26 +64,43 @@ class AuthController extends BaseController
             return;
         }
 
-        // 2. Xử lý Register qua Service
+        // 2. Gọi Service xử lý đăng ký
         $authService = new AuthService();
         $result = $authService->registerUser($_POST);
 
         if ($result['success']) {
-            header('Location: /login'); // Đăng ký xong chuyển về Login
+            // --- THAY ĐỔI Ở ĐÂY: TỰ ĐỘNG ĐĂNG NHẬP ---
+            
+            // Lấy email và password người dùng vừa nhập
+            $email = trim($_POST['email'] ?? '');
+            $password = $_POST['password'] ?? '';
+
+            // Gọi hàm login luôn (tạo session ngay lập tức)
+            $authService->loginUser($email, $password);
+
+            // Chuyển hướng thẳng về Trang chủ (Home)
+            header('Location: /login'); 
             exit;
         } else {
             // Lỗi nghiệp vụ (ví dụ: Trùng email)
             $this->view('auth/register', [
                 'errors' => ['email' => $result['message']]
+
             ]);
         }
     }
 
-    
-
+    // --- ĐĂNG XUẤT ---
     public function logout() {
-        session_destroy();
-        header('Location: /');
+        // Khởi động session nếu chưa có để còn destroy nó
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        session_destroy(); // Xóa sạch dữ liệu đăng nhập
+        
+        // SỬA DÒNG NÀY: Chuyển về /login thay vì /
+        header('Location: /login'); 
         exit;
     }
 }
