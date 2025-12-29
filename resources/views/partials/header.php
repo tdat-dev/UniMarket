@@ -1,26 +1,3 @@
-<!DOCTYPE html>
-<html lang="vi">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UniMarket Header</title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700;800&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <style>
-    body {
-        font-family: 'Quicksand', sans-serif;
-    }
-    </style>
-</head>
-
-<body class="bg-gray-50">
-
     <header class="w-full sticky top-0 z-50 bg-white font-sans shadow-sm">
 
         <div class="bg-gray-100 border-b border-gray-200">
@@ -52,7 +29,7 @@
                 <div class="flex items-center gap-8">
 
                     <a href="/" class="flex items-center gap-2 flex-shrink-0 group no-underline">
-                        <img src="/images/UniMarketHead.svg" alt="UniMarket" class="h-16 w-auto object-contain">
+                        <img src="/images/LogoHeader.png" alt="UniMarket" class="h-12 w-auto object-contain">
                     </a>
 
                     <div class="flex-1">
@@ -97,6 +74,4 @@
         </div>
     </header>
 
-</body>
-
-</html>
+    </html>
