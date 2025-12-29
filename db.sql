@@ -178,7 +178,7 @@ INSERT INTO categories (name, icon) VALUES
 ('Khác', '📦');
 
 -- 4. Sản phẩm
-INSERT INTO products (user_id, category_id, name, description, price, image_url, status) VALUES
+INSERT INTO products (user_id, category_id, name, description, price, image, status) VALUES
 -- Sách
 (2, 1, 'Giáo trình Lập trình C++', 'Sách mới 95%, không gạch chú. Phù hợp cho sinh viên năm 1-2 IT.', 85000, 'book_cpp.jpg', 'active'),
 (3, 1, 'Kinh tế vi mô - N. Gregory Mankiw', 'Bản tiếng Việt, đã dùng 1 kỳ, còn mới.', 120000, 'book_eco.jpg', 'active'),
