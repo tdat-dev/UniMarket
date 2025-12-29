@@ -1,0 +1,43 @@
+name: 🚀 Deploy to Hosting
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: 🎉 Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # Fetch 2 commits to compare changes
+
+      - name: 📂 Sync files via FTP (only changed files)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          # Chỉ upload file thay đổi (incremental sync)
+          state-name: .ftp-deploy-sync-state.json
+          # Loại trừ các file/folder không cần upload
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.github/**
+            **/vendor/**
+            .env
+            .env.example
+            composer.lock
+            package-lock.json
+            README.md
+            README2.md
+            ARCHITECTURE.md
+            .gitignore
+            .ftp-deploy-sync-state.json
