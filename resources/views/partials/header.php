@@ -1,4 +1,4 @@
-    <header class="w-full sticky top-0 z-50 bg-white font-sans shadow-sm">
+    <header class="w-full z-50 bg-white font-sans shadow-sm">
 
         <div class="bg-gray-100 border-b border-gray-200 hidden md:block">
             <div class="max-w-[1200px] mx-auto px-4">
@@ -28,36 +28,46 @@
                         <img src="/images/LogoHeader.png" alt="UniMarket" class="h-12 w-auto object-contain">
                     </a>
 
-                    <div class="flex-1">
-                        <form
-                            class="flex h-[44px] border border-gray-300 rounded-lg overflow-hidden hover:border-[#2C67C8] focus-within:border-[#2C67C8] focus-within:ring-2 focus-within:ring-[#2C67C8]/20 transition-all">
-                            <input type="text" placeholder="Tìm giáo trình, đồ gia dụng, quần áo..."
-                                class="flex-1 px-4 text-sm text-[#333] placeholder-gray-400 focus:outline-none bg-transparent">
+        <div class="flex-1 relative">
+            <form action="/search" method="GET"
+                class="flex h-[44px] border border-gray-300 rounded-lg overflow-hidden hover:border-[#2C67C8] focus-within:border-[#2C67C8] focus-within:ring-2 focus-within:ring-[#2C67C8]/20 transition-all">
+                <input type="text" name="q" id="search-input" 
+                    placeholder="Tìm giáo trình, đồ gia dụng, quần áo..."
+                    value="<?= htmlspecialchars($_GET['q'] ?? '') ?>"
+                    autocomplete="off"
+                    class="flex-1 px-4 text-sm text-[#333] placeholder-gray-400 focus:outline-none bg-transparent">
 
-                            <button
-                                class="w-[70px] bg-gradient-to-b from-[#2C67C8] to-[#1990AA] flex items-center justify-center hover:opacity-90 transition-opacity">
-                                <i class="fa-solid fa-magnifying-glass text-white text-lg"></i>
-                            </button>
-                        </form>
+                <button type="submit"
+                    class="w-[70px] bg-gradient-to-b from-[#2C67C8] to-[#1990AA] flex items-center justify-center hover:opacity-90 transition-opacity">
+                    <i class="fa-solid fa-magnifying-glass text-white text-lg"></i>
+                </button>
+            </form>
 
-                        <div class="flex flex-wrap gap-x-4 mt-2 text-xs text-gray-500 pl-1 justify-center md:justify-start">
-                            <a href="#" class="hover:text-[#2C67C8]">Sục Crocs</a>
-                            <a href="#" class="hover:text-[#2C67C8]">Áo Khoác</a>
-                            <a href="#" class="hidden sm:inline hover:text-[#2C67C8]">Giáo trình C++</a>
-                        </div>
-                    </div>
+            <!-- Dropdown gợi ý -->
+            <div id="search-suggestions" 
+                class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden z-50 max-h-[300px] overflow-y-auto">
+            </div>
 
-                    <div class="flex items-center gap-4 md:gap-8 flex-shrink-0 w-full md:w-auto justify-center md:justify-end">
+            <div class="flex flex-wrap gap-x-4 mt-2 text-xs text-gray-500 pl-1 justify-center md:justify-start">
+                <a href="/search?q=Sục Crocs" class="hover:text-[#2C67C8]">Sục Crocs</a>
+                <a href="/search?q=Áo Khoác" class="hover:text-[#2C67C8]">Áo Khoác</a>
+                <a href="/search?q=Giáo trình C++" class="hidden sm:inline hover:text-[#2C67C8]">Giáo trình C++</a>
+            </div>
+        </div>
+
+                    <div
+                        class="flex items-center gap-4 md:gap-8 flex-shrink-0 w-full md:w-auto justify-center md:justify-end">
+
                         <a href="#" class="relative group p-1 hidden md:block">
-                            <i class="fa-solid fa-cart-shopping text-gray-600 text-2xl group-hover:text-[#2C67C8] transition-colors"></i>
-                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-white">2</span>
+                            <i
+                                class="fa-solid fa-cart-shopping text-gray-600 text-2xl group-hover:text-[#2C67C8] transition-colors"></i>
                         </a>
-                        <?php if (isset($_SESSION['user'])): ?>
-                        <a href="#" class="w-full md:w-auto justify-center px-6 py-2.5 bg-gradient-to-r from-[#2C67C8] to-[#1990AA] text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all transform flex items-center gap-2 no-underline">
+
+                        <a href="#"
+                            class="w-full md:w-auto justify-center px-6 py-2.5 bg-gradient-to-r from-[#2C67C8] to-[#1990AA] text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all transform flex items-center gap-2 no-underline">
                             <i class="fa-solid fa-plus text-sm"></i>
                             <span>Đăng Bán</span>
                         </a>
-                        <?php endif; ?>
                     </div>
 
                 </div>

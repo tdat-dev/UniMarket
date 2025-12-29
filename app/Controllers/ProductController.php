@@ -4,35 +4,50 @@ namespace App\Controllers;
 
 use App\Models\Product;
 
-class ProductController
+class ProductController extends BaseController // Kế thừa BaseController để dùng hàm view()
 {
-    // Hiển thị danh sách sản phẩm
     public function index()
     {
-        // 1. Tạo object Product (tự động kết nối DB qua BaseModel)
+        $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+        $limit = 22; // Số sản phẩm trên mỗi trang
+        $offset = ($page - 1) * $limit;
+
         $productModel = new Product();
-        
-        // 2. Gọi method all() để lấy data
-        $products = $productModel->all();
-        
-        // 3. Trả về JSON (tạm thời, sau này sẽ load view)
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode($products, JSON_UNESCAPED_UNICODE);
+        $products = $productModel->getPaginated($limit, $offset);
+        $totalProducts = $productModel->countAll();
+        $totalPages = ceil($totalProducts / $limit);
+
+        $this->view('products/index', [
+            'products' => $products,
+            'currentPage' => $page,
+            'totalPages' => $totalPages
+        ]);
     }
 
-    // Hiển thị chi tiết 1 sản phẩm
-    public function show($id)
+    public function show()
     {
+        // Lấy ID từ URL: product-detail?id=5
+        $id = $_GET['id'] ?? null;
+
         $productModel = new Product();
         $product = $productModel->find($id);
-        
+
         if (!$product) {
-            http_response_code(404);
-            echo json_encode(['error' => 'Không tìm thấy sản phẩm']);
-            return;
+            die("Sản phẩm không tồn tại"); // Hoặc redirect 404
         }
-        
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode($product, JSON_UNESCAPED_UNICODE);
+
+        $this->view('products/detail', ['product' => $product]);
+    }
+
+    // Hàm hiện form đăng tin
+    public function create()
+    {
+        $this->view('products/create'); // Bạn cần tạo file view này
+    }
+
+    // Hàm xử lý lưu tin
+    public function store()
+    {
+        // Code xử lý upload ảnh và gọi Model create() tại đây
     }
 }
