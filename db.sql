@@ -1,6 +1,6 @@
 -- 2. Tạo Database mới (Hỗ trợ tiếng Việt)
-CREATE DATABASE IF NOT EXISTS UniMarket CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE UniMarket;
+CREATE DATABASE IF NOT EXISTS Unizify CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE Unizify;
 
 -- 3. Bảng Ngành học (Tạo trước)
 CREATE TABLE IF NOT EXISTS majors (
@@ -161,7 +161,7 @@ INSERT IGNORE INTO majors (name, code) VALUES
 
 -- 2. Người dùng (password: 123456 đã hash bằng bcrypt)
 INSERT IGNORE INTO users (full_name, email, password, phone_number, address, role, major_id) VALUES
-('Nguyễn Văn Admin', 'admin@unimarket.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0901234567', 'Hà Nội', 'admin', 1),
+('Nguyễn Văn Admin', 'admin@unizify.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0901234567', 'Hà Nội', 'admin', 1),
 ('Trần Thị Lan', 'lan.tran@student.edu.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0912345678', 'TP HCM', 'student', 1),
 ('Lê Văn Hùng', 'hung.le@student.edu.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0923456789', 'Đà Nẵng', 'student', 2),
 ('Phạm Thị Mai', 'mai.pham@student.edu.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0934567890', 'Hải Phòng', 'student', 3),

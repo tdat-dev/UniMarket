@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng ký - UniMarket</title>
+    <title>Đăng ký - Unizify</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -31,10 +31,10 @@
         <div class="w-full max-w-[1400px] mx-auto px-4 flex flex-col lg:flex-row items-center justify-between gap-10">
 
             <div class="hidden lg:flex flex-col items-center justify-center w-[55%]">
-                <img src="/images/homepage3.png" alt="UniMarket Illustration"
+                <img src="/images/homepage3.png" alt="Unizify Illustration"
                     class="w-full h-auto object-contain drop-shadow-2xl no-drag" draggable="false">
                 <div class="mt-8 text-center text-white">
-                    <h3 class="text-3xl font-bold mb-2">Tham gia UniMarket</h3>
+                    <h3 class="text-3xl font-bold mb-2">Tham gia Unizify</h3>
                     <p class="text-blue-100 text-lg">Cộng đồng trao đổi đồ cũ sinh viên lớn nhất</p>
                 </div>
             </div>
@@ -45,11 +45,22 @@
                 </div>
 
                 <form action="/register" method="post" class="space-y-4">
+                    <?php if (isset($error)): ?>
+                        <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+                            <p class="font-bold">Đăng ký thất bại</p>
+                            <p><?php echo $error; ?></p>
+                        </div>
+                    <?php endif; ?>
                     <div class="flex flex-col md:flex-row gap-4">
                         <div class="w-full">
                             <input type="text" name="username" placeholder="Họ và tên" required
                                 value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : '' ?>"
                                 class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-700">
+                            <?php if (isset($errors['username'])): ?>
+                                <p class="text-red-500 text-sm mt-1 italic"><i
+                                        class="fa-solid fa-circle-exclamation mr-1"></i><?php echo $errors['username']; ?>
+                                </p>
+                            <?php endif; ?>
                         </div>
                         <div class="w-full">
                             <input type="text" name="branch" placeholder="Ngành học"
@@ -80,6 +91,10 @@
                         <input type="text" name="phone" placeholder="Số điện thoại" required
                             value="<?php echo isset($_POST['phone']) ? htmlspecialchars($_POST['phone']) : '' ?>"
                             class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-700">
+                        <?php if (isset($errors['phone'])): ?>
+                            <p class="text-red-500 text-sm mt-1 italic"><i
+                                    class="fa-solid fa-circle-exclamation mr-1"></i><?php echo $errors['phone']; ?></p>
+                        <?php endif; ?>
                     </div>
 
                     <div class="relative">
@@ -91,6 +106,10 @@
                             <i class="fa-regular fa-eye"></i>
                         </span>
                     </div>
+                    <?php if (isset($errors['password'])): ?>
+                        <p class="text-red-500 text-sm mt-1 italic"><i
+                                class="fa-solid fa-circle-exclamation mr-1"></i><?php echo $errors['password']; ?></p>
+                    <?php endif; ?>
 
 
                     <input type="submit" name="submit" value="ĐĂNG KÝ NGAY"
