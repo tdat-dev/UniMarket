@@ -4,7 +4,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE categories;
 
 INSERT INTO categories (name, icon) VALUES
-('Thời Trang Nam', '/images/categories/Item.png'),
+('Thời Trang Nam', '/images/categories/item.png'),
 ('Điện Thoại', '/images/categories/dienthoai.png'),
 ('Điện Tử', '/images/categories/manhinh.png'),
 ('Laptop', '/images/categories/laptop.png'),
@@ -23,7 +23,7 @@ INSERT INTO categories (name, icon) VALUES
 ('Túi Ví', '/images/categories/tuida.png'),
 ('Phụ Kiện', '/images/categories/thatlung.png'),
 ('Sách', '/images/categories/sach.png'),
-('Khác', '/images/categories/Item.png');
+('Khác', '/images/categories/item.png');
 
 -- Bật lại kiểm tra khóa ngoại
 SET FOREIGN_KEY_CHECKS = 1;

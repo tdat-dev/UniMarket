@@ -32,7 +32,7 @@
         <div class="w-full max-w-[1400px] mx-auto px-4 flex flex-col lg:flex-row items-center justify-between gap-10">
 
             <div class="hidden lg:flex items-center justify-center w-[55%]">
-                <img src="/images/homepage3.png" alt="Unizify Illustration"
+                <img src="/images/homepage-text.png" alt="Unizify Illustration"
                     class="w-full h-auto object-contain drop-shadow-2xl no-drag" draggable="false">
             </div>
 
