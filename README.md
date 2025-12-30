@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/images/LogoHeader.png" alt="UniMarket Logo" width="250">
+  <img src="public/images/logo.png" alt="Unizify Logo" width="250">
 </p>
 
 <p align="center">

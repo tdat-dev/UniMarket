@@ -31,10 +31,6 @@
 /test-results/
 /playwright-report/
 /playwright/.cache/
-*.png
-*.jpg
-*.jpeg
-*.webm
 footer-screenshot.png
 no-footer-debug.png
 
@@ -59,6 +55,7 @@ desktop.ini
 .settings/
 *.sublime-project
 *.sublime-workspace
+.agent
 
 # Build files
 /dist/

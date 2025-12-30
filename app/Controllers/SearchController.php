@@ -35,13 +35,25 @@ class SearchController extends BaseController
         ]);
     }
 
+    public function search()
+    {
+        // Kiểm tra đăng nhập
+        if (!isset($_SESSION['user'])) {
+            // Lưu URL hiện tại vào session
+            $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
+            header('Location: /login');
+            exit;
+        }
+        $this->index();
+    }
+
     public function suggest()
     {
         $keyword = $_GET['q'] ?? '';
         $productModel = new Product();
-        
+
         $results = $productModel->searchByKeyword($keyword, 6, 0);
-        
+
         header('Content-Type: application/json');
         echo json_encode($results);
         exit;

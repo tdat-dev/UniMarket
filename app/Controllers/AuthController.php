@@ -7,7 +7,8 @@ use App\Validators\AuthValidator;
 class AuthController extends BaseController
 {
     // --- LOGIN (HIỂN THỊ FORM) ---
-    public function login() {
+    public function login()
+    {
         if (isset($_SESSION['user'])) {
             header('Location: /');
             exit;
@@ -16,7 +17,8 @@ class AuthController extends BaseController
     }
 
     // --- XỬ LÝ ĐĂNG NHẬP ---
-    public function processLogin() {
+    public function processLogin()
+    {
         // 1. Validate dữ liệu đầu vào
         $validator = new AuthValidator();
         $errors = $validator->validateLogin($_POST);
@@ -45,7 +47,8 @@ class AuthController extends BaseController
     }
 
     // --- REGISTER (HIỂN THỊ FORM) ---
-    public function register() {
+    public function register()
+    {
         if (isset($_SESSION['user'])) {
             header('Location: /');
             exit;
@@ -54,7 +57,8 @@ class AuthController extends BaseController
     }
 
     // --- XỬ LÝ ĐĂNG KÝ (CÓ AUTO LOGIN) ---
-    public function processRegister() {
+    public function processRegister()
+    {
         // 1. Validate dữ liệu
         $validator = new AuthValidator();
         $errors = $validator->validateRegister($_POST);
@@ -70,7 +74,7 @@ class AuthController extends BaseController
 
         if ($result['success']) {
             // --- THAY ĐỔI Ở ĐÂY: TỰ ĐỘNG ĐĂNG NHẬP ---
-            
+
             // Lấy email và password người dùng vừa nhập
             $email = trim($_POST['email'] ?? '');
             $password = $_POST['password'] ?? '';
@@ -79,7 +83,7 @@ class AuthController extends BaseController
             $authService->loginUser($email, $password);
 
             // Chuyển hướng thẳng về Trang chủ (Home)
-            header('Location: /login'); 
+            header('Location: /login');
             exit;
         } else {
             // Lỗi nghiệp vụ (ví dụ: Trùng email)
@@ -91,16 +95,17 @@ class AuthController extends BaseController
     }
 
     // --- ĐĂNG XUẤT ---
-    public function logout() {
+    public function logout()
+    {
         // Khởi động session nếu chưa có để còn destroy nó
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        
+
         session_destroy(); // Xóa sạch dữ liệu đăng nhập
-        
+
         // SỬA DÒNG NÀY: Chuyển về /login thay vì /
-        header('Location: /login'); 
+        header('Location: /login');
         exit;
     }
 }
