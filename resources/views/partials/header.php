@@ -51,7 +51,7 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
             <div class="flex flex-col md:flex-row items-center gap-4 md:gap-8">
 
                 <a href="/" class="flex items-center gap-2 flex-shrink-0 group no-underline">
-                    <img src="/images/logo.png" alt="Unizify" class="h-16 w-auto object-contain">
+                    <img src="/images/logouni.png" alt="Unizify" class="h-16 w-auto object-contain">
                 </a>
 
                 <div class="flex-1 relative">
