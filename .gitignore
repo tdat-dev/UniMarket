@@ -31,10 +31,6 @@
 /test-results/
 /playwright-report/
 /playwright/.cache/
-*.png
-*.jpg
-*.jpeg
-*.webm
 footer-screenshot.png
 no-footer-debug.png
 
