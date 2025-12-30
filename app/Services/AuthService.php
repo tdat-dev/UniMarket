@@ -2,9 +2,12 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\Cart;
 
-class AuthService {
-    public function registerUser($data) {
+class AuthService
+{
+    public function registerUser($data)
+    {
         $userModel = new User();
 
         // 1. Kiểm tra email trùng
@@ -13,34 +16,47 @@ class AuthService {
         }
 
         // 2. Đăng ký
-        // Lưu ý: Password đã được hash bên trong Model User->register() rồi 
-        // hoặc bạn hash tại đây nếu muốn kiểm soát chặt hơn.
-        // Ở đây mình giả định Model của bạn đã lo việc insert.
         $userModel->register([
-            'full_name' => $data['username'], // Map từ name='username' của form sang 'full_name' của DB
-            'email'     => $data['email'],
-            'password'  => $data['password'],
+            'full_name' => $data['username'],
+            'email' => $data['email'],
+            'password' => $data['password'],
             'phone_number' => $data['phone'] ?? '',
-            'address'   => $data['school'] ?? '',
-            'major_id'  => 1 
+            'address' => $data['school'] ?? '',
+            'major_id' => 1
         ]);
 
         return ['success' => true];
     }
 
-    public function loginUser($email, $password) {
+    public function loginUser($email, $password)
+    {
         $userModel = new User();
         $user = $userModel->login($email, $password);
-        
+
         if ($user) {
             // Lưu session
-            if (session_status() === PHP_SESSION_NONE) session_start();
+            if (session_status() === PHP_SESSION_NONE)
+                session_start();
+
+            // Lưu giỏ hàng từ session trước khi ghi đè
+            $sessionCart = $_SESSION['cart'] ?? [];
+
             $_SESSION['user'] = [
                 'id' => $user['id'],
                 'full_name' => $user['full_name'],
                 'email' => $user['email'],
                 'role' => $user['role']
             ];
+
+            // Merge giỏ hàng từ Session vào Database
+            if (!empty($sessionCart)) {
+                $cartModel = new Cart();
+                $cartModel->mergeFromSession($user['id'], $sessionCart);
+
+                // Xóa giỏ hàng trong session sau khi đã merge
+                unset($_SESSION['cart']);
+            }
+
             return true;
         }
         return false;
