@@ -38,4 +38,10 @@ class User extends BaseModel
 		}
 		return false;
 	}
+	// Lấy thông tin user theo ID
+	public function find($id)
+	{
+		$sql = "SELECT id, full_name, email, phone_number, address, created_at FROM users WHERE id = :id";
+		return $this->db->fetchOne($sql, ['id' => $id]);
+	}
 }
