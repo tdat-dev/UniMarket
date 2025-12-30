@@ -1,4 +1,7 @@
 <?php
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 $current_page = $_SERVER['REQUEST_URI'];
 // Kiểm tra nếu không phải trang login hoặc register thì mới cho sticky
 $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_page, '/register') !== false);
@@ -79,6 +82,24 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                 <div
                     class="flex items-center gap-4 md:gap-8 flex-shrink-0 w-full md:w-auto justify-center md:justify-end">
 
+                    <a href="/cart" class="relative group p-1 hidden md:block">
+                        <i
+                            class="fa-solid fa-cart-shopping text-gray-600 text-2xl group-hover:text-[#2C67C8] transition-colors"></i>
+                        <?php
+                        $cartCount = 0;
+                        if (isset($_SESSION['cart'])) {
+                            foreach ($_SESSION['cart'] as $qty) {
+                                $cartCount += $qty;
+                            }
+                        }
+                        ?>
+                        <?php if ($cartCount > 0): ?>
+                            <span
+                                class="absolute -top-1 -right-2 bg-[#EE4D2D] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-white">
+                                <?= $cartCount > 99 ? '99+' : $cartCount ?>
+                            </span>
+                        <?php endif; ?>
+                    </a>
                     <a href="#" class="relative group p-1 hidden md:block">
                         <i
                             class="fa-solid fa-cart-shopping text-gray-600 text-2xl group-hover:text-[#2C67C8] transition-colors"></i>
