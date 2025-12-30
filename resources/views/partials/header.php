@@ -1,3 +1,8 @@
+<?php
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+?>
     <header class="w-full z-50 bg-white font-sans shadow-sm">
 
         <div class="bg-gray-100 border-b border-gray-200 hidden md:block">
@@ -12,9 +17,24 @@
                         <span>Hỗ Trợ</span>
                     </a>
                     <div class="flex items-center gap-3">
-                        <a href="/register" class="hover:text-[#2C67C8] font-medium transition-colors">Đăng Ký</a>
-                        <span class="h-[14px] w-[1px] bg-gray-300"></span>
-                        <a href="/login" class="hover:text-[#2C67C8] font-medium transition-colors">Đăng Nhập</a>
+                        <?php if (isset($_SESSION['user'])): ?>
+        <div class="flex items-center gap-3">
+            <span class="text-gray-600 font-medium">
+                Chào, <?= htmlspecialchars($_SESSION['user']['full_name']) ?>
+            </span>
+            
+            <form action="/logout" method="POST" class="inline-block m-0 p-0">
+    <button type="submit" class="hover:text-[#2C67C8] font-medium transition-colors text-red-500 bg-transparent border-none cursor-pointer flex items-center">
+        <i class="fa-solid fa-right-from-bracket mr-1"></i> Đăng xuất
+    </button>
+</form>
+        </div>
+
+    <?php else: ?>
+        <a href="/register" class="hover:text-[#2C67C8] font-medium transition-colors">Đăng Ký</a>
+        <span class="h-[14px] w-[1px] bg-gray-300"></span>
+        <a href="/login" class="hover:text-[#2C67C8] font-medium transition-colors">Đăng Nhập</a>
+    <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -58,9 +78,21 @@
                     <div
                         class="flex items-center gap-4 md:gap-8 flex-shrink-0 w-full md:w-auto justify-center md:justify-end">
 
-                        <a href="#" class="relative group p-1 hidden md:block">
-                            <i
-                                class="fa-solid fa-cart-shopping text-gray-600 text-2xl group-hover:text-[#2C67C8] transition-colors"></i>
+                        <a href="/cart" class="relative group p-1 hidden md:block">
+                            <i class="fa-solid fa-cart-shopping text-gray-600 text-2xl group-hover:text-[#2C67C8] transition-colors"></i>
+                            <?php 
+                            $cartCount = 0;
+                            if (isset($_SESSION['cart'])) {
+                                foreach ($_SESSION['cart'] as $qty) {
+                                    $cartCount += $qty;
+                                }
+                            }
+                            ?>
+                            <?php if ($cartCount > 0): ?>
+                                <span class="absolute -top-1 -right-2 bg-[#EE4D2D] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-white">
+                                    <?= $cartCount > 99 ? '99+' : $cartCount ?>
+                                </span>
+                            <?php endif; ?>
                         </a>
 
                         <a href="#"

@@ -9,17 +9,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-    body {
-        font-family: 'Roboto', sans-serif;
-    }
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
 
-    .no-drag {
-        -webkit-user-drag: none;
-        user-drag: none;
-        -webkit-user-select: none;
-        user-select: none;
-        pointer-events: none;
-    }
+        .no-drag {
+            -webkit-user-drag: none;
+            user-drag: none;
+            -webkit-user-select: none;
+            user-select: none;
+            pointer-events: none;
+        }
     </style>
 </head>
 
@@ -38,13 +38,11 @@
 
             <div class="w-full lg:w-[40%] max-w-[450px] bg-white rounded-3xl shadow-2xl p-8 md:p-10">
                 <div class="text-center mb-6">
-                    <img src="/images/LogoHeader.png" alt="UniMarket Logo"
-                        class="h-16 mx-auto mb-4 no-drag object-contain">
                     <h2 class="text-3xl font-bold text-gray-800">Chào mừng trở lại!</h2>
                     <p class="text-gray-400 text-sm mt-1">Đăng nhập để tiếp tục mua sắm</p>
                 </div>
 
-                <form action="" method="post" class="space-y-4">
+                <form action="/login" method="post" class="space-y-4">
                     <div>
                         <input type="text" name="username" placeholder="Email hoặc Số điện thoại" required
                             value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : '' ?>"
@@ -81,7 +79,7 @@
                     </a>
 
                     <div class="text-center mt-6">
-                        <p class="text-gray-500 text-sm">Chưa có tài khoản? <a href="register"
+                        <p class="text-gray-500 text-sm">Chưa có tài khoản? <a href="/register"
                                 class="text-[#5A88FF] font-bold hover:underline">Đăng ký ngay</a></p>
                     </div>
                 </form>
@@ -92,16 +90,16 @@
     <?php include __DIR__ . '/../partials/footer.php'; ?>
 
     <script>
-    const togglePassword = document.getElementById('togglePassword');
-    const password = document.getElementById('password');
-    if (togglePassword && password) {
-        togglePassword.addEventListener('click', function() {
-            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-            password.setAttribute('type', type);
-            this.querySelector('i').classList.toggle('fa-eye');
-            this.querySelector('i').classList.toggle('fa-eye-slash');
-        });
-    }
+        const togglePassword = document.getElementById('togglePassword');
+        const password = document.getElementById('password');
+        if (togglePassword && password) {
+            togglePassword.addEventListener('click', function () {
+                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                password.setAttribute('type', type);
+                this.querySelector('i').classList.toggle('fa-eye');
+                this.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+        }
     </script>
 </body>
 

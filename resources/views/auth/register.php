@@ -9,9 +9,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-    body {
-        font-family: 'Roboto', sans-serif;
-    }
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .no-drag {
+            -webkit-user-drag: none;
+            user-drag: none;
+            -webkit-user-select: none;
+            user-select: none;
+            pointer-events: none;
+        }
     </style>
 </head>
 
@@ -20,27 +28,23 @@
     <?php include __DIR__ . '/../partials/header.php'; ?>
 
     <div class="bg-[#4e89ff] flex-grow flex items-center justify-center py-10">
-        <div
-            class="container mx-auto px-4 max-w-6xl flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12">
+        <div class="w-full max-w-[1400px] mx-auto px-4 flex flex-col lg:flex-row items-center justify-between gap-10">
 
-            <div class="hidden lg:flex flex-col items-center justify-center lg:w-1/2">
-                <div class="relative w-full max-w-xl">
-                    <img src="/images/homepage3.png" alt="UniMarket Illustration"
-                        class="w-full h-auto object-contain drop-shadow-2xl">
-                </div>
+            <div class="hidden lg:flex flex-col items-center justify-center w-[55%]">
+                <img src="/images/homepage3.png" alt="UniMarket Illustration"
+                    class="w-full h-auto object-contain drop-shadow-2xl no-drag" draggable="false">
                 <div class="mt-8 text-center text-white">
                     <h3 class="text-3xl font-bold mb-2">Tham gia UniMarket</h3>
                     <p class="text-blue-100 text-lg">Cộng đồng trao đổi đồ cũ sinh viên lớn nhất</p>
                 </div>
             </div>
 
-            <div class="w-full max-w-lg bg-white rounded-3xl shadow-2xl p-8 md:p-10">
+            <div class="w-full lg:w-[45%] max-w-lg bg-white rounded-3xl shadow-2xl p-8 md:p-10">
                 <div class="text-center mb-6">
-                    <img src="/images/LogoHeader.png" alt="UniMarket Logo" class="h-16 mx-auto mb-3 object-contain">
                     <h2 class="text-2xl font-bold text-gray-800">Tạo tài khoản mới</h2>
                 </div>
 
-                <form action="" method="post" class="space-y-4">
+                <form action="/register" method="post" class="space-y-4">
                     <div class="flex flex-col md:flex-row gap-4">
                         <div class="w-full">
                             <input type="text" name="username" placeholder="Họ và tên" required
@@ -64,6 +68,12 @@
                         <input type="email" name="email" placeholder="Email sinh viên" required
                             value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>"
                             class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-700">
+                        <?php if (isset($errors['email'])): ?>
+                            <p class="text-red-500 text-sm mt-1 italic">
+                                <i class="fa-solid fa-circle-exclamation mr-1"></i>
+                                <?php echo $errors['email']; ?>
+                            </p>
+                        <?php endif; ?>
                     </div>
 
                     <div>
@@ -82,6 +92,7 @@
                         </span>
                     </div>
 
+
                     <input type="submit" name="submit" value="ĐĂNG KÝ NGAY"
                         class="w-full bg-[#5A88FF] text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition duration-300 cursor-pointer shadow-md mt-2">
 
@@ -98,7 +109,7 @@
                     </a>
 
                     <div class="text-center mt-6">
-                        <p class="text-gray-500 text-sm">Đã có tài khoản? <a href="login"
+                        <p class="text-gray-500 text-sm">Đã có tài khoản? <a href="/login"
                                 class="text-[#5A88FF] font-bold hover:underline">Đăng nhập</a></p>
                     </div>
                 </form>
@@ -109,20 +120,20 @@
     <?php include __DIR__ . '/../partials/footer.php'; ?>
 
     <script>
-    // Script ẩn hiện mật khẩu giữ nguyên
-    const togglePassword = document.getElementById('togglePasswordRegister');
-    const password = document.getElementById('password-register');
-    if (togglePassword && password) {
-        togglePassword.addEventListener('click', function() {
-            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-            password.setAttribute('type', type);
-            const icon = this.querySelector('i');
-            if (icon) {
-                icon.classList.toggle('fa-eye');
-                icon.classList.toggle('fa-eye-slash');
-            }
-        });
-    }
+        // Script ẩn hiện mật khẩu giữ nguyên
+        const togglePassword = document.getElementById('togglePasswordRegister');
+        const password = document.getElementById('password-register');
+        if (togglePassword && password) {
+            togglePassword.addEventListener('click', function () {
+                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                password.setAttribute('type', type);
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.classList.toggle('fa-eye');
+                    icon.classList.toggle('fa-eye-slash');
+                }
+            });
+        }
     </script>
 </body>
 

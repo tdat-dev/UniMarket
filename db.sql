@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS search_keywords (
 -- ===================================
 
 -- 1. Ngành học
-INSERT INTO majors (name, code) VALUES
+INSERT IGNORE INTO majors (name, code) VALUES
 ('Công nghệ thông tin', 'IT'),
 ('Kinh tế', 'ECO'),
 ('Ngoại ngữ', 'LANG'),
@@ -160,7 +160,7 @@ INSERT INTO majors (name, code) VALUES
 ('Thiết kế', 'DESIGN');
 
 -- 2. Người dùng (password: 123456 đã hash bằng bcrypt)
-INSERT INTO users (full_name, email, password, phone_number, address, role, major_id) VALUES
+INSERT IGNORE INTO users (full_name, email, password, phone_number, address, role, major_id) VALUES
 ('Nguyễn Văn Admin', 'admin@unimarket.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0901234567', 'Hà Nội', 'admin', 1),
 ('Trần Thị Lan', 'lan.tran@student.edu.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0912345678', 'TP HCM', 'student', 1),
 ('Lê Văn Hùng', 'hung.le@student.edu.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0923456789', 'Đà Nẵng', 'student', 2),
@@ -168,7 +168,7 @@ INSERT INTO users (full_name, email, password, phone_number, address, role, majo
 ('Hoàng Văn Nam', 'nam.hoang@student.edu.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0945678901', 'Cần Thơ', 'student', 1);
 
 -- 3. Danh mục
-INSERT INTO categories (name, icon) VALUES
+INSERT IGNORE INTO categories (name, icon) VALUES
 ('Sách - Giáo trình', '📚'),
 ('Điện tử', '💻'),
 ('Thời trang', '👕'),
@@ -178,47 +178,47 @@ INSERT INTO categories (name, icon) VALUES
 ('Khác', '📦');
 
 -- 4. Sản phẩm
-INSERT INTO products (user_id, category_id, name, description, price, image_url, status) VALUES
+INSERT IGNORE INTO products (user_id, category_id, name, description, price, quantity, image, status) VALUES
 -- Sách
-(2, 1, 'Giáo trình Lập trình C++', 'Sách mới 95%, không gạch chú. Phù hợp cho sinh viên năm 1-2 IT.', 85000, 'book_cpp.jpg', 'active'),
-(3, 1, 'Kinh tế vi mô - N. Gregory Mankiw', 'Bản tiếng Việt, đã dùng 1 kỳ, còn mới.', 120000, 'book_eco.jpg', 'active'),
-(4, 1, 'Oxford Advanced Learner Dictionary', 'Từ điển Anh-Việt bìa cứng, không rách.', 150000, 'oxford_dict.jpg', 'active'),
+(2, 1, 'Giáo trình Lập trình C++', 'Sách mới 95%, không gạch chú. Phù hợp cho sinh viên năm 1-2 IT.', 85000, 1, 'book_cpp.jpg', 'active'),
+(3, 1, 'Kinh tế vi mô - N. Gregory Mankiw', 'Bản tiếng Việt, đã dùng 1 kỳ, còn mới.', 120000, 1, 'book_eco.jpg', 'active'),
+(4, 1, 'Oxford Advanced Learner Dictionary', 'Từ điển Anh-Việt bìa cứng, không rách.', 150000, 1, 'oxford_dict.jpg', 'active'),
 
 -- Điện tử
-(2, 2, 'Chuột Logitech G102', 'Dùng 6 tháng, còn nguyên hộp. Bảo hành 18 tháng.', 250000, 'mouse_logitech.jpg', 'active'),
-(5, 2, 'Tai nghe Sony WH-1000XM4', 'Chống ồn cực tốt, pin 8/10. Không hộp.', 4500000, 'headphone_sony.jpg', 'active'),
-(3, 2, 'USB SanDisk 32GB', 'Mới 100%, chưa bóc seal.', 80000, 'usb_sandisk.jpg', 'sold'),
+(2, 2, 'Chuột Logitech G102', 'Dùng 6 tháng, còn nguyên hộp. Bảo hành 18 tháng.', 250000, 1, 'mouse_logitech.jpg', 'active'),
+(5, 2, 'Tai nghe Sony WH-1000XM4', 'Chống ồn cực tốt, pin 8/10. Không hộp.', 4500000, 1, 'headphone_sony.jpg', 'active'),
+(3, 2, 'USB SanDisk 32GB', 'Mới 100%, chưa bóc seal.', 80000, 1, 'usb_sandisk.jpg', 'sold'),
 
 -- Thời trang
-(4, 3, 'Áo hoodie Uniqlo màu đen', 'Size M, giặt 2 lần. Form rộng unisex.', 180000, 'hoodie_uniqlo.jpg', 'active'),
-(5, 3, 'Giày Converse Chuck Taylor', 'Size 40, màu trắng. Mua tháng trước nhưng không vừa.', 550000, 'shoes_converse.jpg', 'active'),
+(4, 3, 'Áo hoodie Uniqlo màu đen', 'Size M, giặt 2 lần. Form rộng unisex.', 180000, 1, 'hoodie_uniqlo.jpg', 'active'),
+(5, 3, 'Giày Converse Chuck Taylor', 'Size 40, màu trắng. Mua tháng trước nhưng không vừa.', 550000, 1, 'shoes_converse.jpg', 'active'),
 
 -- Văn phòng phẩm
-(2, 4, 'Combo 10 bút bi Thiên Long', 'Mực xanh, mới 100%.', 25000, 'pen_combo.jpg', 'active'),
-(3, 4, 'Máy tính Casio FX-580VN X', 'Dùng 1 năm, còn tốt. Có hướng dẫn sử dụng.', 350000, 'calculator_casio.jpg', 'active'),
+(2, 4, 'Combo 10 bút bi Thiên Long', 'Mực xanh, mới 100%.', 25000, 1, 'pen_combo.jpg', 'active'),
+(3, 4, 'Máy tính Casio FX-580VN X', 'Dùng 1 năm, còn tốt. Có hướng dẫn sử dụng.', 350000, 1, 'calculator_casio.jpg', 'active'),
 
 -- Đồ dùng cá nhân
-(4, 5, 'Ba lô The North Face 20L', 'Màu xám, chống nước. Dùng 1 năm nhưng còn mới 90%.', 650000, 'backpack_tnf.jpg', 'active'),
-(5, 5, 'Bình giữ nhiệt Lock&Lock 500ml', 'Màu hồng pastel, chưa sử dụng.', 120000, 'bottle_locknlock.jpg', 'active'),
+(4, 5, 'Ba lô The North Face 20L', 'Màu xám, chống nước. Dùng 1 năm nhưng còn mới 90%.', 650000, 1, 'backpack_tnf.jpg', 'active'),
+(5, 5, 'Bình giữ nhiệt Lock&Lock 500ml', 'Màu hồng pastel, chưa sử dụng.', 120000, 1, 'bottle_locknlock.jpg', 'active'),
 
 -- Thể thao
-(2, 6, 'Bóng đá Mikasa size 5', 'Dùng tập luyện 3 tháng, còn bơm tốt.', 180000, 'ball_mikasa.jpg', 'active'),
-(3, 6, 'Thảm tập Yoga Nike 6mm', 'Màu xanh dương, có túi đựng. Mua nhầm size.', 300000, 'yoga_mat.jpg', 'active');
+(2, 6, 'Bóng đá Mikasa size 5', 'Dùng tập luyện 3 tháng, còn bơm tốt.', 180000, 1, 'ball_mikasa.jpg', 'active'),
+(3, 6, 'Thảm tập Yoga Nike 6mm', 'Màu xanh dương, có túi đựng. Mua nhầm size.', 300000, 1, 'yoga_mat.jpg', 'active');
 
 -- 5. Đơn hàng (Đã có giao dịch)
-INSERT INTO orders (buyer_id, seller_id, total_amount, status) VALUES
+INSERT IGNORE INTO orders (buyer_id, seller_id, total_amount, status) VALUES
 (3, 2, 85000, 'completed'),   -- Hùng mua sách C++ từ Lan
 (4, 5, 4500000, 'shipping'),   -- Mai mua tai nghe từ Nam
 (5, 3, 80000, 'completed');    -- Nam mua USB từ Hùng (đã sold)
 
 -- 6. Chi tiết đơn hàng
-INSERT INTO order_details (order_id, product_id, quantity, price_at_purchase) VALUES
+INSERT IGNORE INTO order_details (order_id, product_id, quantity, price_at_purchase) VALUES
 (1, 1, 1, 85000),    -- Sách C++
 (2, 5, 1, 4500000),  -- Tai nghe Sony
 (3, 6, 1, 80000);    -- USB SanDisk
 
 -- 7. Tin nhắn
-INSERT INTO messages (sender_id, receiver_id, content, is_read) VALUES
+INSERT IGNORE INTO messages (sender_id, receiver_id, content, is_read) VALUES
 (3, 2, 'Chào bạn, sách C++ còn không?', TRUE),
 (2, 3, 'Còn bạn nhé! Bạn lấy khi nào?', TRUE),
 (3, 2, 'Chiều nay mình qua nhận được không?', FALSE),
@@ -226,19 +226,19 @@ INSERT INTO messages (sender_id, receiver_id, content, is_read) VALUES
 (5, 4, 'Còn 18 tháng nha, hộp mất rồi.', FALSE);
 
 -- 8. Đánh giá
-INSERT INTO reviews (reviewer_id, product_id, rating, comment) VALUES
+INSERT IGNORE INTO reviews (reviewer_id, product_id, rating, comment) VALUES
 (3, 1, 5, 'Sách đẹp, giao hàng nhanh. Recommend!'),
 (5, 6, 4, 'USB chạy tốt, đóng gói cẩn thận.');
 
 -- 9. Yêu thích
-INSERT INTO favorites (user_id, product_id) VALUES
+INSERT IGNORE INTO favorites (user_id, product_id) VALUES
 (2, 5),  -- Lan thích tai nghe Sony
 (3, 8),  -- Hùng thích giày Converse
 (4, 11), -- Mai thích ba lô TNF
 (5, 1);  -- Nam thích sách C++
 
 -- 10. Tương tác (Cho hệ thống gợi ý)
-INSERT INTO interactions (user_id, product_id, interaction_type, score) VALUES
+INSERT IGNORE INTO interactions (user_id, product_id, interaction_type, score) VALUES
 (2, 1, 'view', 3),
 (2, 2, 'click', 5),
 (3, 5, 'view', 2),
@@ -249,11 +249,11 @@ INSERT INTO interactions (user_id, product_id, interaction_type, score) VALUES
 (5, 7, 'click', 6);
 
 -- 11. Thông báo
-INSERT INTO notifications (user_id, content, is_read) VALUES
+INSERT IGNORE INTO notifications (user_id, content, is_read) VALUES
 (2, 'Sản phẩm "Giáo trình C++" của bạn đã được mua!', TRUE),
 (3, 'Bạn có tin nhắn mới từ Trần Thị Lan', FALSE),
 (5, 'Đơn hàng #2 đang được giao', FALSE);
 
 -- 12. Báo cáo vi phạm
-INSERT INTO reports (reporter_id, product_id, reason, status) VALUES
+INSERT IGNORE INTO reports (reporter_id, product_id, reason, status) VALUES
 (4, 13, 'Sản phẩm không đúng mô tả, nghi ngờ hàng giả', 'pending');
