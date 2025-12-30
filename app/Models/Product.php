@@ -183,16 +183,18 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
         return $this->db->fetchAll($sql, $params);
     }
 
-    // Giảm số lượng tồn kho
+   // Giảm số lượng tồn kho
     public function decreaseQuantity($id, $amount)
     {
-        $sql = "UPDATE products SET quantity = quantity - :amount WHERE id = :id AND quantity >= :amount";
-        return $this->db->execute($sql, ['id' => $id, 'amount' => $amount]);
-    }
+        // Sửa lỗi HY093: Đặt tên tham số khác nhau cho mỗi lần xuất hiện
+        $sql = "UPDATE products 
+                SET quantity = quantity - :amount_dec 
+                WHERE id = :id AND quantity >= :amount_check";
 
-    // Lấy sản phẩm theo user_id (cho Shop page)
-    public function getByUserId($userId)
-    {
-        return $this->db->fetchAll("SELECT * FROM products WHERE user_id = :user_id ORDER BY id DESC", ['user_id' => $userId]);
+        return $this->db->execute($sql, [
+            'id' => $id, 
+            'amount_dec' => $amount,   // Dùng cho phép trừ
+            'amount_check' => $amount  // Dùng cho điều kiện WHERE
+        ]);
     }
 }
