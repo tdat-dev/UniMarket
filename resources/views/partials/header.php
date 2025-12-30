@@ -6,45 +6,47 @@ $current_page = $_SERVER['REQUEST_URI'];
 // Kiểm tra nếu không phải trang login hoặc register thì mới cho sticky
 $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_page, '/register') !== false);
 ?>
-<header class="w-full z-50 font-sans">
 
-    <div class="bg-gray-100 border-b border-gray-200 hidden md:block">
-        <div class="max-w-[1200px] mx-auto px-4">
-            <div class="h-[34px] flex items-center justify-end gap-6 text-[13px] text-gray-600">
-                <a href="#" class="flex items-center gap-1 hover:text-[#2C67C8] transition-colors">
-                    <i class="fa-regular fa-bell"></i>
-                    <span>Thông Báo</span>
-                </a>
-                <a href="#" class="flex items-center gap-1 hover:text-[#2C67C8] transition-colors">
-                    <i class="fa-regular fa-circle-question"></i>
-                    <span>Hỗ Trợ</span>
-                </a>
-                <div class="flex items-center gap-3">
-                    <?php if (isset($_SESSION['user'])): ?>
-                        <div class="flex items-center gap-3">
-                            <span class="text-gray-600 font-medium">
-                                Chào, <?= htmlspecialchars($_SESSION['user']['full_name']) ?>
-                            </span>
+<!-- Phần này sẽ bị cuốn đi khi cuộn trang -->
+<div class="w-full bg-gray-100 border-b border-gray-200 hidden md:block">
+    <div class="max-w-[1200px] mx-auto px-4">
+        <div class="h-[34px] flex items-center justify-end gap-6 text-[13px] text-gray-600">
+            <a href="#" class="flex items-center gap-1 hover:text-[#2C67C8] transition-colors">
+                <i class="fa-regular fa-bell"></i>
+                <span>Thông Báo</span>
+            </a>
+            <a href="#" class="flex items-center gap-1 hover:text-[#2C67C8] transition-colors">
+                <i class="fa-regular fa-circle-question"></i>
+                <span>Hỗ Trợ</span>
+            </a>
+            <div class="flex items-center gap-3">
+                <?php if (isset($_SESSION['user'])): ?>
+                    <div class="flex items-center gap-3">
+                        <span class="text-gray-600 font-medium">
+                            Chào, <?= htmlspecialchars($_SESSION['user']['full_name']) ?>
+                        </span>
 
-                            <form action="/logout" method="POST" class="inline-block m-0 p-0">
-                                <button type="submit"
-                                    class="hover:text-[#2C67C8] font-medium transition-colors text-red-500 bg-transparent border-none cursor-pointer flex items-center">
-                                    <i class="fa-solid fa-right-from-bracket mr-1"></i> Đăng xuất
-                                </button>
-                            </form>
-                        </div>
+                        <form action="/logout" method="POST" class="inline-block m-0 p-0">
+                            <button type="submit"
+                                class="hover:text-[#2C67C8] font-medium transition-colors text-red-500 bg-transparent border-none cursor-pointer flex items-center">
+                                <i class="fa-solid fa-right-from-bracket mr-1"></i> Đăng xuất
+                            </button>
+                        </form>
+                    </div>
 
-                    <?php else: ?>
-                        <a href="/register" class="hover:text-[#2C67C8] font-medium transition-colors">Đăng Ký</a>
-                        <span class="h-[14px] w-[1px] bg-gray-300"></span>
-                        <a href="/login" class="hover:text-[#2C67C8] font-medium transition-colors">Đăng Nhập</a>
-                    <?php endif; ?>
-                </div>
+                <?php else: ?>
+                    <a href="/register" class="hover:text-[#2C67C8] font-medium transition-colors">Đăng Ký</a>
+                    <span class="h-[14px] w-[1px] bg-gray-300"></span>
+                    <a href="/login" class="hover:text-[#2C67C8] font-medium transition-colors">Đăng Nhập</a>
+                <?php endif; ?>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="bg-white pb-3 shadow-sm <?= !$is_auth_page ? 'sticky top-0' : '' ?>">
+<!-- Thẻ Header này sẽ dính vào đỉnh màn hình khi cuộn xuống -->
+<header class="w-full z-50 bg-white font-sans shadow-sm <?= !$is_auth_page ? 'sticky top-0' : '' ?>">
+    <div class="bg-white pb-3">
         <div class="max-w-[1200px] mx-auto px-4 pt-4">
             <div class="flex flex-col md:flex-row items-center gap-4 md:gap-8">
 
@@ -99,10 +101,6 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                                 <?= $cartCount > 99 ? '99+' : $cartCount ?>
                             </span>
                         <?php endif; ?>
-                    </a>
-                    <a href="#" class="relative group p-1 hidden md:block">
-                        <i
-                            class="fa-solid fa-cart-shopping text-gray-600 text-2xl group-hover:text-[#2C67C8] transition-colors"></i>
                     </a>
 
                     <a href="#"

@@ -11,7 +11,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple-touch-icon.png" />
     <link rel="manifest" href="/images/site.webmanifest" />
     <meta name="theme-color" content="#2C67C8" />
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/app.css">
 
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700;800&display=swap" rel="stylesheet">
 

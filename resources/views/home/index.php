@@ -15,36 +15,20 @@ include __DIR__ . '/../partials/header.php';
                 <!-- Navigation Arrows (Hidden by default, show on hover if needed, but for now static grid) -->
 
                 <div class="grid grid-cols-10 gap-0">
-                    <?php
-                    $categories = [
-                        ['name' => 'Thời Trang Nam', 'img' => 'https://placehold.co/80x80/png?text=Ao+Nam'],
-                        ['name' => 'Điện Thoại', 'img' => 'https://placehold.co/80x80/png?text=Dien+Thoai'],
-                        ['name' => 'Điện Tử', 'img' => 'https://placehold.co/80x80/png?text=TV'],
-                        ['name' => 'Laptop', 'img' => 'https://placehold.co/80x80/png?text=Laptop'],
-                        ['name' => 'Máy Ảnh', 'img' => 'https://placehold.co/80x80/png?text=Camera'],
-                        ['name' => 'Đồng Hồ', 'img' => 'https://placehold.co/80x80/png?text=Dong+Ho'],
-                        ['name' => 'Giày Dép', 'img' => 'https://placehold.co/80x80/png?text=Giay'],
-                        ['name' => 'Gia Dụng', 'img' => 'https://placehold.co/80x80/png?text=Am+Sieu+Toc'],
-                        ['name' => 'Thể Thao', 'img' => 'https://placehold.co/80x80/png?text=Bong+Da'],
-                        ['name' => 'Xe Cộ', 'img' => 'https://placehold.co/80x80/png?text=Xe+May'],
-                        ['name' => 'Thời Trang Nữ', 'img' => 'https://placehold.co/80x80/png?text=Ao+Nu'],
-                        ['name' => 'Mẹ & Bé', 'img' => 'https://placehold.co/80x80/png?text=Ghe+An'],
-                        ['name' => 'Nhà Cửa', 'img' => 'https://placehold.co/80x80/png?text=Noi'],
-                        ['name' => 'Sắc Đẹp', 'img' => 'https://placehold.co/80x80/png?text=Son'],
-                        ['name' => 'Sức Khỏe', 'img' => 'https://placehold.co/80x80/png?text=Thuoc'],
-                        ['name' => 'Giày Nữ', 'img' => 'https://placehold.co/80x80/png?text=Giay+Cao+Got'],
-                        ['name' => 'Túi Ví', 'img' => 'https://placehold.co/80x80/png?text=Tui+Xach'],
-                        ['name' => 'Phụ Kiện', 'img' => 'https://placehold.co/80x80/png?text=That+Lung'],
-                        ['name' => 'Sách', 'img' => 'https://placehold.co/80x80/png?text=Sach'],
-                        ['name' => 'Khác', 'img' => 'https://placehold.co/80x80/png?text=Khac'],
-                    ];
-                    foreach ($categories as $cat):
-                        ?>
-                        <a href="#"
+                    <?php foreach ($categories as $cat): ?>
+                        <a href="/search?category=<?= $cat['id'] ?>"
                             class="flex flex-col items-center justify-center h-[150px] border-r border-b border-gray-50 hover:shadow-md transition-shadow group/item">
                             <div
                                 class="w-[70%] aspect-square rounded-full overflow-hidden mb-2 transition-transform group-hover/item:-translate-y-1">
-                                <img src="<?= $cat['img'] ?>" alt="<?= $cat['name'] ?>" class="w-full h-full object-cover">
+                                <!-- Hỗ trợ cả emoji hoặc đường dẫn ảnh -->
+                                <?php if (strpos($cat['icon'] ?? '', '/') !== false || strpos($cat['icon'] ?? '', '.') !== false): ?>
+                                    <img src="<?= $cat['icon'] ?>" alt="<?= $cat['name'] ?>"
+                                        class="w-full h-full object-contain p-2">
+                                <?php else: ?>
+                                    <div class="w-full h-full flex items-center justify-center bg-blue-50 text-3xl">
+                                        <?= $cat['icon'] ?? '📦' ?>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                             <span class="text-[13px] text-gray-800 text-center px-2 leading-4"><?= $cat['name'] ?></span>
                         </a>
@@ -92,9 +76,11 @@ include __DIR__ . '/../partials/header.php';
             </div>
         </div>
 
-        <div class="container mx-auto mt-10">
-            <h2 class="text-2xl font-bold mb-5">Sản phẩm mới nhất</h2>
-
+        <!-- SẢN PHẨM MỚI NHẤT -->
+        <div class="bg-white rounded-sm shadow-sm p-5">
+            <div class="border-b border-gray-100 pb-4 mb-4">
+                <h2 class="text-[#2C67C8] font-medium uppercase text-base">SẢN PHẨM MỚI NHẤT</h2>
+            </div>
             <?php $products = $products ?? []; ?>
             <div class="grid grid-cols-6 gap-3 mt-4">
                 <?php foreach ($latestProducts as $item): ?>
@@ -118,33 +104,35 @@ include __DIR__ . '/../partials/header.php';
                     </a>
                 <?php endforeach; ?>
             </div>
+        </div>
 
-            <!-- GỢI Ý HÔM NAY -->
-            <div class="mt-10">
-                <div class="bg-white z-40 border-b border-gray-200 sticky top-[60px] md:top-[80px]">
-                    <!-- Added sticky header -->
-                    <div class="flex justify-center">
-                        <div class="py-4 px-10 border-b-4 border-[#2C67C8] cursor-pointer">
-                            <h2 class="text-[#2C67C8] font-medium uppercase text-base">GỢI Ý HÔM NAY</h2>
-                        </div>
+        <!-- GỢI Ý HÔM NAY -->
+        <div class="mt-6">
+            <div class="bg-white z-40 border-b border-gray-200 sticky top-[60px] md:top-[80px]">
+                <!-- Added sticky header -->
+                <div class="flex justify-center">
+                    <div class="py-4 px-10 border-b-4 border-[#2C67C8] cursor-pointer">
+                        <h2 class="text-[#2C67C8] font-medium uppercase text-base">GỢI Ý HÔM NAY</h2>
                     </div>
-                </div>
-
-                <div id="suggested-products-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-4">
-                    <?php foreach ($suggestedProducts as $item): ?>
-                        <?php include __DIR__ . '/../partials/product_card.php'; ?>
-                    <?php endforeach; ?>
-                </div>
-
-                <div class="flex justify-center mt-8 pb-10">
-                    <a href="/products"
-                        class="bg-white border border-gray-300 text-gray-600 px-10 py-2 hover:bg-gray-50 transition-colors rounded-sm text-sm">
-                        Xem Thêm
-                    </a>
                 </div>
             </div>
 
+            <div id="suggested-products-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-4">
+                <?php foreach ($suggestedProducts as $item): ?>
+                    <?php include __DIR__ . '/../partials/product_card.php'; ?>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="flex justify-center mt-8 pb-10">
+                <a href="/products"
+                    class="bg-white border border-gray-300 text-gray-600 px-10 py-2 hover:bg-gray-50 transition-colors rounded-sm text-sm">
+                    Xem Thêm
+                </a>
+            </div>
         </div>
+
+    </div>
+    </div>
 </main>
 
 <?php include __DIR__ . '/../partials/footer.php'; ?>
