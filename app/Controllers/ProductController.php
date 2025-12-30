@@ -36,7 +36,18 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
             die("Sản phẩm không tồn tại"); // Hoặc redirect 404
         }
 
-        $this->view('products/detail', ['product' => $product]);
+        // Lấy thông tin người bán
+        $userModel = new \App\Models\User();
+        $seller = $userModel->find($product['user_id']);
+
+        // Lấy sản phẩm liên quan (cùng danh mục, trừ sản phẩm hiện tại)
+        $relatedProducts = $productModel->getByCategory($product['category_id'], 4, $product['id']);
+
+        $this->view('products/detail', [
+            'product' => $product,
+            'seller' => $seller,
+            'relatedProducts' => $relatedProducts
+        ]);
     }
 
     // Hàm hiện form đăng tin

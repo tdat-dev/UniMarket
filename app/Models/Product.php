@@ -166,4 +166,33 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
         $result = $this->db->fetchOne($sql, ['keyword' => "%$keyword%"]);
         return $result['total'];
     }
+
+
+    // Lấy sản phẩm theo danh mục (cho phần "Sản phẩm tương tự")
+    public function getByCategory($categoryId, $limit = 4, $excludeId = null)
+    {
+        $sql = "SELECT * FROM products WHERE category_id = :category_id AND status = 'active'";
+        $params = ['category_id' => $categoryId];
+
+        if ($excludeId) {
+            $sql .= " AND id != :exclude_id";
+            $params['exclude_id'] = $excludeId;
+        }
+
+        $sql .= " ORDER BY RAND() LIMIT $limit";
+        return $this->db->fetchAll($sql, $params);
+    }
+
+    // Giảm số lượng tồn kho
+    public function decreaseQuantity($id, $amount)
+    {
+        $sql = "UPDATE products SET quantity = quantity - :amount WHERE id = :id AND quantity >= :amount";
+        return $this->db->execute($sql, ['id' => $id, 'amount' => $amount]);
+    }
+
+    // Lấy sản phẩm theo user_id (cho Shop page)
+    public function getByUserId($userId)
+    {
+        return $this->db->fetchAll("SELECT * FROM products WHERE user_id = :user_id ORDER BY id DESC", ['user_id' => $userId]);
+    }
 }

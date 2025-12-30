@@ -21,6 +21,17 @@ $router->get('register', [AuthController::class, 'register']);
 $router->get('products', [ProductController::class, 'index']);
 $router->get('product-detail', [ProductController::class, 'show']);
 
+// Cart & Checkout
+$router->post('cart/add', [\App\Controllers\CartController::class, 'add']);
+$router->get('cart', [\App\Controllers\CartController::class, 'index']);
+$router->post('cart/update', [\App\Controllers\CartController::class, 'update']);
+$router->post('checkout', [\App\Controllers\CheckoutController::class, 'process']); // Hiển thị trang checkout (review)
+$router->post('checkout/confirm', [\App\Controllers\CheckoutController::class, 'confirm']); // Xử lý đặt hàng thực sự
+
+// Shop & Chat
+$router->get('shop', [\App\Controllers\ShopController::class, 'index']);
+$router->get('chat', [\App\Controllers\ChatController::class, 'index']);
+
 // Route search
 $router->get('search', [SearchController::class, 'index']);
 $router->get('api/search-suggest', [SearchController::class, 'suggest']);
