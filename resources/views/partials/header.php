@@ -12,9 +12,24 @@
                         <span>Hỗ Trợ</span>
                     </a>
                     <div class="flex items-center gap-3">
-                        <a href="/register" class="hover:text-[#2C67C8] font-medium transition-colors">Đăng Ký</a>
-                        <span class="h-[14px] w-[1px] bg-gray-300"></span>
-                        <a href="/login" class="hover:text-[#2C67C8] font-medium transition-colors">Đăng Nhập</a>
+                        <?php if (isset($_SESSION['user'])): ?>
+        <div class="flex items-center gap-3">
+            <span class="text-gray-600 font-medium">
+                Chào, <?= htmlspecialchars($_SESSION['user']['full_name']) ?>
+            </span>
+            
+            <form action="/logout" method="POST" class="inline-block m-0 p-0">
+    <button type="submit" class="hover:text-[#2C67C8] font-medium transition-colors text-red-500 bg-transparent border-none cursor-pointer flex items-center">
+        <i class="fa-solid fa-right-from-bracket mr-1"></i> Đăng xuất
+    </button>
+</form>
+        </div>
+
+    <?php else: ?>
+        <a href="/register" class="hover:text-[#2C67C8] font-medium transition-colors">Đăng Ký</a>
+        <span class="h-[14px] w-[1px] bg-gray-300"></span>
+        <a href="/login" class="hover:text-[#2C67C8] font-medium transition-colors">Đăng Nhập</a>
+    <?php endif; ?>
                     </div>
                 </div>
             </div>

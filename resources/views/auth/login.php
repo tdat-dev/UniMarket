@@ -44,7 +44,7 @@
                     <p class="text-gray-400 text-sm mt-1">Đăng nhập để tiếp tục mua sắm</p>
                 </div>
 
-                <form action="" method="post" class="space-y-4">
+                <form action="/login" method="post" class="space-y-4">
                     <div>
                         <input type="text" name="username" placeholder="Email hoặc Số điện thoại" required
                             value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : '' ?>"
@@ -81,8 +81,7 @@
                     </a>
 
                     <div class="text-center mt-6">
-                        <p class="text-gray-500 text-sm">Chưa có tài khoản? <a href="register"
-                                class="text-[#5A88FF] font-bold hover:underline">Đăng ký ngay</a></p>
+                        <p class="text-gray-500 text-sm">Chưa có tài khoản? <a href="/register" class="text-[#5A88FF] font-bold hover:underline">Đăng ký ngay</a></p>
                     </div>
                 </form>
             </div>
