@@ -36,7 +36,10 @@ class CartController extends BaseController
 
         // Redirect based on action
         if ($action === 'buy') {
-            header('Location: /checkout'); // Redirect to Checkout page
+            // Forward directly to checkout processing
+            $_POST['selected_products'] = [$productId];
+            (new CheckoutController())->process();
+            exit;
         } else {
             // Redirect back to product page with success message (tạm thời redirect back)
             // Trong thực tế có thể dùng flash message
