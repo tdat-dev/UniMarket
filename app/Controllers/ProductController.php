@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\Product;
-
+use App\Models\User;
 class ProductController extends BaseController // Kế thừa BaseController để dùng hàm view()
 {
     public function index()
@@ -37,7 +37,7 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
         }
 
         // Lấy thông tin người bán
-        $userModel = new \App\Models\User();
+        $userModel = new User();
         $seller = $userModel->find($product['user_id']);
 
         // Lấy sản phẩm liên quan (cùng danh mục, trừ sản phẩm hiện tại)

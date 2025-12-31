@@ -21,6 +21,7 @@
 /storage/framework/cache/
 /storage/framework/sessions/
 /storage/framework/views/
+/tests/security/
 
 # Uploads (giữ cấu trúc thư mục nhưng ignore files)
 /public/uploads/*

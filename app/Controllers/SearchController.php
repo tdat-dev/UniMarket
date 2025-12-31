@@ -37,13 +37,20 @@ class SearchController extends BaseController
 
     public function search()
     {
+        // Đảm bảo session đã được khởi tạo
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
         // Kiểm tra đăng nhập
         if (!isset($_SESSION['user'])) {
-            // Lưu URL hiện tại vào session
+            // Lưu URL hiện tại vào session để redirect sau khi login
             $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
             header('Location: /login');
             exit;
         }
+
+        // Đã đăng nhập -> Cho phép tìm kiếm
         $this->index();
     }
 

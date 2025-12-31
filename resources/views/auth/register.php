@@ -35,7 +35,7 @@
                     class="w-full h-auto object-contain drop-shadow-2xl no-drag" draggable="false">
                 <div class="mt-8 text-center text-white">
                     <h3 class="text-3xl font-bold mb-2">Tham gia Unizify</h3>
-                    <p class="text-blue-100 text-lg">Cộng đồng trao đổi đồ cũ sinh viên lớn nhất</p>
+                    <p class="text-blue-100 text-lg">Cộng đồng trao đổi đồ cũ</p>
                 </div>
             </div>
 
@@ -45,10 +45,15 @@
                 </div>
 
                 <form action="/register" method="post" class="space-y-4">
-                    <?php if (isset($error)): ?>
-                        <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
-                            <p class="font-bold">Đăng ký thất bại</p>
-                            <p><?php echo $error; ?></p>
+                    <?php if (isset($errors['register'])): ?>
+                        <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-r-lg" role="alert">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-circle-exclamation"></i>
+                                <div>
+                                    <p class="font-bold">Đăng ký thất bại</p>
+                                    <p class="text-sm"><?= htmlspecialchars($errors['register']) ?></p>
+                                </div>
+                            </div>
                         </div>
                     <?php endif; ?>
                     <div class="flex flex-col md:flex-row gap-4">
@@ -62,21 +67,10 @@
                                 </p>
                             <?php endif; ?>
                         </div>
-                        <div class="w-full">
-                            <input type="text" name="branch" placeholder="Ngành học"
-                                value="<?php echo isset($_POST['branch']) ? htmlspecialchars($_POST['branch']) : '' ?>"
-                                class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-700">
-                        </div>
                     </div>
 
                     <div>
-                        <input type="text" name="school" placeholder="Địa chỉ / Trường học"
-                            value="<?php echo isset($_POST['school']) ? htmlspecialchars($_POST['school']) : '' ?>"
-                            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-700">
-                    </div>
-
-                    <div>
-                        <input type="email" name="email" placeholder="Email sinh viên" required
+                        <input type="email" name="email" placeholder="Email" required
                             value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>"
                             class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-700">
                         <?php if (isset($errors['email'])): ?>
