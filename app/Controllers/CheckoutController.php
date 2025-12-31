@@ -30,7 +30,8 @@ class CheckoutController extends BaseController
             if (isset($allCart[$id])) {
                  $p = $productModel->find($id);
                  if ($p) {
-                     $p['cart_quantity'] = $allCart[$id];
+                     $cartItem = $allCart[$id];
+                     $p['cart_quantity'] = is_array($cartItem) ? ($cartItem['quantity'] ?? 1) : $cartItem;
                      $products[] = $p;
                  }
             }
@@ -65,7 +66,8 @@ class CheckoutController extends BaseController
                          // If 0, we simply don't add it to cartToProcess, effectively removing it from order
                     }
                 } elseif (isset($allCart[$id])) {
-                    $cartToProcess[$id] = $allCart[$id];
+                    $cartItem = $allCart[$id];
+                    $cartToProcess[$id] = is_array($cartItem) ? ($cartItem['quantity'] ?? 1) : $cartItem;
                 }
             }
         } 

@@ -30,7 +30,17 @@ $router->post('checkout/confirm', [\App\Controllers\CheckoutController::class, '
 
 // Shop & Chat
 $router->get('shop', [\App\Controllers\ShopController::class, 'index']);
+$router->get('shop/orders', [\App\Controllers\ShopController::class, 'orders']);
 $router->get('chat', [\App\Controllers\ChatController::class, 'index']);
+
+// Product Management
+$router->get('products/create', [ProductController::class, 'create']);
+$router->post('products/store', [ProductController::class, 'store']); // For form submission
+
+// User Profile
+$router->get('profile', [\App\Controllers\ProfileController::class, 'index']);
+$router->get('wallet', [\App\Controllers\ProfileController::class, 'wallet']);
+$router->get('reviews', [\App\Controllers\ProfileController::class, 'reviews']);
 
 // Route search (yêu cầu đăng nhập)
 $router->get('search', [SearchController::class, 'search']);
