@@ -30,6 +30,7 @@ jobs:
             **/node_modules/**
             **/.github/**
             *.sql
+            .agent
             .env
             .env.example
             composer.lock

@@ -63,13 +63,23 @@ if ($isAuthenticated) {
             } else {
                 foreach ($files as $file) {
                     $filePath = MIGRATIONS_DIR . $file;
+                    $extension = pathinfo($file, PATHINFO_EXTENSION);
+
                     if (file_exists($filePath)) {
                         try {
-                            $sql = file_get_contents($filePath);
-                            // Tách lệnh nếu cần hoặc chạy thẳng
-                            $pdo->exec($sql);
+                            if ($extension === 'sql') {
+                                // Chạy file SQL
+                                $sql = file_get_contents($filePath);
+                                $pdo->exec($sql);
+                            } elseif ($extension === 'php') {
+                                // Chạy file PHP
+                                require_once $filePath;
+                                if (function_exists('run')) {
+                                    run($pdo);
+                                }
+                            }
                             $logs[] = ['type' => 'success', 'msg' => "✅ {$file}: Chạy thành công!"];
-                        } catch (PDOException $e) {
+                        } catch (Exception $e) {
                             $logs[] = ['type' => 'error', 'msg' => "❌ {$file}: " . $e->getMessage()];
                         }
                     }
@@ -102,7 +112,9 @@ $migrations = [];
 if ($isAuthenticated && is_dir(MIGRATIONS_DIR)) {
     $files = scandir(MIGRATIONS_DIR);
     foreach ($files as $file) {
-        if (pathinfo($file, PATHINFO_EXTENSION) === 'sql') {
+        $ext = pathinfo($file, PATHINFO_EXTENSION);
+        // Hỗ trợ cả file .sql và .php
+        if ($ext === 'sql' || $ext === 'php') {
             $migrations[] = $file;
         }
     }
@@ -238,10 +250,17 @@ if ($isAuthenticated && is_dir(MIGRATIONS_DIR)) {
                                         <input type="checkbox" name="files[]" value="<?= htmlspecialchars($file) ?>"
                                             class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
                                         <div class="ml-3">
-                                            <div class="text-sm font-medium text-slate-700 font-mono"><?= htmlspecialchars($file) ?>
+                                            <div class="text-sm font-medium text-slate-700 font-mono flex items-center gap-2">
+                                                <?= htmlspecialchars($file) ?>
+                                                <?php $ext = pathinfo($file, PATHINFO_EXTENSION); ?>
+                                                <span
+                                                    class="text-[9px] px-1.5 py-0.5 rounded font-bold <?= $ext === 'php' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700' ?>">
+                                                    <?= strtoupper($ext) ?>
+                                                </span>
                                             </div>
                                             <div class="text-[10px] text-slate-400">
-                                                <?= date("d/m/Y H:i", filemtime(MIGRATIONS_DIR . $file)) ?></div>
+                                                <?= date("d/m/Y H:i", filemtime(MIGRATIONS_DIR . $file)) ?>
+                                            </div>
                                         </div>
                                     </label>
                                     <a href="?preview=<?= urlencode($file) ?>"

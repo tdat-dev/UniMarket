@@ -32,8 +32,8 @@ $router->post('checkout/confirm', [\App\Controllers\CheckoutController::class, '
 $router->get('shop', [\App\Controllers\ShopController::class, 'index']);
 $router->get('chat', [\App\Controllers\ChatController::class, 'index']);
 
-// Route search
-$router->get('search', [SearchController::class, 'index']);
+// Route search (yêu cầu đăng nhập)
+$router->get('search', [SearchController::class, 'search']);
 $router->get('api/search-suggest', [SearchController::class, 'suggest']);
 $router->post('register', [AuthController::class, 'processRegister']);
 

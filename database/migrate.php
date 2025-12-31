@@ -1,7 +1,16 @@
 <?php
+/**
+ * MIGRATION RUNNER
+ * Hỗ trợ cả file .sql và .php
+ * 
+ * - File .sql: Chạy trực tiếp bằng PDO::exec()
+ * - File .php: Include file và gọi hàm run($pdo)
+ */
+
 require_once __DIR__ . '/../app/Core/Database.php';
 
 $db = \App\Core\Database::getInstance();
+$pdo = $db->getConnection();
 
 // Tạo bảng tracking migrations nếu chưa có
 $db->query("
@@ -16,23 +25,38 @@ $db->query("
 $executed = $db->fetchAll("SELECT filename FROM migrations");
 $executedFiles = array_column($executed, 'filename');
 
-// Lấy tất cả file migration
+// Lấy tất cả file migration (.sql và .php)
 $migrationPath = __DIR__ . '/migrations/';
-$files = glob($migrationPath . '*.sql');
+$sqlFiles = glob($migrationPath . '*.sql');
+$phpFiles = glob($migrationPath . '*.php');
+$files = array_merge($sqlFiles, $phpFiles);
 sort($files);
 
 $count = 0;
 foreach ($files as $file) {
     $filename = basename($file);
+    $extension = pathinfo($file, PATHINFO_EXTENSION);
 
     if (in_array($filename, $executedFiles)) {
         continue;
     }
 
-    $sql = file_get_contents($file);
-
     try {
-        $db->getConnection()->exec($sql);
+        if ($extension === 'sql') {
+            // Chạy file SQL
+            $sql = file_get_contents($file);
+            $pdo->exec($sql);
+        } elseif ($extension === 'php') {
+            // Chạy file PHP
+            // File PHP phải có hàm run($pdo) hoặc chạy trực tiếp
+            require_once $file;
+
+            // Nếu file có hàm run(), gọi nó
+            if (function_exists('run')) {
+                run($pdo);
+            }
+        }
+
         $db->insert("INSERT INTO migrations (filename) VALUES (:filename)", [
             'filename' => $filename
         ]);
