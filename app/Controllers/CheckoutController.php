@@ -55,8 +55,16 @@ class CheckoutController extends BaseController
 
         $cartToProcess = [];
         if (!empty($selectedIds) && is_array($selectedIds)) {
+            $postQuantities = $_POST['quantities'] ?? [];
             foreach ($selectedIds as $id) {
-                if (isset($allCart[$id])) {
+                // Prioritize quantity from POST, then Session
+                if (isset($postQuantities[$id])) {
+                    $qty = (int)$postQuantities[$id];
+                    if ($qty >= 0) { // Allow 0 to potentially skip item
+                         if ($qty > 0) $cartToProcess[$id] = $qty;
+                         // If 0, we simply don't add it to cartToProcess, effectively removing it from order
+                    }
+                } elseif (isset($allCart[$id])) {
                     $cartToProcess[$id] = $allCart[$id];
                 }
             }
