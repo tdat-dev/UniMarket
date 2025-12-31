@@ -24,7 +24,12 @@ class AuthController extends BaseController
         $errors = $validator->validateLogin($_POST);
 
         if (!empty($errors)) {
-            $this->view('auth/login', ['errors' => $errors]);
+            // Lấy lỗi đầu tiên để hiển thị ra alert
+            $firstError = reset($errors);
+            $this->view('auth/login', [
+                'error' => $firstError,
+                'errors' => $errors
+            ]);
             return;
         }
 
@@ -35,12 +40,11 @@ class AuthController extends BaseController
 
         if ($authService->loginUser($email, $password)) {
             // Đăng nhập thành công -> Chuyển về Home (/)
-            // Lưu ý: Route '/' chính là HomeController::index (tương đương home/index)
             header('Location: /');
             exit;
         } else {
             $this->view('auth/login', [
-                'errors' => ['login' => 'Email hoặc mật khẩu không chính xác'],
+                'error' => 'Email hoặc mật khẩu không đúng', // Sửa key thành 'error' để khớp với view
                 'old' => ['username' => $email]
             ]);
         }
