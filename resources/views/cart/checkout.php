@@ -57,18 +57,28 @@ if (!empty($products)) {
                         <?php foreach ($products as $item): 
                             $itemTotal = $item['price'] * $item['cart_quantity'];
                         ?>
-                        <div class="flex gap-4 p-4 border-b last:border-0 items-center">
+                        <div class="flex gap-4 p-4 border-b last:border-0 items-center item-row">
                             <div class="w-16 h-16 border rounded-sm overflow-hidden flex-shrink-0">
                                 <img src="/uploads/<?= htmlspecialchars($item['image']) ?>" class="w-full h-full object-cover">
                             </div>
                             <div class="flex-1">
                                 <h4 class="text-sm font-medium text-gray-800 line-clamp-2"><?= htmlspecialchars($item['name']) ?></h4>
                                 <span class="text-xs text-gray-500">Loại: Tiêu chuẩn</span>
+                                <div class="text-xs text-gray-400 mt-1">Kho: <?= $item['quantity'] ?></div>
                             </div>
-                            <div class="text-sm text-gray-600">
-                                <?= number_format($item['price'], 0, ',', '.') ?>đ x <?= $item['cart_quantity'] ?>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm text-gray-600 hidden sm:block"><?= number_format($item['price'], 0, ',', '.') ?>đ</span>
+                                <div class="flex items-center border border-gray-300 rounded-sm">
+                                    <button type="button" class="btn-decrease px-2 py-1 hover:bg-gray-100 border-r border-gray-300 min-w-[24px]">-</button>
+                                    <input type="number" name="quantities[<?= $item['id'] ?>]" value="<?= $item['cart_quantity'] ?>" 
+                                           class="w-12 text-center text-sm outline-none input-quantity [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                           data-price="<?= $item['price'] ?>" 
+                                           data-max="<?= $item['quantity'] ?>" 
+                                           readonly>
+                                    <button type="button" class="btn-increase px-2 py-1 hover:bg-gray-100 border-l border-gray-300 min-w-[24px]">+</button>
+                                </div>
                             </div>
-                            <div class="text-sm font-bold text-[#EE4D2D] w-32 text-right">
+                            <div class="text-sm font-bold text-[#EE4D2D] w-32 text-right item-total">
                                 <?= number_format($itemTotal, 0, ',', '.') ?>đ
                             </div>
                         </div>
@@ -86,7 +96,7 @@ if (!empty($products)) {
                     
                     <div class="flex justify-between items-center mb-4">
                         <span class="text-gray-600">Tổng tiền hàng</span>
-                        <span class="font-medium"><?= number_format($grandTotal, 0, ',', '.') ?>đ</span>
+                        <span class="font-medium" id="grand-total"><?= number_format($grandTotal, 0, ',', '.') ?>đ</span>
                     </div>
                     <div class="flex justify-between items-center mb-4">
                         <span class="text-gray-600">Phí vận chuyển</span>
@@ -95,7 +105,7 @@ if (!empty($products)) {
                     
                      <div class="flex justify-between items-center mb-6 pt-4 border-t">
                         <span class="text-base font-medium text-gray-800">Tổng thanh toán</span>
-                        <span class="text-xl font-bold text-[#EE4D2D]"><?= number_format($grandTotal, 0, ',', '.') ?>đ</span>
+                        <span class="text-xl font-bold text-[#EE4D2D]" id="final-total"><?= number_format($grandTotal, 0, ',', '.') ?>đ</span>
                     </div>
 
                     <div class="space-y-3">
@@ -105,7 +115,7 @@ if (!empty($products)) {
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full mt-6 py-3 bg-[#EE4D2D] text-white font-bold rounded-sm hover:bg-[#d73211] transition-transform active:scale-[0.98] shadow-md">
+                    <button type="submit" id="btn-order" class="w-full mt-6 py-3 bg-[#EE4D2D] text-white font-bold rounded-sm hover:bg-[#d73211] transition-transform active:scale-[0.98] shadow-md">
                         ĐẶT HÀNG
                     </button>
                     
@@ -117,5 +127,109 @@ if (!empty($products)) {
         </form>
     </div>
 </main>
+
+<script>
+    // Toast Notification logic - Global scope
+    const showToast = (message, type = 'error') => {
+        const toast = document.createElement('div');
+        toast.className = `fixed top-24 right-5 z-50 px-6 py-3 rounded shadow-lg text-white transform transition-all duration-300 translate-x-full opacity-0 flex items-center gap-2 ${
+            type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        }`;
+        
+        const icon = type === 'success' ? '<i class="fa-solid fa-check-circle"></i>' : '<i class="fa-solid fa-circle-exclamation"></i>';
+        toast.innerHTML = `${icon} <span>${message}</span>`;
+        
+        document.body.appendChild(toast);
+
+        // Animate in
+        requestAnimationFrame(() => {
+            toast.classList.remove('translate-x-full', 'opacity-0');
+        });
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+            toast.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }, 3000);
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        <?php if (!empty($errors)): ?>
+            <?php foreach ($errors as $error): ?>
+                showToast('<?= addslashes($error) ?>', 'error');
+            <?php endforeach; ?>
+        <?php endif; ?>
+
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
+        };
+
+        const updateTotals = () => {
+            let grandTotal = 0;
+            
+            document.querySelectorAll('.item-row').forEach(row => {
+                const input = row.querySelector('.input-quantity');
+                const price = parseInt(input.dataset.price);
+                const qty = parseInt(input.value) || 0;
+                const itemTotalEl = row.querySelector('.item-total');
+                
+                const itemTotal = price * qty;
+                grandTotal += itemTotal;
+                
+                itemTotalEl.textContent = formatCurrency(itemTotal);
+            });
+
+            const grandTotalEl = document.getElementById('grand-total');
+            const finalTotalEl = document.getElementById('final-total');
+            
+            if (grandTotalEl) grandTotalEl.textContent = formatCurrency(grandTotal);
+            if (finalTotalEl) finalTotalEl.textContent = formatCurrency(grandTotal);
+            
+            const btnSubmit = document.getElementById('btn-order');
+            if (btnSubmit) {
+                if (grandTotal === 0) {
+                    btnSubmit.disabled = true;
+                    btnSubmit.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    btnSubmit.disabled = false;
+                    btnSubmit.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
+        };
+
+        document.querySelectorAll('.btn-decrease').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const input = this.nextElementSibling;
+                let val = parseInt(input.value) || 0;
+                if (val > 0) {
+                    val--;
+                    input.value = val;
+                    updateTotals();
+                }
+            });
+        });
+
+        document.querySelectorAll('.btn-increase').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const input = this.previousElementSibling;
+                let val = parseInt(input.value) || 0;
+                const max = parseInt(input.dataset.max) || 999;
+                
+                if (val < max) {
+                    val++;
+                    input.value = val;
+                    updateTotals();
+                } else {
+                    showToast(`Số lượng tối đa cho sản phẩm này là ${max} sản phẩm`, 'error');
+                }
+            });
+        });
+        
+        // Initial check
+        updateTotals();
+    });
+</script>
 
 <?php include __DIR__ . '/../partials/footer.php'; ?>

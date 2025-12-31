@@ -8,7 +8,7 @@ include __DIR__ . '/../partials/header.php';
 
         <!-- Breadcrumb -->
         <div class="text-sm text-gray-500">
-            <a href="/" class="hover:text-[#2C67C8]">Oreka</a>
+            <a href="/" class="hover:text-[#2C67C8]">Trang chủ</a>
             <span class="mx-2">></span>
             <a href="/products" class="hover:text-[#2C67C8]">Sản phẩm</a>
             <span class="mx-2">></span>
@@ -90,11 +90,11 @@ include __DIR__ . '/../partials/header.php';
                                 <input type="hidden" name="quantity" value="1" id="input-quantity-submit">
 
                                 <button type="submit" name="action" value="add"
-                                    class="flex-1 px-6 py-3 border border-[#EE4D2D] bg-[#EE4D2D]/10 text-[#EE4D2D] font-medium rounded-sm hover:bg-[#EE4D2D]/20 transition-colors flex items-center justify-center gap-2">
+                                    class="flex-1 px-6 py-3 bg-[#2C67C8] text-white font-medium rounded-sm hover:bg-[#F97316] transition-colors flex items-center justify-center gap-2">
                                     <i class="fa-solid fa-cart-shopping"></i> Thêm vào giỏ hàng
                                 </button>
                                 <button type="submit" name="action" value="buy"
-                                    class="flex-1 px-8 py-3 bg-[#EE4D2D] text-white font-medium rounded-sm hover:bg-[#D73211] transition-colors shadow-sm text-center">
+                                    class="flex-1 px-8 py-3 bg-[#2C67C8] text-white font-medium rounded-sm hover:bg-[#F97316] transition-colors shadow-sm text-center">
                                     Mua ngay
                                 </button>
                             </form>
