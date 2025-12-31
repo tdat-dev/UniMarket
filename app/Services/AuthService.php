@@ -22,7 +22,6 @@ class AuthService
             'password' => $data['password'],
             'phone_number' => $data['phone'] ?? '',
             'address' => $data['school'] ?? '',
-            'major_id' => 1
         ]);
 
         return ['success' => true];

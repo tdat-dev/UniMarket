@@ -2,12 +2,14 @@
 
 namespace App\Controllers;
 use App\Models\Product;
+use App\Models\Category;
+
 class HomeController extends BaseController
 {
     public function index()
     {
         $productModel = new Product();
-        $categoryModel = new \App\Models\Category();
+        $categoryModel = new Category();
 
         $latestProducts = $productModel->getLatest(8);
         $suggestedProducts = $productModel->getRandom(12);
@@ -18,7 +20,7 @@ class HomeController extends BaseController
             'latestProducts' => $latestProducts,
             'suggestedProducts' => $suggestedProducts,
             'topProducts' => $topProducts,
-            'categories' => $categories
+            'categories' => $categories,
         ]);
     }
 }
