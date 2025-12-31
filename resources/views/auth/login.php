@@ -57,13 +57,18 @@
                     <?php endif; ?>
                     <div>
                         <input type="text" name="username" placeholder="Email hoặc Số điện thoại" required
-                            value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : '' ?>"
-                            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                        oninvalid="this.setCustomValidity('Vui lòng điền vào số điện thoại hoặc email')"
+                        oninput="this.setCustomValidity('')"
+                        value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : '' ?>"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
                     </div>
 
                     <div class="relative">
                         <input type="password" name="password" id="password" placeholder="Mật khẩu" required
-                            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                        oninvalid="this.setCustomValidity('Vui lòng điền mật khẩu')"
+                        oninput="this.setCustomValidity('')"
+                        value="<?php echo isset($_POST['password']) ? htmlspecialchars($_POST['password']) : '' ?>"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
                         <span
                             class="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600"
                             id="togglePassword">
