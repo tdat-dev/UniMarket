@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/images/logo.png" alt="Unizify Logo" width="250">
+  <img src="public/images/logouni.png" alt="Unizify Logo" width="150">
 </p>
 
 <p align="center">
@@ -24,38 +24,47 @@
 - [Database & Migrations](#-database--migrations)
 - [Quy trình làm việc](#-quy-trình-làm-việc)
 - [Thành viên nhóm](#-thành-viên-nhóm)
+- [Tiến độ dự án](#-tiến-độ-dự-án)
 
 ---
 
 ## 🎯 Giới thiệu
 
-**UniMarket** là nền tảng mua bán đồ cũ dành cho sinh viên. Cho phép đăng bán, tìm kiếm và mua sản phẩm với giá sinh viên.
+**UniMarket** là nền tảng mua bán đồ cũ dành cho sinh viên - một dự án môn học tâm huyết giúp kết nối sinh viên có nhu cầu mua bán, trao đổi đồ dùng học tập, giáo trình và thiết bị cũ.
+
+Với khẩu hiệu _"Đồ Cũ, Vẫn CHẤT"_, chúng tôi mong muốn tạo ra một môi trường giao dịch an toàn, tiết kiệm và thân thiện.
 
 ### Tính năng chính
 
-| Tính năng               | Mô tả                         | Trạng thái |
-| ----------------------- | ----------------------------- | :--------: |
-| Đăng ký/Đăng nhập       | Xác thực người dùng           |     ✅     |
-| Đăng bán sản phẩm       | Upload ảnh, nhập thông tin    |     ✅     |
-| Tìm kiếm sản phẩm       | Tìm kiếm theo tên             |     ✅     |
-| Gợi ý tìm kiếm hàng đầu | Tracking keyword phổ biến     |     ✅     |
-| Phân trang              | Phân trang danh sách sản phẩm |     ✅     |
+| Tính năng             | Mô tả                                 | Trạng thái |
+| --------------------- | ------------------------------------- | :--------: |
+| **Đăng ký/Đăng nhập** | Xác thực, quản lý profile             |     ✅     |
+| **Sản phẩm**          | Đăng bán, quản lý, upload ảnh         |     ✅     |
+| **Tìm kiếm**          | Tìm theo tên, danh mục, giá           |     ✅     |
+| **Gợi ý thông minh**  | Gợi ý từ khóa, sản phẩm liên quan     |     ✅     |
+| **Giỏ hàng**          | Thêm vào giỏ, cập nhật số lượng       |     ✅     |
+| **Thanh toán**        | Quy trình đặt hàng (Checkout)         |     🔄     |
+| **Admin Dashboard**   | Quản lý người dùng, sản phẩm (cơ bản) |     ⏳     |
 
 ---
 
 ## 💻 Yêu cầu hệ thống
 
-| Thành phần | Yêu cầu     |
-| ---------- | ----------- |
-| PHP        | >= 8.0      |
-| MySQL      | >= 8.0      |
-| Composer   | >= 2.0      |
-| Node.js    | >= 16.0     |
-| Laragon    | Khuyến nghị |
+Để chạy dự án mượt mà, bạn cần môi trường sau:
+
+| Thành phần   | Yêu cầu | Ghi chú                      |
+| ------------ | ------- | ---------------------------- |
+| **PHP**      | >= 8.0  | Bật extension `pdo_mysql`    |
+| **MySQL**    | >= 8.0  | Hỗ trợ JSON, UTF8mb4         |
+| **Composer** | >= 2.0  | Quản lý thư viện PHP         |
+| **Node.js**  | >= 16.0 | Để build Tailwind CSS        |
+| **Laragon**  | Đề xuất | Môi trường dev tiện lợi nhất |
 
 ---
 
 ## 🚀 Cài đặt nhanh
+
+Hãy làm theo các bước sau để khởi chạy dự án trên máy local:
 
 ### 1. Clone project
 
@@ -66,6 +75,8 @@ cd UniMarket
 
 ### 2. Cài dependencies
 
+Cài đặt các gói thư viện cần thiết cho PHP và JS:
+
 ```bash
 composer install
 npm install
@@ -73,13 +84,13 @@ npm install
 
 ### 3. Cấu hình database
 
-Copy file `.env.example` thành `.env` và sửa thông tin database:
+Copy file cấu hình mẫu và cập nhật thông tin kết nối CSDL của bạn:
 
 ```bash
 cp .env.example .env
 ```
 
-Sửa file `.env`:
+Mở file `.env` và chỉnh sửa các thông số `DB_` cho phù hợp (ví dụ dùng root/rỗng mặc định của Laragon):
 
 ```env
 DB_HOST=127.0.0.1
@@ -88,219 +99,161 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-### 4. Tạo database và chạy migrations
+### 4. Khởi tạo Database
+
+Bạn cần tạo database trống trước, sau đó chạy script migration để tạo bảng và dữ liệu mẫu:
 
 ```bash
-# Tạo database trong MySQL
-CREATE DATABASE unimarket CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+# Tạo database (nếu chưa có)
+# CREATE DATABASE unimarket CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-# Chạy migrations (tự động tạo các bảng)
+# Chạy migrations
 php database/migrate.php
 ```
 
-### 5. Build CSS (Tailwind)
+> **Lưu ý:** Script `migrate.php` sẽ tự động chạy tất cả các file SQL và PHP trong thư mục `database/migrations` chưa được thực thi.
+
+### 5. Build Assets
+
+Biên dịch Tailwind CSS:
 
 ```bash
-npm run dev    # Development (watch mode)
-npm run build  # Production
+npm run dev    # Chế độ development (tự động build khi sửa file)
+# hoặc
+npm run build  # Build bản production (tối ưu hóa)
 ```
 
-### 6. Chạy project
+### 6. Khởi chạy
 
-- **Laragon**: Truy cập `http://unimarket.test`
-- **PHP Built-in**: `php -S localhost:8000 -t public`
+- **Nếu dùng Laragon**: Chỉ cần Start All, truy cập `http://unimarket.test`.
+- **Nếu dùng PHP Server**:
+  ```bash
+  php -S localhost:8000 -t public
+  ```
+  Truy cập `http://localhost:8000`.
 
 ---
 
 ## 📁 Cấu trúc dự án
 
+Cấu trúc thư mục được tổ chức theo mô hình MVC (gần giống Laravel nhưng đơn giản hơn):
+
 ```
 UniMarket/
 │
-├── .env                         # Biến môi trường (DB config)
-├── .env.example                 # Template cho .env
-├── .gitignore                   # Ignore rules cho Git
-├── composer.json                # PHP dependencies
-├── package.json                 # Node.js dependencies
-├── tailwind.config.js           # Cấu hình Tailwind CSS
-├── db.sql                       # Full database schema (backup)
-├── post.php                     # Test file
-├── ARCHITECTURE.md              # Tài liệu kiến trúc
-├── README.md                    # Tài liệu này
+├── app/                         # CORE LOGIC
+│   ├── Controllers/             # Nhận request, xử lý logic, trả về view
+│   ├── Core/                    # Framework base (Router, Database, App)
+│   ├── Models/                  # Tương tác dữ liệu (Active Record pattern)
+│   └── Services/                # Xử lý nghiệp vụ phức tạp
 │
-├── .github/                     # GitHub workflows
+├── config/                      # CẤU HÌNH
+│   ├── app.php                  # Config chung
+│   └── database.php             # Config DB
 │
-├── app/                         # Source code chính
-│   ├── Controllers/             # Xử lý request
-│   │   ├── AuthController.php       # Đăng nhập/Đăng ký
-│   │   ├── BaseController.php       # Base class
-│   │   ├── HomeController.php       # Trang chủ
-│   │   ├── ProductController.php    # CRUD sản phẩm
-│   │   └── SearchController.php     # Tìm kiếm
-│   │
-│   ├── Core/                    # Core framework
-│   │   ├── App.php                  # Bootstrap
-│   │   ├── Database.php             # Database connection
-│   │   └── Router.php               # Routing
-│   │
-│   ├── Models/                  # Tương tác database
-│   │   ├── BaseModel.php            # Base class
-│   │   ├── Product.php              # Model sản phẩm
-│   │   ├── SearchKeyword.php        # Model từ khóa tìm kiếm
-│   │   └── User.php                 # Model người dùng
-│   │
-│   └── Services/                # Business logic
-│       └── RecommendationService.php
+├── database/                    # MIGRATIONS & SEEDS
+│   ├── migrate.php              # Script chạy migration
+│   └── migrations/              # Danh sách file thay đổi CSDL theo thời gian
 │
-├── config/                      # Cấu hình
-│   ├── app.php                  # Cấu hình app
-│   └── database.php             # Cấu hình database
+├── public/                      # WEB ROOT
+│   ├── index.php                # Entry point duy nhất
+│   ├── css/                     # File CSS đầu ra
+│   ├── images/                  # Ảnh tĩnh
+│   └── uploads/                 # Ảnh user upload
 │
-├── database/                    # Database migrations
-│   ├── migrate.php              # Script chạy migrations
-│   └── migrations/              # Các file migration
-│       ├── 001_create_base_tables.sql
-│       ├── 002_create_products_table.sql
-│       ├── 003_create_orders_tables.sql
-│       ├── 004_create_social_tables.sql
-│       ├── 005_create_system_tables.sql
-│       ├── 006_create_search_keywords.sql
-│       └── 007_add_quantity_if_missing.sql
-│
-├── public/                      # Web root (entry point)
-│   ├── index.php                # Entry point
-│   ├── css/                     # Compiled CSS
-│   ├── js/                      # JavaScript
-│   ├── images/                  # Hình ảnh
-│   └── uploads/                 # User uploads
-│
-├── resources/                   # Resources
+├── resources/                   # FRONTEND SOURCE
 │   ├── css/                     # Tailwind source
 │   ├── lang/                    # Ngôn ngữ
-│   └── views/                   # Giao diện
-│       ├── auth/                    # Login, Register
-│       ├── home/                    # Trang chủ
-│       ├── layouts/                 # Layouts
-│       ├── partials/                # Header, Footer, Components
-│       │   ├── head.php
-│       │   ├── header.php
-│       │   ├── footer.php
-│       │   └── product_card.php
-│       ├── products/                # Danh sách SP, Chi tiết
-│       └── search/                  # Kết quả tìm kiếm
+│   └── views/                   # Các file giao diện (.php)
 │
-├── routes/                      # Routes
-│   └── web.php                  # Định nghĩa routes
-│
-├── vendor/                      # Composer packages
-└── node_modules/                # NPM packages
+└── routes/                      # ĐỊNH TUYẾN
+    └── web.php                  # Khai báo URL và Controller tương ứng
 ```
 
 ---
 
 ## 🗄️ Database & Migrations
 
-### Chạy migrations
+Hệ thống sử dụng cơ chế migration tự viết (`app/Core/Database.php` và `database/migrate.php`) để quản lý version database.
 
-```bash
-php database/migrate.php
-```
+### Danh sách Migrations hiện tại
 
-### Danh sách migrations
+| File                                     | Mô tả                                         |
+| :--------------------------------------- | :-------------------------------------------- |
+| `001_create_base_tables.sql`             | Tạo bảng cơ sở: users, categories             |
+| `002_create_products_table.sql`          | Tạo bảng products                             |
+| `003_create_orders_tables.sql`           | Tạo bảng orders, order_details                |
+| `004_create_social_tables.sql`           | Tạo bảng messages, reviews, favorites         |
+| `005_create_system_tables.sql`           | Tạo bảng interactions, notifications, reports |
+| `006_create_search_keywords.sql`         | Tạo bảng search_keywords (tracking tìm kiếm)  |
+| `007_add_quantity_if_missing.sql`        | Bổ sung cột quantity cho products             |
+| `008_seed_categories_data.sql`           | Thêm dữ liệu danh mục mẫu                     |
+| `009_correct_category_images.sql`        | Sửa đường dẫn ảnh danh mục                    |
+| `010_update_renamed_category_images.sql` | Cập nhật lại tên ảnh danh mục                 |
+| `011_fix_password_hash.sql`              | Sửa logic hash password                       |
+| `012_reset_users_with_correct_hash.sql`  | Reset user mẫu với pass mới                   |
+| `013_fix_password_final.sql`             | Fix lỗi password cuối cùng                    |
+| `014_seed_admin.php`                     | Script PHP tạo tài khoản Admin mặc định       |
+| `015_create_carts_table.sql`             | Tạo bảng carts (Giỏ hàng)                     |
 
-| File                              | Mô tả                                     |
-| --------------------------------- | ----------------------------------------- |
-| `001_create_base_tables.sql`      | Bảng majors, users, categories            |
-| `002_create_products_table.sql`   | Bảng products                             |
-| `003_create_orders_tables.sql`    | Bảng orders, order_details                |
-| `004_create_social_tables.sql`    | Bảng messages, reviews, favorites         |
-| `005_create_system_tables.sql`    | Bảng interactions, notifications, reports |
-| `006_create_search_keywords.sql`  | Bảng search_keywords                      |
-| `007_add_quantity_if_missing.sql` | Thêm cột quantity nếu thiếu               |
+### Cách tạo Migration mới
 
-### Thêm migration mới
+Để thay đổi Database, **ĐỪNG** sửa file SQL cũ. Hãy tạo file mới theo thứ tự tăng dần:
 
-```bash
-# Tạo file mới
-database/migrations/008_ten_migration.sql
-
-# Chạy migrate
-php database/migrate.php
-```
+1. Đặt tên file logic: `NNN_ten_thay_doi.sql` (hoặc `.php`)
+2. Viết câu lệnh SQL vào file.
+3. Chạy lệnh `php database/migrate.php`.
 
 ---
 
 ## 🔄 Quy trình làm việc
 
-### Git Workflow
+### Git Flow
+
+Chúng ta tuân thủ quy trình Git Flow đơn giản:
 
 ```
-main ──── develop ──── feature/xxx
-              ↑
-          Pull Request
+main (bản ổn định)
+  ↑
+develop (bản đang code) ──── feature/chuc-nang-moi
+                             feature/fix-loi-abc
 ```
 
-### Quy tắc commit
+### Commit Message chuẩn
 
-```bash
-feat(scope): thêm tính năng mới
-fix(scope): sửa lỗi
-docs: cập nhật tài liệu
-style: format code
-refactor: tái cấu trúc code
-```
+Vui lòng viết commit message bằng tiếng Anh theo Convention:
 
-**Ví dụ:**
-
-```bash
-git commit -m "feat(search): thêm gợi ý tìm kiếm"
-git commit -m "fix(product): sửa lỗi phân trang"
-```
-
-### Quy trình tạo feature mới
-
-1. **Tạo branch**
-
-   ```bash
-   git checkout develop
-   git pull origin develop
-   git checkout -b feature/ten-tinh-nang
-   ```
-
-2. **Code & commit**
-
-   ```bash
-   git add .
-   git commit -m "feat(xxx): mô tả"
-   ```
-
-3. **Push & tạo Pull Request**
-
-   ```bash
-   git push origin feature/ten-tinh-nang
-   ```
-
-4. **Review & merge** vào `develop`
+- `feat(scope)`: tính năng mới (vd: `feat(auth): add login page`)
+- `fix(scope)`: sửa lỗi (vd: `fix(cart): update total calculation`)
+- `docs(...)`: tài liệu
+- `style(...)`: format, CSS
+- `refactor(...)`: viết lại code cho gọn, không đổi logic
 
 ---
 
 ## 👥 Thành viên nhóm
 
-|  #  | Họ tên |  MSSV  | Vai trò       | Công việc                      |
-| :-: | ------ | :----: | ------------- | ------------------------------ |
-|  1  | [Tên]  | [MSSV] | **Team Lead** | Backend, Database, Review code |
-|  2  | [Tên]  | [MSSV] | Frontend      | UI/UX, Giao diện               |
-|  3  | [Tên]  | [MSSV] | Fullstack     | Tích hợp, Testing              |
+|  #  | Họ tên |  MSSV  | Vai trò       | Nhiệm vụ chính                             |
+| :-: | ------ | :----: | ------------- | ------------------------------------------ |
+|  1  | [Tên]  | [MSSV] | **Team Lead** | Kiến trúc hệ thống, Database, Core, Review |
+|  2  | [Tên]  | [MSSV] | Frontend      | Giao diện, UX/UI, Responsive               |
+|  3  | [Tên]  | [MSSV] | Dev           | Chức năng Search, Cart, Testing            |
 
 ---
 
-## 📞 Liên hệ
+## 📅 Tiến độ dự án
 
-Nếu có vấn đề, liên hệ Team Lead hoặc tạo Issue trên repository.
+| Giai đoạn | Nội dung                        |   Trạng thái   |
+| :-------: | ------------------------------- | :------------: |
+|  **P1**   | Phân tích, Database, Setup Base |  ✅ Completed  |
+|  **P2**   | Auth, Homepage, Product Listing |  ✅ Completed  |
+|  **P3**   | Search, Filter, Product Detail  |  ✅ Completed  |
+|  **P4**   | Cart, Checkout                  | 🔄 In Progress |
+|  **P5**   | Admin, Report, Polish           |   ⏳ Pending   |
 
 ---
 
 <p align="center">
-  <strong>UniMarket</strong> - Đồ cũ, vẫn CHẤT!<br>
-  <sub>📅 Cập nhật: 30/12/2025</sub>
+  <strong>UniMarket Team</strong><br>
+  <sub>📅 Cập nhật lần cuối: 30/12/2025</sub>
 </p>

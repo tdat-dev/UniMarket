@@ -39,8 +39,17 @@ class AuthController extends BaseController
         $password = $_POST['password'] ?? '';
 
         if ($authService->loginUser($email, $password)) {
-            // Đăng nhập thành công -> Chuyển về Home (/)
-            header('Location: /');
+            // Đăng nhập thành công
+
+            // Kiểm tra xem có URL cần quay lại không
+            if (isset($_SESSION['redirect_after_login'])) {
+                $redirectUrl = $_SESSION['redirect_after_login'];
+                unset($_SESSION['redirect_after_login']); // Xóa sau khi dùng
+                header("Location: $redirectUrl");
+            } else {
+                // Không có URL lưu -> Về trang chủ
+                header('Location: /');
+            }
             exit;
         } else {
             $this->view('auth/login', [

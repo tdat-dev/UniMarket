@@ -43,10 +43,16 @@
                 </div>
 
                 <form action="/login" method="post" class="space-y-4">
-                    <?php if (isset($error)): ?>
-                        <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
-                            <p class="font-bold">Đăng nhập thất bại</p>
-                            <p><?php echo $error; ?></p>
+                    <!-- Hiển thị lỗi đăng nhập -->
+                    <?php if (isset($errors['login'])): ?>
+                        <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-r-lg" role="alert">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-circle-exclamation"></i>
+                                <div>
+                                    <p class="font-bold">Đăng nhập thất bại</p>
+                                    <p class="text-sm"><?= htmlspecialchars($errors['login']) ?></p>
+                                </div>
+                            </div>
                         </div>
                     <?php endif; ?>
                     <div>

@@ -74,10 +74,14 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                     </div>
 
                     <div class="flex flex-wrap gap-x-4 mt-2 text-xs text-gray-500 pl-1 justify-center md:justify-start">
-                        <a href="/search?q=Sục Crocs" class="hover:text-[#2C67C8]">Sục Crocs</a>
-                        <a href="/search?q=Áo Khoác" class="hover:text-[#2C67C8]">Áo Khoác</a>
-                        <a href="/search?q=Giáo trình C++" class="hidden sm:inline hover:text-[#2C67C8]">Giáo trình
-                            C++</a>
+                        <?php if (!empty($topKeywords)): ?>
+                            <?php foreach ($topKeywords as $index => $kw): ?>
+                                <a href="/search?q=<?= urlencode($kw['keyword']) ?>"
+                                    class="<?= $index >= 2 ? 'hidden sm:inline' : '' ?> hover:text-[#2C67C8]">
+                                    <?= htmlspecialchars(ucfirst($kw['keyword'])) ?>
+                                </a>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -87,15 +91,7 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                     <a href="/cart" class="relative group p-1 hidden md:block">
                         <i
                             class="fa-solid fa-cart-shopping text-gray-600 text-2xl group-hover:text-[#2C67C8] transition-colors"></i>
-                        <?php
-                        $cartCount = 0;
-                        if (isset($_SESSION['cart'])) {
-                            foreach ($_SESSION['cart'] as $qty) {
-                                $cartCount += $qty;
-                            }
-                        }
-                        ?>
-                        <?php if ($cartCount > 0): ?>
+                        <?php if (($cartCount ?? 0) > 0): ?>
                             <span
                                 class="absolute -top-1 -right-2 bg-[#EE4D2D] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-white">
                                 <?= $cartCount > 99 ? '99+' : $cartCount ?>
