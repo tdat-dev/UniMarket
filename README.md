@@ -180,7 +180,7 @@ Hệ thống sử dụng cơ chế migration tự viết (`app/Core/Database.php
 
 | File                                     | Mô tả                                         |
 | :--------------------------------------- | :-------------------------------------------- |
-| `001_create_base_tables.sql`             | Tạo bảng cơ sở: majors, users, categories     |
+| `001_create_base_tables.sql`             | Tạo bảng cơ sở: users, categories             |
 | `002_create_products_table.sql`          | Tạo bảng products                             |
 | `003_create_orders_tables.sql`           | Tạo bảng orders, order_details                |
 | `004_create_social_tables.sql`           | Tạo bảng messages, reviews, favorites         |
