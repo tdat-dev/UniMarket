@@ -4,6 +4,8 @@ namespace App\Controllers;
 
 use App\Models\Product;
 use App\Models\User;
+use App\Middleware\VerificationMiddleware;
+
 class ProductController extends BaseController // Kế thừa BaseController để dùng hàm view()
 {
     public function index()

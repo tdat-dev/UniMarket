@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\Product;
 use App\Models\SearchKeyword;
 
+
 class SearchController extends BaseController
 {
     public function index()

@@ -4,7 +4,9 @@
   "type": "project",
   "license": "proprietary",
   "require": {
-    "vlucas/phpdotenv": "^5.6"
+    "vlucas/phpdotenv": "^5.6",
+    "google/apiclient": "^2.15",
+    "phpmailer/phpmailer": "^7.0"
   },
   "autoload": {
     "psr-4": {

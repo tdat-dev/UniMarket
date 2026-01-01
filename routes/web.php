@@ -4,6 +4,9 @@ use App\Controllers\AuthController;
 use App\Controllers\HomeController;
 use App\Controllers\ProductController;
 use App\Controllers\SearchController;
+use App\Controllers\GoogleAuthController;
+use App\Controllers\VerificationController;
+
 
 /** @var \App\Core\Router $router */
 
@@ -16,6 +19,11 @@ $router->post('login', [AuthController::class, 'processLogin']);
 
 // Đăng ký
 $router->get('register', [AuthController::class, 'register']);
+$router->post('register', [AuthController::class, 'processRegister']);
+
+// Google OAuth
+$router->get('auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
+$router->get('auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
 
 // Route show list and detail
 $router->get('products', [ProductController::class, 'index']);
@@ -35,7 +43,12 @@ $router->get('chat', [\App\Controllers\ChatController::class, 'index']);
 // Route search (yêu cầu đăng nhập)
 $router->get('search', [SearchController::class, 'search']);
 $router->get('api/search-suggest', [SearchController::class, 'suggest']);
-$router->post('register', [AuthController::class, 'processRegister']);
+
+// Verify email
+$router->get('verify-email', [VerificationController::class, 'showVerifyForm']);
+$router->post('verify-email', [VerificationController::class, 'verifyByOtp']);
+$router->get('verify-email/token', [VerificationController::class, 'verifyByToken']);
+$router->post('verify-email/resend', [VerificationController::class, 'resendVerification']);
 
 // Đăng xuất
 $router->post('logout', [AuthController::class, 'logout']);

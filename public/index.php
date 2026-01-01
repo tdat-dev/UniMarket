@@ -8,6 +8,10 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 require_once __DIR__ . '/../vendor/autoload.php';
 
+// Load biến môi trường từ file .env
+$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+$dotenv->safeLoad();
+
 use App\Core\App;
 
 $app = new App();

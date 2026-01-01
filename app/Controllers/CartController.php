@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\Product;
 use App\Models\Cart;
+use App\Middleware\VerificationMiddleware;
 
 class CartController extends BaseController
 {
@@ -30,6 +31,7 @@ class CartController extends BaseController
      */
     public function add()
     {
+        VerificationMiddleware::requireVerified();
         $userId = $this->getUserId();
         $productId = $_POST['product_id'] ?? null;
         $quantity = (int) ($_POST['quantity'] ?? 1);
@@ -69,6 +71,7 @@ class CartController extends BaseController
      */
     public function index()
     {
+        VerificationMiddleware::requireVerified();
         $userId = $this->getUserId();
         $products = [];
         $total = 0;
