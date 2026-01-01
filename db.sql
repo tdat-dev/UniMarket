@@ -1,6 +1,6 @@
 -- 2. Tạo Database mới (Hỗ trợ tiếng Việt)
-CREATE DATABASE IF NOT EXISTS Unizify CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE Unizify;
+CREATE DATABASE IF NOT EXISTS Zoldify CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE Zoldify;
 
 
 -- 4. Bảng Người dùng
@@ -11,7 +11,10 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     phone_number VARCHAR(20),
     address VARCHAR(255),
-    role ENUM('student', 'admin') DEFAULT 'student',
+    role ENUM('buyer', 'seller', 'admin', 'moderator') DEFAULT 'buyer',
+    email_verified TINYINT(1) DEFAULT 0,           -- 0 = chưa xác minh, 1 = đã xác minh
+    email_verification_token VARCHAR(64),           -- Token ngẫu nhiên
+    email_verification_expires_at DATETIME,         -- Thời gian hết hạn token
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 ) ENGINE=InnoDB;
 
@@ -145,11 +148,18 @@ CREATE TABLE IF NOT EXISTS search_keywords (
 
 -- 2. Người dùng (password: 123456 đã hash bằng bcrypt)
 INSERT IGNORE INTO users (full_name, email, password, phone_number, address, role) VALUES
-('Nguyễn Văn Admin', 'admin@unizify.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0901234567', 'Hà Nội', 'admin'),
-('Trần Thị Lan', 'lan.tran@student.edu.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0912345678', 'TP HCM', 'student'),
-('Lê Văn Hùng', 'hung.le@student.edu.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0923456789', 'Đà Nẵng', 'student', 2),
-('Phạm Thị Mai', 'mai.pham@student.edu.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0934567890', 'Hải Phòng', 'student', 3),
-('Hoàng Văn Nam', 'nam.hoang@student.edu.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0945678901', 'Cần Thơ', 'student', 1);
+-- Admin & Moderator
+('Admin Zoldify', 'admin@zoldify.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0901234567', 'Hà Nội', 'admin'),
+('Nguyễn Văn Kiểm', 'moderator@zoldify.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0902345678', 'TP HCM', 'moderator'),
+
+-- Sellers (Người bán đồ cũ)
+('Trần Thị Hoa', 'hoa.seller@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0912345678', 'Quận 1, TP HCM', 'seller'),
+('Lê Văn Minh', 'minh.shop@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0923456789', 'Hải Châu, Đà Nẵng', 'seller'),
+('Phạm Thị Mai', 'mai.vintage@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0934567890', 'Lê Chân, Hải Phòng', 'seller'),
+
+-- Buyers (Người mua)
+('Ngô Thị Lan', 'lan.buyer@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0956789012', 'Đống Đa, Hà Nội', 'buyer'),
+('Đặng Văn Tùng', 'tung.customer@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0967890123', 'Tân Bình, TP HCM', 'buyer');
 
 -- 3. Danh mục
 INSERT IGNORE INTO categories (name, icon) VALUES

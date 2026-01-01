@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unizify - Mua sắm đồ cũ online</title>
+    <title>Zoldify - Mua sắm đồ cũ online</title>
 
     <link rel="icon" href="/images/icons/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/images/icons/favicon-32x32.png" />

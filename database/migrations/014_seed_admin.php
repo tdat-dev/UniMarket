@@ -9,7 +9,7 @@ function run($pdo)
         VALUES (?, ?, 'admin', 'Super Admin')
         ON DUPLICATE KEY UPDATE password = ?
     ");
-    $stmt->execute(['superadmin@unizify.vn', $hash, $hash]);
+    $stmt->execute(['superadmin@zoldify.vn', $hash, $hash]);
 
     echo "Created super admin!\n";
 }

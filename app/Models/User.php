@@ -16,6 +16,7 @@ class User extends BaseModel
 			'password' => password_hash($data['password'], PASSWORD_DEFAULT),
 			'phone_number' => $data['phone_number'] ?? null,
 			'address' => $data['address'] ?? null,
+			'email_verified' => $data['email_verified'] ?? 0, // Mặc định là 0 (chưa verify)
 		]);
 	}
 
@@ -30,7 +31,7 @@ class User extends BaseModel
 	// Đăng nhập: kiểm tra email và password
 	public function login($email, $password)
 	{
-		$sql = "SELECT * FROM users WHERE email = :email";
+		$sql = "SELECT * FROM users WHERE email = :email";  // Đã lấy tất cả cột rồi, OK!
 		$user = $this->db->fetchOne($sql, ['email' => $email]);
 		if ($user && password_verify($password, $user['password'])) {
 			return $user;
@@ -40,24 +41,54 @@ class User extends BaseModel
 	// Lấy thông tin user theo ID
 	public function find($id)
 	{
-		$sql = "SELECT id, full_name, email, phone_number, address, created_at FROM users WHERE id = :id";
+		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at FROM users WHERE id = :id";
 		return $this->db->fetchOne($sql, ['id' => $id]);
 	}
-	public function update($id, $data)
+
+	// Lấy thông tin user theo email (cho Google OAuth)
+	public function findByEmail($email)
 	{
-		$fields = [];
-		$params = ['id' => $id];
+		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at FROM users WHERE email = :email";
+		return $this->db->fetchOne($sql, ['email' => $email]);
+	}
 
-		foreach ($data as $key => $value) {
-			$fields[] = "$key = :$key";
-			$params[$key] = $value;
-		}
+	// Lưu token xác minh
+	public function saveVerificationToken(int $userId, string $token, string $expiresAt): bool
+	{
+		$sql = "UPDATE users SET 
+            email_verification_token = :token, 
+            email_verification_expires_at = :expires_at 
+            WHERE id = :id";
+		return $this->db->execute($sql, [
+			'token' => $token,
+			'expires_at' => $expiresAt,
+			'id' => $userId
+		]);
+	}
 
-		if (empty($fields)) {
-			return true;
-		}
+	// Tìm user theo token (cho verify bằng link)
+	public function findByVerificationToken(string $token): ?array
+	{
+		$sql = "SELECT * FROM users WHERE email_verification_token LIKE :token";
+		return $this->db->fetchOne($sql, ['token' => $token . '%']) ?: null;
+	}
 
-		$sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = :id";
-		return $this->db->execute($sql, $params);
+	// Tìm user theo email để verify (lấy cả token)
+	public function findByEmailForVerification(string $email): ?array
+	{
+		$sql = "SELECT id, full_name, email, email_verified, email_verification_token, email_verification_expires_at 
+            FROM users WHERE email = :email";
+		return $this->db->fetchOne($sql, ['email' => $email]) ?: null;
+	}
+
+	// Đánh dấu đã xác minh
+	public function markAsVerified(int $userId): bool
+	{
+		$sql = "UPDATE users SET 
+            email_verified = 1, 
+            email_verification_token = NULL, 
+            email_verification_expires_at = NULL 
+            WHERE id = :id";
+		return $this->db->execute($sql, ['id' => $userId]);
 	}
 }
