@@ -9,7 +9,7 @@ class User extends BaseModel
 	// Đăng ký tài khoản mới
 	public function register($data)
 	{
-		$sql = "INSERT INTO users (full_name, email, password, phone_number, address) VALUES (:full_name, :email, :password, :phone_number, :address)";
+		$sql = "INSERT INTO users (full_name, email, password, phone_number, address, email_verified) VALUES (:full_name, :email, :password, :phone_number, :address, :email_verified)";
 		return $this->db->insert($sql, [
 			'full_name' => $data['full_name'],
 			'email' => $data['email'],
