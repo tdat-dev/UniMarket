@@ -10,7 +10,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- Hash được tạo bằng: password_hash('123456', PASSWORD_BCRYPT)
 
 INSERT INTO users (full_name, email, password, phone_number, address, role) VALUES
-('Nguyễn Văn Admin', 'admin@unizify.vn', '$2y$10$e0MYzXyjpJS7Pd0RVvHwHe1MEOVkbWRN9lLVvMqxGPVrjJJhDFWGq', '0901234567', 'Hà Nội', 'admin'),
+('Nguyễn Văn Admin', 'admin@zoldify.vn', '$2y$10$e0MYzXyjpJS7Pd0RVvHwHe1MEOVkbWRN9lLVvMqxGPVrjJJhDFWGq', '0901234567', 'Hà Nội', 'admin'),
 ('Trần Thị Lan', 'lan.tran@student.edu.vn', '$2y$10$e0MYzXyjpJS7Pd0RVvHwHe1MEOVkbWRN9lLVvMqxGPVrjJJhDFWGq', '0912345678', 'TP HCM', 'student'),
 ('Lê Văn Hùng', 'hung.le@student.edu.vn', '$2y$10$e0MYzXyjpJS7Pd0RVvHwHe1MEOVkbWRN9lLVvMqxGPVrjJJhDFWGq', '0923456789', 'Đà Nẵng', 'student'),
 ('Phạm Thị Mai', 'mai.pham@student.edu.vn', '$2y$10$e0MYzXyjpJS7Pd0RVvHwHe1MEOVkbWRN9lLVvMqxGPVrjJJhDFWGq', '0934567890', 'Hải Phòng', 'student'),

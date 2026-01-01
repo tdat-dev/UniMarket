@@ -3,6 +3,8 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\Cart;
+use App\Services\EmailVerificationService;
+use App\Helpers\StringHelper;
 
 class AuthService
 {
@@ -10,21 +12,32 @@ class AuthService
     {
         $userModel = new User();
 
+        // Chuẩn hóa dữ liệu đầu vào
+        $fullName = StringHelper::formatName($data['username']);
+        $email = StringHelper::formatEmail($data['email']);
+        $phone = StringHelper::formatPhone($data['phone'] ?? '');
+
         // 1. Kiểm tra email trùng
-        if ($userModel->checkEmailExists($data['email'])) {
+        if ($userModel->checkEmailExists($email)) {
             return ['success' => false, 'message' => 'Email đã được sử dụng'];
         }
 
         // 2. Đăng ký
-        $userModel->register([
-            'full_name' => $data['username'],
-            'email' => $data['email'],
+        $userId = $userModel->register([
+            'full_name' => $fullName,
+            'email' => $email,
             'password' => $data['password'],
-            'phone_number' => $data['phone'] ?? '',
+            'phone_number' => $phone,
             'address' => $data['school'] ?? '',
         ]);
 
-        return ['success' => true];
+        // 3. Gửi email xác minh
+        if ($userId) {
+            $verificationService = new EmailVerificationService();
+            $verificationService->sendVerification($userId, $email, $fullName);
+        }
+
+        return ['success' => true, 'user_id' => $userId, 'email' => $email];
     }
 
     public function loginUser($email, $password)
@@ -33,6 +46,7 @@ class AuthService
         $user = $userModel->login($email, $password);
 
         if ($user) {
+
             // Lưu session
             if (session_status() === PHP_SESSION_NONE)
                 session_start();
@@ -44,20 +58,19 @@ class AuthService
                 'id' => $user['id'],
                 'full_name' => $user['full_name'],
                 'email' => $user['email'],
-                'role' => $user['role']
+                'role' => $user['role'],
+                'email_verified' => !empty($user['email_verified'])
             ];
 
             // Merge giỏ hàng từ Session vào Database
             if (!empty($sessionCart)) {
                 $cartModel = new Cart();
                 $cartModel->mergeFromSession($user['id'], $sessionCart);
-
-                // Xóa giỏ hàng trong session sau khi đã merge
                 unset($_SESSION['cart']);
             }
 
-            return true;
+            return ['success' => true];
         }
-        return false;
+        return ['success' => false, 'reason' => 'invalid_credentials'];
     }
 }

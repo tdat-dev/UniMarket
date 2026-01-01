@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\Product;
 use App\Models\Cart;
+use App\Middleware\VerificationMiddleware;
 
 class CartController extends BaseController
 {
@@ -30,6 +31,7 @@ class CartController extends BaseController
      */
     public function add()
     {
+        VerificationMiddleware::requireVerified();
         $userId = $this->getUserId();
         $productId = $_POST['product_id'] ?? null;
         $quantity = (int) ($_POST['quantity'] ?? 1);
@@ -57,7 +59,15 @@ class CartController extends BaseController
 
         // Redirect based on action
         if ($action === 'buy') {
-            header('Location: /cart');
+            // If "Buy Now", we want to go straight to checkout with JUST this item selected.
+            // Since checkout expects POST data (selected_products[]), we can't just header header('Location: ...').
+            // We'll render a simple auto-submitting form.
+            echo '<form id="buy_now_form" action="/checkout" method="POST">';
+            echo '<input type="hidden" name="selected_products[]" value="' . $productId . '">';
+            echo '<input type="hidden" name="quantities[' . $productId . ']" value="' . $quantity . '">';
+            echo '</form>';
+            echo '<script>document.getElementById("buy_now_form").submit();</script>';
+            exit;
         } else {
             header("Location: /product-detail?id=$productId");
         }
@@ -69,6 +79,7 @@ class CartController extends BaseController
      */
     public function index()
     {
+        VerificationMiddleware::requireVerified();
         $userId = $this->getUserId();
         $products = [];
         $total = 0;

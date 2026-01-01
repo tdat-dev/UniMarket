@@ -4,6 +4,9 @@ use App\Controllers\AuthController;
 use App\Controllers\HomeController;
 use App\Controllers\ProductController;
 use App\Controllers\SearchController;
+use App\Controllers\GoogleAuthController;
+use App\Controllers\VerificationController;
+
 
 /** @var \App\Core\Router $router */
 
@@ -16,6 +19,11 @@ $router->post('login', [AuthController::class, 'processLogin']);
 
 // Đăng ký
 $router->get('register', [AuthController::class, 'register']);
+$router->post('register', [AuthController::class, 'processRegister']);
+
+// Google OAuth
+$router->get('auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
+$router->get('auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
 
 // Route show list and detail
 $router->get('products', [ProductController::class, 'index']);
@@ -30,12 +38,33 @@ $router->post('checkout/confirm', [\App\Controllers\CheckoutController::class, '
 
 // Shop & Chat
 $router->get('shop', [\App\Controllers\ShopController::class, 'index']);
+$router->get('shop/orders', [\App\Controllers\ShopController::class, 'orders']);
 $router->get('chat', [\App\Controllers\ChatController::class, 'index']);
+$router->post('chat/send', [\App\Controllers\ChatController::class, 'send']);
+
+// Product Management
+$router->get('products/create', [ProductController::class, 'create']);
+$router->post('products/store', [ProductController::class, 'store']); // For form submission
+
+// User Profile
+$router->get('profile', [\App\Controllers\ProfileController::class, 'index']);
+$router->post('profile/update', [\App\Controllers\ProfileController::class, 'update']);
+$router->get('wallet', [\App\Controllers\ProfileController::class, 'wallet']);
+$router->post('wallet/process', [\App\Controllers\ProfileController::class, 'processWallet']);
+$router->get('reviews', [\App\Controllers\ProfileController::class, 'reviews']);
+$router->post('reviews/store', [\App\Controllers\ProfileController::class, 'storeReview']);
+$router->get('shop/orders', [\App\Controllers\ShopController::class, 'orders']);
+$router->post('shop/orders/update', [\App\Controllers\ShopController::class, 'updateOrderStatus']);
 
 // Route search (yêu cầu đăng nhập)
 $router->get('search', [SearchController::class, 'search']);
 $router->get('api/search-suggest', [SearchController::class, 'suggest']);
-$router->post('register', [AuthController::class, 'processRegister']);
+
+// Verify email
+$router->get('verify-email', [VerificationController::class, 'showVerifyForm']);
+$router->post('verify-email', [VerificationController::class, 'verifyByOtp']);
+$router->get('verify-email/token', [VerificationController::class, 'verifyByToken']);
+$router->post('verify-email/resend', [VerificationController::class, 'resendVerification']);
 
 // Đăng xuất
 $router->post('logout', [AuthController::class, 'logout']);

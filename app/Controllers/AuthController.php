@@ -13,7 +13,15 @@ class AuthController extends BaseController
             header('Location: /');
             exit;
         }
-        $this->view('auth/login');
+
+        // Kiểm tra lỗi từ Session (ví dụ từ Google Auth redirect về)
+        $data = [];
+        if (isset($_SESSION['error'])) {
+            $data['errors']['login'] = $_SESSION['error'];
+            unset($_SESSION['error']);
+        }
+
+        $this->view('auth/login', $data);
     }
 
     // --- XỬ LÝ ĐĂNG NHẬP ---
@@ -24,31 +32,40 @@ class AuthController extends BaseController
         $errors = $validator->validateLogin($_POST);
 
         if (!empty($errors)) {
-            $this->view('auth/login', ['errors' => $errors]);
+            // Lấy lỗi đầu tiên để hiển thị ra alert
+            $firstError = reset($errors);
+            $this->view('auth/login', [
+                'error' => $firstError,
+                'errors' => $errors
+            ]);
             return;
         }
 
         // 2. Gọi Service để kiểm tra đăng nhập
         $authService = new AuthService();
-        $email = trim($_POST['username'] ?? ''); // Form Login name="username"
+        $email = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
 
-        if ($authService->loginUser($email, $password)) {
-            // Đăng nhập thành công
+        $result = $authService->loginUser($email, $password);
 
-            // Kiểm tra xem có URL cần quay lại không
+        if ($result['success']) {
+            // Đăng nhập thành công
             if (isset($_SESSION['redirect_after_login'])) {
                 $redirectUrl = $_SESSION['redirect_after_login'];
-                unset($_SESSION['redirect_after_login']); // Xóa sau khi dùng
+                unset($_SESSION['redirect_after_login']);
                 header("Location: $redirectUrl");
             } else {
-                // Không có URL lưu -> Về trang chủ
                 header('Location: /');
             }
             exit;
+        } elseif ($result['reason'] === 'unverified') {
+            // Email chưa xác minh -> chuyển đến trang verify
+            $_SESSION['pending_verification_email'] = $result['email'];
+            header('Location: /verify-email');
+            exit;
         } else {
             $this->view('auth/login', [
-                'errors' => ['login' => 'Email hoặc mật khẩu không chính xác'],
+                'error' => 'Email hoặc mật khẩu không đúng', // Sửa key thành 'error' để khớp với view
                 'old' => ['username' => $email]
             ]);
         }
@@ -64,7 +81,7 @@ class AuthController extends BaseController
         $this->view('auth/register');
     }
 
-    // --- XỬ LÝ ĐĂNG KÝ (CÓ AUTO LOGIN) ---
+    // --- XỬ LÝ ĐĂNG KÝ (Chuyển đến trang verify) ---
     public function processRegister()
     {
         // 1. Validate dữ liệu
@@ -81,23 +98,15 @@ class AuthController extends BaseController
         $result = $authService->registerUser($_POST);
 
         if ($result['success']) {
-            // --- THAY ĐỔI Ở ĐÂY: TỰ ĐỘNG ĐĂNG NHẬP ---
+            // Lưu email để hiển thị ở trang verify
+            $_SESSION['pending_verification_email'] = $result['email'];
 
-            // Lấy email và password người dùng vừa nhập
-            $email = trim($_POST['email'] ?? '');
-            $password = $_POST['password'] ?? '';
-
-            // Gọi hàm login luôn (tạo session ngay lập tức)
-            $authService->loginUser($email, $password);
-
-            // Chuyển hướng thẳng về Trang chủ (Home)
-            header('Location: /login');
+            // Chuyển đến trang xác minh email
+            header('Location: /verify-email');
             exit;
         } else {
-            // Lỗi nghiệp vụ (ví dụ: Trùng email)
             $this->view('auth/register', [
                 'errors' => ['email' => $result['message']]
-
             ]);
         }
     }

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/images/logouni.png" alt="Unizify Logo" width="150">
+  <img src="public/images/logouni.png" alt="Zoldify Logo" width="150">
 </p>
 
 <p align="center">
@@ -206,6 +206,31 @@ Hệ thống sử dụng cơ chế migration tự viết (`app/Core/Database.php
 
 ---
 
+## 📚 Tài liệu chi tiết (Documentation)
+
+Ngoài README chính, dự án còn có các tài liệu hướng dẫn chi tiết cho từng module:
+
+### 🔐 Google OAuth (Đăng nhập Google)
+
+- [**Hướng dẫn tích hợp Google Login**](docs/GOOGLE_OAUTH_GUIDE.md): Chi tiết cách tạo App trên Google Console và cấu hình code.
+- [**Checklist Debug lỗi OAuth**](docs/GOOGLE_OAUTH_CHECKLIST.md): Các bước kiểm tra khi gặp lỗi "Not Found" hoặc "Mismatch URI".
+
+### ⚡ Performance & Caching (Redis)
+
+- [**Cài đặt Redis**](docs/REDIS_SETUP.md): Hướng dẫn cài Redis trên Windows/Laragon và tích hợp vào dự án.
+- [**Redis Advanced**](docs/REDIS_ADVANCED.md): Chiến lược caching nâng cao cho Search và Product data.
+
+### 👤 Quản lý Vai trò (Roles)
+
+- [**Role Migration Guide**](docs/ROLE_MIGRATION_GUIDE.md): Hướng dẫn migration và phân quyền user.
+- [**Role Changes Summary**](docs/ROLE_CHANGES_SUMMARY.md): Tổng hợp các thay đổi về logic phân quyền.
+
+### 🛠 Troubleshooting (Sửa lỗi)
+
+- [**Fix Lỗi Checkout**](docs/BUG_FIX_CHECKOUT_TYPEERROR.md): Hướng dẫn fix lỗi TypeError khi thanh toán.
+
+---
+
 ## 🔄 Quy trình làm việc
 
 ### Git Flow
@@ -254,6 +279,6 @@ Vui lòng viết commit message bằng tiếng Anh theo Convention:
 ---
 
 <p align="center">
-  <strong>UniMarket Team</strong><br>
+  <strong>Zoldify Team</strong><br>
   <sub>📅 Cập nhật lần cuối: 30/12/2025</sub>
 </p>

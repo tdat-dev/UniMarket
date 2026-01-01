@@ -9,7 +9,7 @@
 // =====================================================
 // 1. CẤU HÌNH & BẢO MẬT
 // =====================================================
-define('SECRET_KEY', 'unizify-migrate-2024'); // <--- ĐỔI MẬT KHẨU Ở ĐÂY
+define('SECRET_KEY', 'tdatdev@123'); // <--- ĐỔI MẬT KHẨU Ở ĐÂY
 define('MIGRATIONS_DIR', __DIR__ . '/../database/migrations/');
 
 session_start();
@@ -127,7 +127,7 @@ if ($isAuthenticated && is_dir(MIGRATIONS_DIR)) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unizify Migration Pro</title>
+    <title>Zoldify Migration Pro</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine.js -->
@@ -163,7 +163,7 @@ if ($isAuthenticated && is_dir(MIGRATIONS_DIR)) {
                         class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/30">
                         <i class="fa-solid fa-database text-white text-2xl"></i>
                     </div>
-                    <h1 class="text-2xl font-bold text-slate-800">Unizify Migration</h1>
+                    <h1 class="text-2xl font-bold text-slate-800">Zoldify Migration</h1>
                     <p class="text-slate-500 text-sm">Dashboard quản trị Database</p>
                 </div>
 

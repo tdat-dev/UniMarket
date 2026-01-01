@@ -5,13 +5,14 @@ namespace App\Controllers;
 use App\Models\Product;
 use App\Models\SearchKeyword;
 
+
 class SearchController extends BaseController
 {
     public function index()
     {
         $keyword = $_GET['q'] ?? '';
         $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
-        $limit = 12;
+        $limit = 12; 
         $offset = ($page - 1) * $limit;
 
         $productModel = new Product();

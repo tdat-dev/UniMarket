@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     phone_number VARCHAR(20),
     address VARCHAR(255),
-    role ENUM('student', 'admin') DEFAULT 'student',
+    role ENUM('buyer', 'seller', 'admin', 'moderator') DEFAULT 'buyer',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 ) ENGINE=InnoDB;
 

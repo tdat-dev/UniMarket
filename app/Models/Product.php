@@ -258,4 +258,12 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
         ]);
     }
 
+    // Get products by user ID (for Shop page)
+    public function getByUserId($userId)
+    {
+        return $this->db->fetchAll("SELECT * FROM products WHERE user_id = :user_id ORDER BY id DESC", [
+            'user_id' => (int) $userId
+        ]);
+    }
+
 }

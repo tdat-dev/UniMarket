@@ -8,6 +8,15 @@ use App\Core\RedisCache;
 
 class BaseController
 {
+
+    public function __construct()
+    {
+        // Khởi tạo session nếu cần
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+    }
+
     /**
      * Lấy số lượng sản phẩm trong giỏ hàng
      */
