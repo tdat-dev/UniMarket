@@ -40,6 +40,7 @@ $router->post('checkout/confirm', [\App\Controllers\CheckoutController::class, '
 $router->get('shop', [\App\Controllers\ShopController::class, 'index']);
 $router->get('shop/orders', [\App\Controllers\ShopController::class, 'orders']);
 $router->get('chat', [\App\Controllers\ChatController::class, 'index']);
+$router->post('chat/send', [\App\Controllers\ChatController::class, 'send']);
 
 // Product Management
 $router->get('products/create', [ProductController::class, 'create']);
@@ -47,6 +48,7 @@ $router->post('products/store', [ProductController::class, 'store']); // For for
 
 // User Profile
 $router->get('profile', [\App\Controllers\ProfileController::class, 'index']);
+$router->post('profile/update', [\App\Controllers\ProfileController::class, 'update']);
 $router->get('wallet', [\App\Controllers\ProfileController::class, 'wallet']);
 $router->get('reviews', [\App\Controllers\ProfileController::class, 'reviews']);
 

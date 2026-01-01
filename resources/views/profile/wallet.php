@@ -55,7 +55,7 @@
                     <div class="relative z-10 flex flex-col justify-between h-full min-h-[180px]">
                         <div>
                              <p class="text-gray-400 text-sm font-medium uppercase tracking-wider">Số dư khả dụng</p>
-                             <h3 class="text-3xl font-bold mt-1 tracking-tight">0 <span class="text-lg text-gray-400 font-normal">VNĐ</span></h3>
+                             <h3 class="text-3xl font-bold mt-1 tracking-tight"><?= number_format($balance, 0, ',', '.') ?> <span class="text-lg text-gray-400 font-normal">VNĐ</span></h3>
                         </div>
                         
                         <div class="flex gap-3 mt-6">
@@ -78,11 +78,36 @@
                         <a href="#" class="text-sm text-blue-600 hover:underline">Xem tất cả</a>
                     </div>
                     
-                    <div class="p-8 text-center">
-                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-3">
-                             <i class="fa-solid fa-clock-rotate-left text-gray-400"></i>
+                    <div class="p-0">
+                        <?php if (empty($transactions)): ?>
+                        <div class="p-8 text-center">
+                            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-3">
+                                 <i class="fa-solid fa-clock-rotate-left text-gray-400"></i>
+                            </div>
+                            <p class="text-gray-500 text-sm">Chưa có giao dịch nào gần đây.</p>
                         </div>
-                        <p class="text-gray-500 text-sm">Chưa có giao dịch nào gần đây.</p>
+                        <?php else: ?>
+                            <ul class="divide-y divide-gray-100">
+                                <?php foreach ($transactions as $t): ?>
+                                    <li class="px-6 py-4 flex items-center justify-between hover:bg-gray-50">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-10 h-10 rounded-full flex items-center justify-center <?= $t['type'] == 'deposit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' ?>">
+                                                <i class="fa-solid <?= $t['type'] == 'deposit' ? 'fa-arrow-down' : 'fa-arrow-up' ?>"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-900">
+                                                    <?= $t['type'] == 'deposit' ? 'Nạp tiền vào ví' : ($t['type'] == 'withdraw' ? 'Rút tiền' : 'Thanh toán đơn hàng') ?>
+                                                </p>
+                                                <p class="text-xs text-gray-500"><?= date('d/m/Y H:i', strtotime($t['created_at'])) ?></p>
+                                            </div>
+                                        </div>
+                                        <span class="font-bold text-sm <?= $t['type'] == 'deposit' || $t['type'] == 'refund' ? 'text-green-600' : 'text-gray-900' ?>">
+                                            <?= $t['type'] == 'deposit' || $t['type'] == 'refund' ? '+' : '-' ?><?= number_format($t['amount'], 0, ',', '.') ?>đ
+                                        </span>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
