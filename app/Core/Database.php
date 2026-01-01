@@ -25,9 +25,35 @@ class Database
             ];
 
             $this->connection = new PDO($dsn, $config['username'], $config['password'], $options);
+            
+            // Tự động tạo bảng nếu chưa có (theo yêu cầu fix lỗi nhanh)
+            $this->ensureTablesExist();
 
         } catch (PDOException $ex) {
             die("Database Connection Failed: " . $ex->getMessage());
+        }
+    }
+
+    private function ensureTablesExist()
+    {
+        // Tạo bảng carts
+        $sql = "CREATE TABLE IF NOT EXISTS carts (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            product_id INT NOT NULL,
+            quantity INT NOT NULL DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            UNIQUE KEY unique_user_product (user_id, product_id),
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+
+        try {
+            $this->connection->exec($sql);
+        } catch (PDOException $e) {
+            // Bỏ qua nếu lỗi, tránh chết trang vì lỗi tạo bảng phụ
+            error_log("Error creating tables: " . $e->getMessage());
         }
     }
 

@@ -11,9 +11,18 @@ class ShopController extends BaseController
     {
         $userId = $_GET['id'] ?? null;
 
+        // If no ID provided, check if logged in -> My Shop
         if (!$userId) {
-            header('Location: /');
-            exit;
+            if (session_status() == PHP_SESSION_NONE) {
+                session_start();
+            }
+            if (isset($_SESSION['user']['id'])) {
+                $userId = $_SESSION['user']['id'];
+                // Optional: flag to show 'edit' controls in view
+            } else {
+                 header('Location: /login');
+                 exit;
+            }
         }
 
         $userModel = new User();
@@ -29,7 +38,24 @@ class ShopController extends BaseController
 
         $this->view('shop/index', [
             'seller' => $seller,
-            'products' => $products
+            'products' => $products,
+            'isOwner' => (isset($_SESSION['user']['id']) && $_SESSION['user']['id'] == $userId)
+        ]);
+    }
+
+    public function orders()
+    {
+         if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+        if (!isset($_SESSION['user'])) {
+            header('Location: /login');
+            exit;
+        }
+
+        // Mock orders/sales data
+        $this->view('shop/orders', [
+            'pageTitle' => 'Đơn bán hàng'
         ]);
     }
 }

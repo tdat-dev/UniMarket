@@ -71,7 +71,8 @@ class CheckoutController extends BaseController
                         // If 0, we simply don't add it to cartToProcess, effectively removing it from order
                     }
                 } elseif (isset($allCart[$id])) {
-                    $cartToProcess[$id] = $allCart[$id];
+                    $cartItem = $allCart[$id];
+                    $cartToProcess[$id] = is_array($cartItem) ? ($cartItem['quantity'] ?? 1) : $cartItem;
                 }
             }
         }
