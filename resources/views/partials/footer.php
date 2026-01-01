@@ -6,12 +6,12 @@
             <div>
                 <h3 class="font-bold text-sm text-gray-800 mb-4 uppercase tracking-wide">DỊCH VỤ KHÁCH HÀNG</h3>
                 <ul class="space-y-3 text-sm text-gray-600">
-                    <li><a href="#" class="hover:text-gray-800 transition-colors">Trung Tâm Trợ Giúp Uni</a></li>
+                    <li><a href="#" class="hover:text-gray-800 transition-colors">Trung Tâm Trợ Giúp Zoldify</a></li>
                     <li><a href="#" class="hover:text-gray-800 transition-colors">Hướng Dẫn Mua Hàng/Đặt Hàng</a></li>
                     <li><a href="#" class="hover:text-gray-800 transition-colors">Hướng Dẫn Bán Hàng</a></li>
                     <li><a href="#" class="hover:text-gray-800 transition-colors">Đơn Hàng</a></li>
                     <li><a href="#" class="hover:text-gray-800 transition-colors">Trả Hàng/Hoàn Tiền</a></li>
-                    <li><a href="#" class="hover:text-gray-800 transition-colors">Liên Hệ Uni</a></li>
+                    <li><a href="#" class="hover:text-gray-800 transition-colors">Liên Hệ Zoldify</a></li>
                     <li><a href="#" class="hover:text-gray-800 transition-colors">Chính Sách Bảo Hành</a></li>
                 </ul>
             </div>
@@ -31,7 +31,7 @@
 
             <!-- Monitor -->
             <div>
-                <h3 class="font-bold text-sm text-gray-800 mb-4 uppercase tracking-wide">THEO DÕI UNIZIFY</h3>
+                <h3 class="font-bold text-sm text-gray-800 mb-4 uppercase tracking-wide">THEO DÕI ZOLDIFY</h3>
                 <ul class="space-y-3 text-sm text-gray-600">
                     <li class="flex items-center gap-3">
                         <i class="fa-brands fa-facebook text-base text-gray-700"></i>
@@ -53,7 +53,7 @@
     <!-- Copyright -->
     <div class="container mx-auto px-4 mt-10 pt-6 max-w-5xl">
         <div class="text-center text-sm text-gray-500">
-            <p>© 2025 Unizify. Tất cả các quyền được bảo lưu.</p>
+            <p>© 2025 Zoldify. Tất cả các quyền được bảo lưu.</p>
             <p class="mt-1">Quốc gia & Khu vực: Việt Nam</p>
         </div>
     </div>
