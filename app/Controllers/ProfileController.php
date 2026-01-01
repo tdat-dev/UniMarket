@@ -97,6 +97,43 @@ class ProfileController extends BaseController
         ]);
     }
 
+    public function processWallet()
+    {
+        if (session_status() == PHP_SESSION_NONE) session_start();
+        if (!isset($_SESSION['user'])) { header('Location: /login'); exit; }
+
+        $userId = $_SESSION['user']['id'];
+        $type = $_POST['type'] ?? 'deposit'; // deposit or withdraw
+        $amount = (float) ($_POST['amount'] ?? 0);
+
+        if ($amount <= 0) {
+            // handle error
+            header('Location: /wallet?error=invalid_amount');
+            exit;
+        }
+
+        $transModel = new \App\Models\Transaction();
+        if ($type == 'withdraw') {
+             $userModel = new \App\Models\User();
+             $user = $userModel->find($userId);
+             if (($user['balance'] ?? 0) < $amount) {
+                 header('Location: /wallet?error=insufficient_balance');
+                 exit;
+             }
+        }
+
+        $transModel->create([
+            'user_id' => $userId,
+            'type' => $type,
+            'amount' => $amount,
+            'description' => $type == 'deposit' ? 'Nạp tiền vào ví' : 'Rút tiền về ngân hàng',
+            'status' => 'completed' // For demo purposes, immediate success
+        ]);
+
+        header('Location: /wallet?success=1');
+        exit;
+    }
+
     public function reviews()
     {
         if (session_status() == PHP_SESSION_NONE) {
@@ -110,10 +147,39 @@ class ProfileController extends BaseController
         $userId = $_SESSION['user']['id'];
         $reviewModel = new \App\Models\Review();
         $reviews = $reviewModel->getByUserId($userId);
+        
+        // Get unreviewed items
+        $orderItemModel = new \App\Models\OrderItem();
+        $unreviewed = $orderItemModel->getUnreviewedItems($userId);
 
         $this->view('profile/reviews', [
             'pageTitle' => 'Đánh giá của tôi',
-            'reviews' => $reviews
+            'reviews' => $reviews,
+            'unreviewed' => $unreviewed
         ]);
+    }
+
+    public function storeReview()
+    {
+        if (session_status() == PHP_SESSION_NONE) session_start();
+        if (!isset($_SESSION['user'])) { header('Location: /login'); exit; }
+        
+        $userId = $_SESSION['user']['id'];
+        $productId = $_POST['product_id'] ?? null;
+        $rating = $_POST['rating'] ?? 5;
+        $comment = $_POST['comment'] ?? '';
+
+        if ($productId) {
+            $reviewModel = new \App\Models\Review();
+            $reviewModel->create([
+                'user_id' => $userId,
+                'product_id' => $productId,
+                'rating' => $rating,
+                'comment' => $comment
+            ]);
+        }
+        
+        header('Location: /reviews?success=1');
+        exit;
     }
 }

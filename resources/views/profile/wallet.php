@@ -47,7 +47,7 @@
 
         <!-- Content Area -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Balance Card -->
+        <!-- Balance Card -->
             <div class="md:col-span-1">
                 <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-lg p-6 text-white h-full relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
@@ -59,10 +59,10 @@
                         </div>
                         
                         <div class="flex gap-3 mt-6">
-                             <button class="flex-1 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 py-2 rounded-lg text-sm font-medium transition cursor-pointer">
+                             <button onclick="document.getElementById('depositModal').classList.remove('hidden')" class="flex-1 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 py-2 rounded-lg text-sm font-medium transition cursor-pointer">
                                  Nạp tiền
                              </button>
-                             <button class="flex-1 bg-transparent hover:bg-white/5 border border-white/20 py-2 rounded-lg text-sm font-medium transition cursor-pointer">
+                             <button onclick="alert('Tính năng rút tiền đang bảo trì.')" class="flex-1 bg-transparent hover:bg-white/5 border border-white/20 py-2 rounded-lg text-sm font-medium transition cursor-pointer">
                                  Rút tiền
                              </button>
                         </div>
@@ -96,7 +96,7 @@
                                             </div>
                                             <div>
                                                 <p class="text-sm font-medium text-gray-900">
-                                                    <?= $t['type'] == 'deposit' ? 'Nạp tiền vào ví' : ($t['type'] == 'withdraw' ? 'Rút tiền' : 'Thanh toán đơn hàng') ?>
+                                                    <?= $t['type'] == 'deposit' ? 'Nạp tiền vào ví' : ($t['type'] == 'withdraw' ? 'Rút tiền' : 'Giao dịch khác') ?>
                                                 </p>
                                                 <p class="text-xs text-gray-500"><?= date('d/m/Y H:i', strtotime($t['created_at'])) ?></p>
                                             </div>
@@ -114,5 +114,29 @@
         </div>
     </div>
 </main>
+
+<!-- Deposit Modal -->
+<div id="depositModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Nạp tiền vào ví</h3>
+            <form action="/wallet/process" method="POST" class="mt-4">
+                <input type="hidden" name="type" value="deposit">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2 text-left" for="amount">Số tiền (VNĐ)</label>
+                    <input type="number" name="amount" min="10000" step="10000" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                </div>
+                <div class="flex items-center justify-between">
+                    <button type="button" onclick="document.getElementById('depositModal').classList.add('hidden')" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        Hủy
+                    </button>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        Xác nhận
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <?php include __DIR__ . '/../partials/footer.php'; ?>

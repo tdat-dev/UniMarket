@@ -48,54 +48,117 @@ if (!isset($_SESSION['user'])) {
         </div>
 
         <!-- Content Area -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-             <!-- Tabs -->
+        <!-- Tabs -->
              <div class="flex border-b border-gray-100">
-                <button class="flex-1 py-4 text-center text-orange-600 font-medium border-b-2 border-orange-600 bg-orange-50/50">
-                    Chưa đánh giá (0)
+                <button onclick="switchTab('unreviewed')" id="tab-unreviewed" class="flex-1 py-4 text-center font-medium border-b-2 bg-orange-50/50 text-orange-600 border-orange-600">
+                    Chưa đánh giá (<?= count($unreviewed ?? []) ?>)
                 </button>
-                 <button class="flex-1 py-4 text-center text-gray-500 font-medium hover:text-orange-600 hover:bg-gray-50 transition-colors">
-                    Đã đánh giá (0)
+                 <button onclick="switchTab('reviewed')" id="tab-reviewed" class="flex-1 py-4 text-center font-medium text-gray-500 hover:text-orange-600 hover:bg-gray-50 transition-colors border-b-2 border-transparent">
+                    Đã đánh giá (<?= count($reviews ?? []) ?>)
                 </button>
             </div>
 
             <div class="p-0">
-                <?php if (empty($reviews)): ?>
-                    <div class="p-12 text-center">
-                        <div class="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fa-regular fa-star text-4xl text-orange-300"></i>
+                <!-- Unreviewed Content -->
+                <div id="content-unreviewed" class="block">
+                     <?php if (empty($unreviewed)): ?>
+                        <div class="p-12 text-center text-gray-500">
+                            <p>Không có sản phẩm nào cần đánh giá.</p>
                         </div>
-                        <h3 class="text-lg font-medium text-gray-900">Chưa có đánh giá nào</h3>
-                        <p class="text-gray-500 mt-1 mb-6">Hãy mua sắm và chia sẻ trải nghiệm của bạn với mọi người.</p>
-                        <a href="/products" class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
-                            Tiếp tục mua sắm
-                        </a>
-                    </div>
-                <?php else: ?>
-                    <ul class="divide-y divide-gray-100">
-                        <?php foreach ($reviews as $review): ?>
-                            <li class="p-6 hover:bg-gray-50 flex gap-4">
-                                <img src="/uploads/<?= htmlspecialchars($review['product_image'] ?? 'default.png') ?>" class="w-16 h-16 object-cover rounded-md border border-gray-200">
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-start">
-                                        <div>
-                                            <h4 class="font-bold text-gray-900"><?= htmlspecialchars($review['product_name']) ?></h4>
-                                            <div class="flex items-center mt-1 mb-2">
-                                                <?php for($i=1; $i<=5; $i++): ?>
-                                                    <i class="fa-solid fa-star text-xs <?= $i <= $review['rating'] ? 'text-yellow-400' : 'text-gray-200' ?>"></i>
-                                                <?php endfor; ?>
-                                            </div>
+                     <?php else: ?>
+                        <ul class="divide-y divide-gray-100">
+                            <?php foreach ($unreviewed as $item): ?>
+                                <li class="p-6 hover:bg-gray-50 transition">
+                                    <div class="flex gap-4">
+                                        <img src="/uploads/<?= htmlspecialchars($item['product_image'] ?? 'default.png') ?>" class="w-16 h-16 object-cover rounded-md border border-gray-200">
+                                        <div class="flex-1">
+                                            <h4 class="font-bold text-gray-900"><?= htmlspecialchars($item['product_name']) ?></h4>
+                                            <p class="text-sm text-gray-500 mb-3">Ngày mua: <?= date('d/m/Y', strtotime($item['order_date'])) ?></p>
+                                            
+                                            <!-- Review Form -->
+                                            <form action="/reviews/store" method="POST" class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                                                <input type="hidden" name="product_id" value="<?= $item['product_id'] ?>">
+                                                <div class="mb-2">
+                                                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Đánh giá sao</label>
+                                                    <select name="rating" class="border rounded px-2 py-1 text-sm">
+                                                        <option value="5">5 Sao - Tuyệt vời</option>
+                                                        <option value="4">4 Sao - Tốt</option>
+                                                        <option value="3">3 Sao - Bình thường</option>
+                                                        <option value="2">2 Sao - Tệ</option>
+                                                        <option value="1">1 Sao - Rất tệ</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <textarea name="comment" rows="2" class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:border-orange-500" placeholder="Chia sẻ trải nghiệm của bạn..."></textarea>
+                                                </div>
+                                                <button type="submit" class="bg-orange-600 text-white text-sm px-4 py-1.5 rounded hover:bg-orange-700">Gửi đánh giá</button>
+                                            </form>
                                         </div>
-                                        <span class="text-xs text-gray-400"><?= date('d/m/Y', strtotime($review['created_at'])) ?></span>
                                     </div>
-                                    <p class="text-sm text-gray-600"><?= htmlspecialchars($review['comment']) ?></p>
-                                </div>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
-                <?php endif; ?>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                     <?php endif; ?>
+                </div>
+
+                <!-- Reviewed Content -->
+                <div id="content-reviewed" class="hidden">
+                    <?php if (empty($reviews)): ?>
+                        <div class="p-12 text-center">
+                            <p class="text-gray-500 mt-1 mb-6">Bạn chưa có đánh giá nào.</p>
+                        </div>
+                    <?php else: ?>
+                        <ul class="divide-y divide-gray-100">
+                            <?php foreach ($reviews as $review): ?>
+                                <li class="p-6 hover:bg-gray-50 flex gap-4">
+                                    <img src="/uploads/<?= htmlspecialchars($review['product_image'] ?? 'default.png') ?>" class="w-16 h-16 object-cover rounded-md border border-gray-200">
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <h4 class="font-bold text-gray-900"><?= htmlspecialchars($review['product_name']) ?></h4>
+                                                <div class="flex items-center mt-1 mb-2">
+                                                    <?php for($i=1; $i<=5; $i++): ?>
+                                                        <i class="fa-solid fa-star text-xs <?= $i <= $review['rating'] ? 'text-yellow-400' : 'text-gray-200' ?>"></i>
+                                                    <?php endfor; ?>
+                                                </div>
+                                            </div>
+                                            <span class="text-xs text-gray-400"><?= date('d/m/Y', strtotime($review['created_at'])) ?></span>
+                                        </div>
+                                        <p class="text-sm text-gray-600"><?= htmlspecialchars($review['comment']) ?></p>
+                                    </div>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
+    </div>
+</main>
+
+<script>
+function switchTab(tab) {
+    if(tab === 'unreviewed') {
+        document.getElementById('content-unreviewed').classList.remove('hidden');
+        document.getElementById('content-reviewed').classList.add('hidden');
+        
+        document.getElementById('tab-unreviewed').classList.add('text-orange-600', 'border-orange-600', 'bg-orange-50/50');
+        document.getElementById('tab-unreviewed').classList.remove('text-gray-500', 'border-transparent');
+        
+        document.getElementById('tab-reviewed').classList.remove('text-orange-600', 'border-orange-600', 'bg-orange-50/50');
+        document.getElementById('tab-reviewed').classList.add('text-gray-500', 'border-transparent');
+    } else {
+        document.getElementById('content-unreviewed').classList.add('hidden');
+        document.getElementById('content-reviewed').classList.remove('hidden');
+        
+        document.getElementById('tab-reviewed').classList.add('text-orange-600', 'border-orange-600', 'bg-orange-50/50');
+        document.getElementById('tab-reviewed').classList.remove('text-gray-500', 'border-transparent');
+        
+        document.getElementById('tab-unreviewed').classList.remove('text-orange-600', 'border-orange-600', 'bg-orange-50/50');
+        document.getElementById('tab-unreviewed').classList.add('text-gray-500', 'border-transparent');
+    }
+}
+</script>
     </div>
 </main>
 
