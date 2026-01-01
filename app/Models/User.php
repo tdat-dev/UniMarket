@@ -43,4 +43,21 @@ class User extends BaseModel
 		$sql = "SELECT id, full_name, email, phone_number, address, created_at FROM users WHERE id = :id";
 		return $this->db->fetchOne($sql, ['id' => $id]);
 	}
+	public function update($id, $data)
+	{
+		$fields = [];
+		$params = ['id' => $id];
+
+		foreach ($data as $key => $value) {
+			$fields[] = "$key = :$key";
+			$params[$key] = $value;
+		}
+
+		if (empty($fields)) {
+			return true;
+		}
+
+		$sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = :id";
+		return $this->db->execute($sql, $params);
+	}
 }

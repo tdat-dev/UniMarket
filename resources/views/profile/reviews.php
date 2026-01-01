@@ -59,15 +59,41 @@ if (!isset($_SESSION['user'])) {
                 </button>
             </div>
 
-            <div class="p-12 text-center">
-                <div class="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fa-regular fa-star text-4xl text-orange-300"></i>
-                </div>
-                <h3 class="text-lg font-medium text-gray-900">Chưa có đánh giá nào</h3>
-                <p class="text-gray-500 mt-1 mb-6">Hãy mua sắm và chia sẻ trải nghiệm của bạn với mọi người.</p>
-                <a href="/" class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
-                    Tiếp tục mua sắm
-                </a>
+            <div class="p-0">
+                <?php if (empty($reviews)): ?>
+                    <div class="p-12 text-center">
+                        <div class="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fa-regular fa-star text-4xl text-orange-300"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900">Chưa có đánh giá nào</h3>
+                        <p class="text-gray-500 mt-1 mb-6">Hãy mua sắm và chia sẻ trải nghiệm của bạn với mọi người.</p>
+                        <a href="/products" class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                            Tiếp tục mua sắm
+                        </a>
+                    </div>
+                <?php else: ?>
+                    <ul class="divide-y divide-gray-100">
+                        <?php foreach ($reviews as $review): ?>
+                            <li class="p-6 hover:bg-gray-50 flex gap-4">
+                                <img src="/uploads/<?= htmlspecialchars($review['product_image'] ?? 'default.png') ?>" class="w-16 h-16 object-cover rounded-md border border-gray-200">
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="font-bold text-gray-900"><?= htmlspecialchars($review['product_name']) ?></h4>
+                                            <div class="flex items-center mt-1 mb-2">
+                                                <?php for($i=1; $i<=5; $i++): ?>
+                                                    <i class="fa-solid fa-star text-xs <?= $i <= $review['rating'] ? 'text-yellow-400' : 'text-gray-200' ?>"></i>
+                                                <?php endfor; ?>
+                                            </div>
+                                        </div>
+                                        <span class="text-xs text-gray-400"><?= date('d/m/Y', strtotime($review['created_at'])) ?></span>
+                                    </div>
+                                    <p class="text-sm text-gray-600"><?= htmlspecialchars($review['comment']) ?></p>
+                                </div>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
             </div>
         </div>
     </div>
