@@ -41,14 +41,14 @@ class User extends BaseModel
 	// Lấy thông tin user theo ID
 	public function find($id)
 	{
-		$sql = "SELECT id, full_name, email, phone_number, address, role, is_locked, created_at FROM users WHERE id = :id";
+		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at FROM users WHERE id = :id";
 		return $this->db->fetchOne($sql, ['id' => $id]);
 	}
 
 	// Lấy thông tin user theo email (cho Google OAuth)
 	public function findByEmail($email)
 	{
-		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at FROM users WHERE email = :email";
+		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at, balance, avatar FROM users WHERE email = :email";
 		return $this->db->fetchOne($sql, ['email' => $email]);
 	}
 
@@ -91,77 +91,4 @@ class User extends BaseModel
             WHERE id = :id";
 		return $this->db->execute($sql, ['id' => $userId]);
 	}
-
-	// Đếm tổng số users
-	public function count(): int
-	{
-		$sql = "SELECT COUNT(*) as total FROM users";
-		$result = $this->db->fetchOne($sql);
-		return $result['total'] ?? 0;
-	}
-
-	// ===================== ADMIN METHODS =====================
-
-	/**
-	 * Lấy danh sách tất cả users (có phân trang) - SẮP XẾP TĂNG DẦN
-	 */
-	public function getAll($limit = 20, $offset = 0): array
-	{
-		$sql = "SELECT id, full_name, email, phone_number, role, email_verified, is_locked, created_at 
-            FROM users 
-            ORDER BY id ASC 
-            LIMIT :limit OFFSET :offset";
-		return $this->db->fetchAll($sql, ['limit' => $limit, 'offset' => $offset]);
-	}
-
-	/**
-	 * Cập nhật thông tin user
-	 */
-	public function update(int $id, array $data): bool
-	{
-		$sql = "UPDATE users SET 
-            full_name = :full_name, 
-            email = :email, 
-            phone_number = :phone_number, 
-            role = :role,
-            email_verified = :email_verified
-            WHERE id = :id";
-		return $this->db->execute($sql, [
-			'id' => $id,
-			'full_name' => $data['full_name'],
-			'email' => $data['email'],
-			'phone_number' => $data['phone_number'] ?? null,
-			'role' => $data['role'] ?? 'buyer',
-			'email_verified' => $data['email_verified'] ?? 0
-		]);
-	}
-
-	/**
-	 * Xóa user
-	 */
-	public function delete(int $id): bool
-	{
-		$sql = "DELETE FROM users WHERE id = :id";
-		return $this->db->execute($sql, ['id' => $id]);
-	}
-
-	/**
-	 * Toggle trạng thái active/inactive (nếu có cột status)
-	 * Hoặc toggle email_verified
-	 */
-	public function toggleVerified(int $id): bool
-	{
-		$sql = "UPDATE users SET email_verified = NOT email_verified WHERE id = :id";
-		return $this->db->execute($sql, ['id' => $id]);
-	}
-
-	/**
-	 * Khóa/Mở khóa tài khoản user
-	 */
-	public function toggleLock(int $id): bool
-	{
-		$sql = "UPDATE users SET is_locked = IF(is_locked = 1, 0, 1) WHERE id = :id";
-		return $this->db->execute($sql, ['id' => $id]);
-	}
-
 }

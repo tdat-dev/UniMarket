@@ -12,7 +12,7 @@ class Cart extends BaseModel
     public function getByUserId($userId)
     {
         $sql = "
-            SELECT c.*, p.name, p.price, p.image, p.quantity as stock
+            SELECT c.*, p.id as id, p.name, p.price, p.image, p.quantity as stock
             FROM {$this->table} c
             JOIN products p ON c.product_id = p.id
             WHERE c.user_id = ?
