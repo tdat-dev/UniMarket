@@ -48,7 +48,7 @@ class User extends BaseModel
 	// Lấy thông tin user theo email (cho Google OAuth)
 	public function findByEmail($email)
 	{
-		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at, balance, avatar FROM users WHERE email = :email";
+		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at FROM users WHERE email = :email";
 		return $this->db->fetchOne($sql, ['email' => $email]);
 	}
 
@@ -90,5 +90,13 @@ class User extends BaseModel
             email_verification_expires_at = NULL 
             WHERE id = :id";
 		return $this->db->execute($sql, ['id' => $userId]);
+	}
+
+	// Đếm tổng số users
+	public function count(): int
+	{
+		$sql = "SELECT COUNT(*) as total FROM users";
+		$result = $this->db->fetchOne($sql);
+		return $result['total'] ?? 0;
 	}
 }
