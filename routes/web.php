@@ -19,3 +19,8 @@ $router->get('product-detail', [ProductController::class, 'show']);
 // Route search
 $router->get('search', [SearchController::class, 'index']);
 $router->get('api/search-suggest', [SearchController::class, 'suggest']);
+
+//Route create product
+$router->get('/products', [ProductController::class, 'index']);
+$router->get('/products/create', [ProductController::class, 'create']);
+$router->post('/products/store', [ProductController::class, 'store']);
