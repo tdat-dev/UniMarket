@@ -7,6 +7,20 @@ use App\Models\Product;
 
 class CheckoutController extends BaseController
 {
+    private function getCartItems($userId) {
+        if ($userId) {
+            $cartModel = new \App\Models\Cart();
+            $dbItems = $cartModel->getByUserId($userId);
+            $cart = [];
+            foreach ($dbItems as $item) {
+                $item['cart_quantity'] = $item['quantity']; // Normalize
+                $cart[$item['product_id']] = $item; // Key by Product ID
+            }
+            return $cart;
+        }
+        return $_SESSION['cart'] ?? [];
+    }
+
     public function process()
     {
         VerificationMiddleware::requireVerified();
@@ -14,8 +28,9 @@ class CheckoutController extends BaseController
             session_start();
         }
 
-        $allCart = $_SESSION['cart'] ?? [];
-        $selectedIds = $_POST['selected_products'] ?? null; // Array of IDs
+        $userId = $_SESSION['user']['id'] ?? null;
+        $allCart = $this->getCartItems($userId);
+        
         $selectedIds = $_POST['selected_products'] ?? [];
 
         // If no products selected, redirect back to cart
@@ -28,12 +43,24 @@ class CheckoutController extends BaseController
         $products = [];
 
         // Prepare products for review
+        // Prepare products for review
         foreach ($selectedIds as $id) {
+            $qty = 0;
+
+            // 1. Check in Database/Session Cart
             if (isset($allCart[$id])) {
+                $cartItem = $allCart[$id];
+                $qty = is_array($cartItem) ? ($cartItem['quantity'] ?? $cartItem['cart_quantity'] ?? 1) : $cartItem;
+            } 
+            // 2. Check in POST data (Buy Now flow)
+            elseif (isset($_POST['quantities'][$id])) {
+                $qty = (int) $_POST['quantities'][$id];
+            }
+
+            // If we have a valid quantity, fetch product details
+            if ($qty > 0) {
                 $p = $productModel->find($id);
                 if ($p) {
-                    // Handle both array format ['quantity' => N] and direct number format
-                    $qty = is_array($allCart[$id]) ? ($allCart[$id]['quantity'] ?? 1) : $allCart[$id];
                     $p['cart_quantity'] = (int) $qty;
                     $products[] = $p;
                 }
@@ -47,7 +74,7 @@ class CheckoutController extends BaseController
         ]);
     }
 
-    // confirm method: Handles POST from Checkout View -> Deducts Stock
+    // confirm method: Handles POST from Checkout View -> Creates Order -> Deducts Stock
     public function confirm()
     {
         VerificationMiddleware::requireVerified();
@@ -55,59 +82,106 @@ class CheckoutController extends BaseController
             session_start();
         }
 
-        $allCart = $_SESSION['cart'] ?? [];
+        $userId = $_SESSION['user']['id'] ?? null;
+        $allCart = $this->getCartItems($userId);
         $selectedIds = $_POST['selected_products'] ?? null;
 
         $cartToProcess = [];
         if (!empty($selectedIds) && is_array($selectedIds)) {
             $postQuantities = $_POST['quantities'] ?? [];
             foreach ($selectedIds as $id) {
-                // Prioritize quantity from POST, then Session
                 if (isset($postQuantities[$id])) {
                     $qty = (int) $postQuantities[$id];
-                    if ($qty >= 0) { // Allow 0 to potentially skip item
-                        if ($qty > 0)
-                            $cartToProcess[$id] = $qty;
-                        // If 0, we simply don't add it to cartToProcess, effectively removing it from order
-                    }
+                    if ($qty > 0) $cartToProcess[$id] = $qty;
                 } elseif (isset($allCart[$id])) {
                     $cartItem = $allCart[$id];
-                    $cartToProcess[$id] = is_array($cartItem) ? ($cartItem['quantity'] ?? 1) : $cartItem;
+                    $cartToProcess[$id] = is_array($cartItem) ? ($cartItem['quantity'] ?? $cartItem['cart_quantity'] ?? 1) : $cartItem;
                 }
             }
         }
-        // Fallback or validation
+        
         if (empty($cartToProcess)) {
             header('Location: /cart');
             exit;
         }
 
         $productModel = new Product();
+        $productsToOrder = [];
         $errors = [];
 
-        // 1. Validate Stock
+        // 1. Validate Stock & Load Product Details
         foreach ($cartToProcess as $id => $qty) {
             $product = $productModel->find($id);
             if (!$product || $product['quantity'] < $qty) {
-                // Simple error handling
                 $errors[] = "Sản phẩm " . ($product['name'] ?? 'Unknown') . " không đủ hàng.";
+            } else {
+                $productsToOrder[] = [
+                    'product' => $product,
+                    'quantity' => $qty
+                ];
             }
         }
 
         if (!empty($errors)) {
+            // In a real app, flashing session error is better.
             echo implode('<br>', $errors);
             echo '<br><a href="/cart">Quay lại giỏ hàng</a>';
             exit;
         }
 
-        // 2. Process Order (Decrement Stock)
-        foreach ($cartToProcess as $id => $qty) {
-            $productModel->decreaseQuantity($id, $qty);
+        // 2. Group by Seller
+        $ordersBySeller = [];
+        foreach ($productsToOrder as $item) {
+            $sellerId = $item['product']['user_id'];
+            if (!isset($ordersBySeller[$sellerId])) {
+                $ordersBySeller[$sellerId] = [
+                    'seller_id' => $sellerId,
+                    'total' => 0,
+                    'items' => []
+                ];
+            }
+            $itemTotal = $item['product']['price'] * $item['quantity'];
+            $ordersBySeller[$sellerId]['total'] += $itemTotal;
+            $ordersBySeller[$sellerId]['items'][] = $item;
         }
 
-        // 3. Clear Processed Items from Cart
-        foreach ($cartToProcess as $id => $qty) {
-            unset($_SESSION['cart'][$id]);
+        // 3. Create Orders in DB
+        $orderModel = new \App\Models\Order();
+        $orderItemModel = new \App\Models\OrderItem();
+        $cartModel = new \App\Models\Cart();
+        $buyerId = $_SESSION['user']['id'];
+
+        foreach ($ordersBySeller as $sellerId => $orderData) {
+            // Create Order
+            $orderId = $orderModel->create([
+                'buyer_id' => $buyerId,
+                'seller_id' => $sellerId,
+                'total_amount' => $orderData['total'],
+                'status' => 'pending' 
+            ]);
+
+            // Create Order Items & Update Stock
+            foreach ($orderData['items'] as $item) {
+                $product = $item['product'];
+                $qty = $item['quantity'];
+
+                $orderItemModel->create([
+                    'order_id' => $orderId,
+                    'product_id' => $product['id'],
+                    'quantity' => $qty,
+                    'price' => $product['price']
+                ]);
+
+                // Decrease Stock
+                $productModel->decreaseQuantity($product['id'], $qty);
+                
+                // Remove from Cart (DB or Session)
+                if ($userId) {
+                    $cartModel->removeItem($userId, $product['id']);
+                } else {
+                    unset($_SESSION['cart'][$product['id']]);
+                }
+            }
         }
 
         // 4. Success View

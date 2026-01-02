@@ -9,7 +9,7 @@ class User extends BaseModel
 	// Đăng ký tài khoản mới
 	public function register($data)
 	{
-		$sql = "INSERT INTO users (full_name, email, password, phone_number, address) VALUES (:full_name, :email, :password, :phone_number, :address)";
+		$sql = "INSERT INTO users (full_name, email, password, phone_number, address, email_verified) VALUES (:full_name, :email, :password, :phone_number, :address, :email_verified)";
 		return $this->db->insert($sql, [
 			'full_name' => $data['full_name'],
 			'email' => $data['email'],
@@ -41,14 +41,14 @@ class User extends BaseModel
 	// Lấy thông tin user theo ID
 	public function find($id)
 	{
-		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at FROM users WHERE id = :id";
+		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at, balance, avatar FROM users WHERE id = :id";
 		return $this->db->fetchOne($sql, ['id' => $id]);
 	}
 
 	// Lấy thông tin user theo email (cho Google OAuth)
 	public function findByEmail($email)
 	{
-		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at FROM users WHERE email = :email";
+		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at, balance, avatar FROM users WHERE email = :email";
 		return $this->db->fetchOne($sql, ['email' => $email]);
 	}
 
@@ -91,4 +91,23 @@ class User extends BaseModel
             WHERE id = :id";
 		return $this->db->execute($sql, ['id' => $userId]);
 	}
+
+    // Cập nhật thông tin user
+    public function update($id, $data)
+    {
+        $fields = [];
+        foreach ($data as $key => $value) {
+            $fields[] = "$key = :$key";
+        }
+        $sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = :id";
+        $data['id'] = $id;
+        return $this->db->execute($sql, $data);
+    }
+
+    // Cập nhật số dư
+    public function updateBalance($id, $amount)
+    {
+        $sql = "UPDATE users SET balance = balance + :amount WHERE id = :id";
+        return $this->db->execute($sql, ['amount' => $amount, 'id' => $id]);
+    }
 }
