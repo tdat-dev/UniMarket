@@ -1,7 +1,7 @@
-<div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
-    <div class="px-6 py-6 md:flex md:items-center md:justify-between">
-        <div class="flex items-center">
-            <div class="relative flex-shrink-0">
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+    <div class="px-6 pb-6 pt-2 md:flex md:items-end md:justify-between">
+        <div class="flex items-end">
+            <div class="relative flex-shrink-0 -mt-16">
                 <?php 
                     $avatarUrl = !empty($_SESSION['user']['avatar']) 
                         ? '/uploads/avatars/' . $_SESSION['user']['avatar']
@@ -18,7 +18,7 @@
                     <i class="fa-solid fa-camera text-xs"></i>
                 </button>
             </div>
-            <div style="margin-left: 50px;">
+            <div class="mb-2" style="margin-left: 30px;">
                 <h1 class="text-2xl font-bold text-gray-900"><?= htmlspecialchars($_SESSION['user']['full_name']) ?></h1>
                 <p class="text-sm text-gray-500">Thành viên từ <?= date('Y', strtotime($_SESSION['user']['created_at'] ?? 'now')) ?></p>
             </div>

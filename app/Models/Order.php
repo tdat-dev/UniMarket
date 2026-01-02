@@ -19,6 +19,11 @@ class Order extends BaseModel
         ]);
     }
 
+    public function find($id)
+    {
+        return $this->db->fetchOne("SELECT * FROM {$this->table} WHERE id = :id", ['id' => $id]);
+    }
+
     public function getByBuyerId($buyerId)
     {
         $sql = "SELECT * FROM {$this->table} WHERE buyer_id = :buyer_id ORDER BY created_at DESC";
@@ -35,9 +40,14 @@ class Order extends BaseModel
         return $this->db->fetchAll($sql, ['seller_id' => $sellerId]);
     }
     
-    public function updateStatus($orderId, $status)
+    public function updateStatus($orderId, $status, $reason = null)
     {
-        $sql = "UPDATE {$this->table} SET status = :status WHERE id = :id";
-        return $this->db->execute($sql, ['status' => $status, 'id' => $orderId]);
+        if ($reason) {
+            $sql = "UPDATE {$this->table} SET status = :status, cancel_reason = :reason WHERE id = :id";
+            return $this->db->execute($sql, ['status' => $status, 'reason' => $reason, 'id' => $orderId]);
+        } else {
+            $sql = "UPDATE {$this->table} SET status = :status WHERE id = :id";
+            return $this->db->execute($sql, ['status' => $status, 'id' => $orderId]);
+        }
     }
 }
