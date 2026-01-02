@@ -77,7 +77,7 @@ class CheckoutController extends BaseController
             'selected_ids' => $selectedIds,
             'user' => $user
         ]);
-        ]);
+
     }
 
     // confirm method: Handles POST from Checkout View -> Creates Order -> Deducts Stock
