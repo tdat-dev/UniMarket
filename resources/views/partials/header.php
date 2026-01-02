@@ -47,6 +47,10 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                                     <i class="fa-regular fa-star w-5 text-center"></i>
                                     Đánh giá của tôi
                                 </a>
+                                <a href="/profile/orders" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
+                                    <i class="fa-solid fa-bag-shopping w-5 text-center"></i>
+                                    Đơn mua
+                                </a>
                             </div>
 
                             <!-- Selling Section -->

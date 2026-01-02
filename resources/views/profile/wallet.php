@@ -8,54 +8,21 @@
 
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16">
         <!-- User Info Card (Simplified for sub-pages) -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
-            <div class="px-6 py-6 md:flex md:items-center md:justify-between">
-                <div class="flex items-center">
-                    <div class="relative flex-shrink-0">
-                        <img class="h-24 w-24 rounded-full ring-4 ring-white bg-white object-cover" src="https://ui-avatars.com/api/?name=<?= urlencode($_SESSION['user']['full_name']) ?>&background=random&size=128" alt="">
-                    </div>
-                    <div class="ml-5">
-                        <h1 class="text-2xl font-bold text-gray-900"><?= htmlspecialchars($_SESSION['user']['full_name']) ?></h1>
-                         <p class="text-sm text-gray-500">Ví của tôi</p>
-                    </div>
-                </div>
-                <div class="mt-4 md:mt-0">
-                     <button class="bg-emerald-600 px-4 py-2 rounded-md text-white font-medium text-sm hover:bg-emerald-700 transition shadow-sm">
-                         <i class="fa-solid fa-plus mr-1"></i> Nạp tiền ngay
-                     </button>
-                </div>
-            </div>
+        <!-- User Info Card -->
+        <?php $activeTab = 'wallet'; include __DIR__ . '/../partials/profile_card.php'; ?>
 
-            <!-- Navigation Tabs -->
-            <div class="bg-gray-50 px-6 border-t border-gray-200">
-                <nav class="-mb-px flex gap-8" aria-label="Tabs">
-                    <a href="/profile" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
-                        <i class="fa-regular fa-id-card"></i> Thông tin
-                    </a>
-                    <a href="/wallet" class="border-emerald-500 text-emerald-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
-                         <i class="fa-solid fa-wallet"></i> Ví & Giao dịch
-                    </a>
-                    <a href="/reviews" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
-                         <i class="fa-regular fa-star"></i> Đánh giá
-                    </a>
-                    <a href="/shop/orders" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
-                         <i class="fa-solid fa-box"></i> Quản lý đơn hàng
-                    </a>
-                </nav>
-            </div>
-        </div>
 
         <!-- Content Area -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Balance Card -->
             <div class="md:col-span-1">
-                <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-lg p-6 text-white h-full relative overflow-hidden">
+                <div class="rounded-xl shadow-lg p-6 text-white h-full relative overflow-hidden" style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%);">
                     <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
                     
                     <div class="relative z-10 flex flex-col justify-between h-full min-h-[180px]">
                         <div>
-                             <p class="text-gray-400 text-sm font-medium uppercase tracking-wider">Số dư khả dụng</p>
-                             <h3 class="text-3xl font-bold mt-1 tracking-tight"><?= number_format($balance, 0, ',', '.') ?> <span class="text-lg text-gray-400 font-normal">VNĐ</span></h3>
+                             <p class="text-gray-400 text-sm font-medium uppercase tracking-wider" style="color: #9ca3af;">Số dư khả dụng</p>
+                             <h3 class="text-4xl font-extrabold mt-2 tracking-tight text-white"><?= number_format($balance, 0, ',', '.') ?> <span class="text-lg font-normal" style="color: rgba(255,255,255,0.7);">VNĐ</span></h3>
                         </div>
                         
                         <div class="flex gap-3 mt-6">
@@ -116,25 +83,56 @@
 </main>
 
 <!-- Deposit Modal -->
-<div id="depositModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3 text-center">
-            <h3 class="text-lg leading-6 font-medium text-gray-900">Nạp tiền vào ví</h3>
-            <form action="/wallet/process" method="POST" class="mt-4">
-                <input type="hidden" name="type" value="deposit">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2 text-left" for="amount">Số tiền (VNĐ)</label>
-                    <input type="number" name="amount" min="10000" step="10000" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+<div id="depositModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Background backdrop -->
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="document.getElementById('depositModal').classList.add('hidden')"></div>
+
+    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <!-- Modal panel -->
+        <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+            
+            <!-- Close button (X) -->
+            <button type="button" onclick="document.getElementById('depositModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-500 transition-colors">
+                <span class="sr-only">Đóng</span>
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-emerald-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fa-solid fa-wallet text-emerald-600"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                        <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">Nạp tiền vào ví</h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500">Nhập số tiền bạn muốn nạp vào ví UniMarket.</p>
+                            
+                            <form action="/wallet/process" method="POST" class="mt-4">
+                                <input type="hidden" name="type" value="deposit">
+                                <div>
+                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="amount">Số tiền (VNĐ)</label>
+                                    <div class="relative rounded-md shadow-sm">
+                                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                            <span class="text-gray-500 sm:text-sm">₫</span>
+                                        </div>
+                                        <input type="number" name="amount" id="amount" min="10000" step="10000" class="block w-full rounded-md border-0 py-2.5 pl-7 pr-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600 sm:text-sm sm:leading-6" placeholder="0" required>
+                                    </div>
+                                    <p class="mt-2 text-xs text-gray-500">Số tiền nạp tối thiểu: 10.000đ</p>
+                                </div>
+                                
+                                <div class="mt-5 sm:flex sm:flex-row-reverse">
+                                    <button type="submit" class="inline-flex w-full justify-center rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 sm:ml-3 sm:w-auto transition-colors">
+                                        Xác nhận nạp
+                                    </button>
+                                    <button type="button" onclick="document.getElementById('depositModal').classList.add('hidden')" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto transition-colors">
+                                        Hủy
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex items-center justify-between">
-                    <button type="button" onclick="document.getElementById('depositModal').classList.add('hidden')" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                        Hủy
-                    </button>
-                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                        Xác nhận
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>

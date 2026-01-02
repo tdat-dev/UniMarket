@@ -48,8 +48,11 @@ if (!isset($_SESSION['user'])) {
                     <a href="/reviews" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
                          <i class="fa-regular fa-star"></i> Đánh giá
                     </a>
-                    <a href="/shop/orders" class="border-gray-800 text-gray-900 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
-                         <i class="fa-solid fa-box"></i> Quản lý đơn hàng
+                    <a href="/profile/orders" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
+                         <i class="fa-solid fa-bag-shopping"></i> Đơn mua
+                    </a>
+                    <a href="/shop/orders" class="border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
+                         <i class="fa-solid fa-store"></i> Đơn bán
                     </a>
                 </nav>
             </div>

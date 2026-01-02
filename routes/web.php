@@ -55,6 +55,8 @@ $router->get('reviews', [\App\Controllers\ProfileController::class, 'reviews']);
 $router->post('reviews/store', [\App\Controllers\ProfileController::class, 'storeReview']);
 $router->get('shop/orders', [\App\Controllers\ShopController::class, 'orders']);
 $router->post('shop/orders/update', [\App\Controllers\ShopController::class, 'updateOrderStatus']);
+$router->get('profile/orders', [\App\Controllers\ProfileController::class, 'orders']);
+$router->post('profile/avatar', [\App\Controllers\ProfileController::class, 'updateAvatar']);
 
 // Route search (yêu cầu đăng nhập)
 $router->get('search', [SearchController::class, 'search']);
