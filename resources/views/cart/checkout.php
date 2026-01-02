@@ -40,14 +40,25 @@ if (!empty($products)) {
 
             <!-- Order Details -->
             <div class="lg:col-span-8 space-y-4">
-                <!-- Address Section (Mockup) -->
+                <!-- Address Section -->
                 <div class="bg-white rounded-sm shadow-sm p-6">
-                    <h3 class="text-base font-medium text-[#EE4D2D] mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-location-dot"></i> Địa chỉ nhận hàng
-                    </h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-base font-medium text-[#EE4D2D] flex items-center gap-2">
+                            <i class="fa-solid fa-location-dot"></i> Địa chỉ nhận hàng
+                        </h3>
+                        <a href="/profile" class="text-blue-600 text-sm hover:underline">Thay đổi</a>
+                    </div>
                     <div class="flex flex-col gap-1 text-sm text-gray-800">
-                        <div class="font-bold">Nguyễn Anh Huy (+84) 999 999 999</div>
-                        <div>Số 123, Đường 3/2, Phường Xuân Khánh, Quận Ninh Kiều, Cần Thơ</div>
+                         <?php if (!empty($user['address'])): ?>
+                            <div class="font-bold">
+                                <?= htmlspecialchars($user['full_name'] ?? $_SESSION['user']['username'] ?? 'Người dùng') ?> 
+                                (<?= htmlspecialchars($user['phone_number'] ?? 'Chưa có SĐT') ?>)
+                            </div>
+                            <div><?= htmlspecialchars($user['address']) ?></div>
+                        <?php else: ?>
+                            <div class="text-red-500">Bạn chưa cập nhật địa chỉ nhận hàng.</div>
+                            <a href="/profile" class="text-blue-600 underline">Cập nhật ngay</a>
+                        <?php endif; ?>
                     </div>
                 </div>
 

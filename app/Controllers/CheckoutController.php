@@ -67,10 +67,16 @@ class CheckoutController extends BaseController
             }
         }
 
+        // Fetch User Info for Address
+        $userModel = new \App\Models\User();
+        $user = $userModel->find($userId);
+
         // Render checkout view
         $this->view('cart/checkout', [
             'products' => $products,
-            'selected_ids' => $selectedIds
+            'selected_ids' => $selectedIds,
+            'user' => $user
+        ]);
         ]);
     }
 
