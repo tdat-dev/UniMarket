@@ -15,7 +15,6 @@ class BaseController
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        $this->checkUserLocked();
     }
 
     /**
@@ -117,30 +116,6 @@ class BaseController
             require_once $viewFile;
         } else {
             echo "View not found: $viewPath";
-        }
-    }
-
-    /**
-     * Kiểm tra user hiện tại có bị khóa không
-     * Nếu bị khóa -> logout và redirect về login
-     */
-    protected function checkUserLocked()
-    {
-        if (isset($_SESSION['user']['id'])) {
-            $userModel = new \App\Models\User();
-            $user = $userModel->find($_SESSION['user']['id']);
-
-            // Nếu user bị khóa hoặc không tồn tại
-            if (!$user || !empty($user['is_locked'])) {
-                // Xóa session
-                unset($_SESSION['user']);
-                session_destroy();
-
-                // Redirect về login với thông báo
-                $_SESSION['error'] = 'Tài khoản của bạn đã bị khóa.';
-                header('Location: /login');
-                exit;
-            }
         }
     }
 }

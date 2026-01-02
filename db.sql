@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
     email_verified TINYINT(1) DEFAULT 0,           -- 0 = chưa xác minh, 1 = đã xác minh
     email_verification_token VARCHAR(64),           -- Token ngẫu nhiên
     email_verification_expires_at DATETIME,         -- Thời gian hết hạn token
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 -- 5. Bảng Danh mục
