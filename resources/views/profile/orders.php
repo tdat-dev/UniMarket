@@ -103,7 +103,9 @@ if (!isset($_SESSION['user'])) {
                                     <button type="button" onclick="initiateCancel(<?= $order['id'] ?>)" class="px-4 py-2 border border-red-500 text-red-600 text-sm font-medium rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Hủy đơn hàng</button>
 
                                 <?php endif; ?>
-                                 <button type="button" onclick="initiateRebuy(<?= $order['id'] ?>)" class="px-4 py-2 border border-blue-600 text-blue-600 text-sm font-medium rounded-md hover:bg-blue-50">Mua lại</button>
+                                <?php if ($order['status'] == 'completed' || $order['status'] == 'cancelled'): ?>
+                                     <button type="button" onclick="initiateRebuy(<?= $order['id'] ?>)" class="px-4 py-2 border border-blue-600 text-blue-600 text-sm font-medium rounded-md hover:bg-blue-50">Mua lại</button>
+                                <?php endif; ?>
                                  <a href="/profile/orders/detail?id=<?= $order['id'] ?>" class="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">Chi tiết đơn hàng</a>
                             </div>
                         </div>
