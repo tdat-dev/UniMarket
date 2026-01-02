@@ -4,6 +4,7 @@ use App\Controllers\Admin\UserController;
 use App\Controllers\Admin\ProductController;
 use App\Controllers\Admin\CategoryController;
 use App\Controllers\Admin\OrderController;
+use App\Controllers\Admin\SettingController;
 
 /** @var \App\Core\Router $router */
 
@@ -36,3 +37,9 @@ $router->post('admin/categories/delete', [CategoryController::class, 'delete']);
 $router->get('admin/orders', [OrderController::class, 'index']);
 $router->get('admin/orders/show', [OrderController::class, 'show']);
 $router->post('admin/orders/update-status', [OrderController::class, 'updateStatus']);
+
+// Settings Management
+$router->get('admin/settings', [SettingController::class, 'index']);
+$router->post('admin/settings/update', [SettingController::class, 'update']);
+$router->post('admin/settings/upload-image', [SettingController::class, 'uploadImage']);
+$router->post('admin/settings/toggle-maintenance', [SettingController::class, 'toggleMaintenance']);

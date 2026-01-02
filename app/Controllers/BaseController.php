@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\Cart;
 use App\Models\SearchKeyword;
 use App\Core\RedisCache;
+use \App\Models\Setting;
 
 class BaseController
 {
@@ -16,6 +17,7 @@ class BaseController
             session_start();
         }
         $this->checkUserLocked();
+        $this->checkMaintenance();
     }
 
     /**
@@ -141,6 +143,37 @@ class BaseController
                 header('Location: /login');
                 exit;
             }
+        }
+    }
+
+    /**
+     * Kiểm tra chế độ bảo trì
+     * Nếu bật -> hiển thị trang bảo trì (trừ admin)
+     */
+    protected function checkMaintenance()
+    {
+        // Bỏ qua nếu là admin
+        if (isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'admin') {
+            return;
+        }
+
+        // Bỏ qua các route admin và login
+        $currentUri = $_SERVER['REQUEST_URI'] ?? '/';
+        if (strpos($currentUri, '/admin') === 0 || strpos($currentUri, '/login') === 0) {
+            return;
+        }
+
+        // Kiểm tra maintenance mode
+        $settingModel = new Setting();
+        $maintenanceMode = $settingModel->get('maintenance_mode', '0');
+
+        if ($maintenanceMode === '1') {
+            $message = $settingModel->get('maintenance_message', 'Website đang bảo trì, vui lòng quay lại sau.');
+
+            // Hiển thị trang bảo trì
+            http_response_code(503);
+            include __DIR__ . '/../../resources/views/maintenance.php';
+            exit;
         }
     }
 }
