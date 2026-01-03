@@ -63,7 +63,10 @@ if (!isset($_SESSION['user'])) {
                                                 <div class="mb-2">
                                                     <textarea name="comment" rows="2" class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:border-orange-500" placeholder="Chia sẻ trải nghiệm của bạn..."></textarea>
                                                 </div>
-                                                <button type="submit" class="bg-orange-600 text-white text-sm px-4 py-1.5 rounded hover:bg-orange-700">Gửi đánh giá</button>
+                                                <button type="submit" class="w-full mt-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:from-orange-600 hover:to-red-700 transition-all transform hover:scale-[1.01] flex items-center justify-center gap-2" style="background: linear-gradient(to right, #f97316, #dc2626);">
+                                                    <i class="fa-solid fa-paper-plane"></i>
+                                                    Gửi Đánh Giá
+                                                </button>
                                             </form>
                                         </div>
                                     </div>
@@ -130,6 +133,13 @@ function switchTab(tab) {
         document.getElementById('tab-unreviewed').classList.add('text-gray-500', 'border-transparent');
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if(urlParams.get('tab') === 'reviewed') {
+        switchTab('reviewed');
+    }
+});
 </script>
     </div>
 </main>

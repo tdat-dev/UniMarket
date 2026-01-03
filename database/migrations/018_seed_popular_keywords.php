@@ -10,7 +10,9 @@ require_once __DIR__ . '/../../app/Core/Database.php';
 
 use App\Core\Database;
 
-$db = Database::getInstance();
+return new class {
+    public function run($pdo) {
+        $db = Database::getInstance();
 
 // Danh sách keywords phổ biến với số lượt tìm kiếm giả lập
 $popularKeywords = [
@@ -59,3 +61,5 @@ foreach ($popularKeywords as $kw) {
 }
 
 echo "\nDone! Popular keywords seeded successfully.\n";
+    }
+};

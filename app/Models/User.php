@@ -43,7 +43,7 @@ class User extends BaseModel
 	// Lấy thông tin user theo ID
 	public function find($id)
 	{
-		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at FROM users WHERE id = :id";
+		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at, balance, avatar FROM users WHERE id = :id";
 		return $this->db->fetchOne($sql, ['id' => $id]);
 	}
 
@@ -94,16 +94,30 @@ class User extends BaseModel
 		return $this->db->execute($sql, ['id' => $userId]);
 	}
 
-	// ================= ADMIN METHODS =================
+	// Đếm tổng số users
+	public function count(): int
+	{
+		$sql = "SELECT COUNT(*) as total FROM users";
+		$result = $this->db->fetchOne($sql);
+		return $result['total'] ?? 0;
+	}
 
-	// Lấy tất cả user (cho Admin)
+	/**
+	 * Lấy tất cả users (thường dùng cho Admin)
+	 */
 	public function getAll()
 	{
-		$sql = "SELECT * FROM users ORDER BY created_at DESC";
+		// Lấy tất cả thông tin quan trọng (trừ password)
+		// Sắp xếp người mới nhất lên đầu
+		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at, email_verified, is_locked, avatar 
+                FROM users 
+                ORDER BY created_at DESC";
 		return $this->db->fetchAll($sql);
 	}
 
-	// Cập nhật thông tin user (cho Admin)
+	/**
+	 * Cập nhật thông tin user (Admin)
+	 */
 	public function update($id, $data)
 	{
 		$sql = "UPDATE users SET 
@@ -124,39 +138,9 @@ class User extends BaseModel
 		]);
 	}
 
-	// Cập nhật thông tin profile (cho User thường)
-	public function updateProfile($id, $data)
-	{
-		$fields = [];
-		$params = ['id' => $id];
-
-		// Chỉ cập nhật các trường được truyền vào
-		if (isset($data['full_name'])) {
-			$fields[] = 'full_name = :full_name';
-			$params['full_name'] = $data['full_name'];
-		}
-		if (isset($data['phone_number'])) {
-			$fields[] = 'phone_number = :phone_number';
-			$params['phone_number'] = $data['phone_number'];
-		}
-		if (isset($data['address'])) {
-			$fields[] = 'address = :address';
-			$params['address'] = $data['address'];
-		}
-		if (isset($data['avatar'])) {
-			$fields[] = 'avatar = :avatar';
-			$params['avatar'] = $data['avatar'];
-		}
-
-		// Nếu không có gì để update
-		if (empty($fields)) {
-			return false;
-		}
-
-		$sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = :id";
-		return $this->db->execute($sql, $params);
-	}
-	// Khóa / Mở khóa tài khoản
+	/**
+	 * Khóa/Mở khóa tài khoản
+	 */
 	public function toggleLock($id)
 	{
 		// Kiểm tra trạng thái hiện tại
@@ -164,31 +148,21 @@ class User extends BaseModel
 		if (!$user)
 			return false;
 
-		// Nếu bảng users chưa có cột is_locked thì mặc định là 0 -> 1
-		$currentStatus = $user['is_locked'] ?? 0;
-		$newStatus = $currentStatus ? 0 : 1;
+		// Đảo ngược trạng thái: nếu đang locked (1) -> mở (0), và ngược lại
+		// Lưu ý: database có thể đang lưu is_locked là NULL hoặc 0
+		$currentStatus = !empty($user['is_locked']) ? 1 : 0;
+		$newStatus = $currentStatus == 1 ? 0 : 1;
 
 		$sql = "UPDATE users SET is_locked = :new_status WHERE id = :id";
-		return $this->db->execute($sql, [
-			'new_status' => $newStatus,
-			'id' => $id
-		]);
+		return $this->db->execute($sql, ['new_status' => $newStatus, 'id' => $id]);
 	}
 
-	// Bật / Tắt verify email
+	/**
+	 * Đổi trạng thái xác minh email
+	 */
 	public function toggleVerified($id)
 	{
-		$user = $this->find($id);
-		if (!$user)
-			return false;
-
-		$currentStatus = $user['email_verified'] ?? 0;
-		$newStatus = $currentStatus ? 0 : 1;
-
-		$sql = "UPDATE users SET email_verified = :new_status WHERE id = :id";
-		return $this->db->execute($sql, [
-			'new_status' => $newStatus,
-			'id' => $id
-		]);
+		$sql = "UPDATE users SET email_verified = NOT email_verified WHERE id = :id";
+		return $this->db->execute($sql, ['id' => $id]);
 	}
 }
