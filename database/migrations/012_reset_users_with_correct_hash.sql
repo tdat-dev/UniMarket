@@ -11,7 +11,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO users (full_name, email, password, phone_number, address, role) VALUES
 ('Nguyễn Văn Admin', 'admin@zoldify.vn', '$2y$10$e0MYzXyjpJS7Pd0RVvHwHe1MEOVkbWRN9lLVvMqxGPVrjJJhDFWGq', '0901234567', 'Hà Nội', 'admin'),
-('Trần Thị Lan', 'lan.tran@student.edu.vn', '$2y$10$e0MYzXyjpJS7Pd0RVvHwHe1MEOVkbWRN9lLVvMqxGPVrjJJhDFWGq', '0912345678', 'TP HCM', 'student'),
-('Lê Văn Hùng', 'hung.le@student.edu.vn', '$2y$10$e0MYzXyjpJS7Pd0RVvHwHe1MEOVkbWRN9lLVvMqxGPVrjJJhDFWGq', '0923456789', 'Đà Nẵng', 'student'),
-('Phạm Thị Mai', 'mai.pham@student.edu.vn', '$2y$10$e0MYzXyjpJS7Pd0RVvHwHe1MEOVkbWRN9lLVvMqxGPVrjJJhDFWGq', '0934567890', 'Hải Phòng', 'student'),
-('Hoàng Văn Nam', 'nam.hoang@student.edu.vn', '$2y$10$e0MYzXyjpJS7Pd0RVvHwHe1MEOVkbWRN9lLVvMqxGPVrjJJhDFWGq', '0945678901', 'Cần Thơ', 'student');
+('Trần Thị Lan', 'lan.tran@student.edu.vn', '$2y$10$e0MYzXyjpJS7Pd0RVvHwHe1MEOVkbWRN9lLVvMqxGPVrjJJhDFWGq', '0912345678', 'TP HCM', 'seller'),
+('Lê Văn Hùng', 'hung.le@student.edu.vn', '$2y$10$e0MYzXyjpJS7Pd0RVvHwHe1MEOVkbWRN9lLVvMqxGPVrjJJhDFWGq', '0923456789', 'Đà Nẵng', 'seller'),
+('Phạm Thị Mai', 'mai.pham@student.edu.vn', '$2y$10$e0MYzXyjpJS7Pd0RVvHwHe1MEOVkbWRN9lLVvMqxGPVrjJJhDFWGq', '0934567890', 'Hải Phòng', 'buyer'),
+('Hoàng Văn Nam', 'nam.hoang@student.edu.vn', '$2y$10$e0MYzXyjpJS7Pd0RVvHwHe1MEOVkbWRN9lLVvMqxGPVrjJJhDFWGq', '0945678901', 'Cần Thơ', 'buyer');

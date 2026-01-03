@@ -258,12 +258,98 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
         ]);
     }
 
-    // Get products by user ID (for Shop page)
-    public function getByUserId($userId)
+    // Đếm tổng số products
+    public function count(): int
     {
-        return $this->db->fetchAll("SELECT * FROM products WHERE user_id = :user_id ORDER BY id DESC", [
-            'user_id' => (int) $userId
+        $sql = "SELECT COUNT(*) as total FROM products";
+        $result = $this->db->fetchOne($sql);
+        return $result['total'] ?? 0;
+    }
+
+    /**
+     * Lấy tất cả sản phẩm của một user (seller)
+     * Dùng cho trang Shop cá nhân
+     */
+    public function getByUserId($userId, $limit = 50, $offset = 0)
+    {
+        $sql = "SELECT * FROM products 
+                WHERE user_id = :user_id 
+                ORDER BY created_at DESC 
+                LIMIT :limit OFFSET :offset";
+
+        return $this->db->fetchAll($sql, [
+            'user_id' => (int) $userId,
+            'limit' => (int) $limit,
+            'offset' => (int) $offset
         ]);
     }
 
+    /**
+     * Đếm số sản phẩm của một user
+     */
+    public function countByUserId($userId): int
+    {
+        $sql = "SELECT COUNT(*) as total FROM products WHERE user_id = :user_id";
+        $result = $this->db->fetchOne($sql, ['user_id' => (int) $userId]);
+        return $result['total'] ?? 0;
+    }
+
+    // ===================== ADMIN METHODS =====================
+
+    /**
+     * Lấy tất cả products cho admin (có phân trang)
+     */
+    public function getAllForAdmin($limit = 20, $offset = 0): array
+    {
+        $sql = "SELECT p.*, c.name as category_name, u.full_name as seller_name
+            FROM products p
+            LEFT JOIN categories c ON p.category_id = c.id
+            LEFT JOIN users u ON p.user_id = u.id
+            ORDER BY p.created_at DESC
+            LIMIT :limit OFFSET :offset";
+        return $this->db->fetchAll($sql, ['limit' => $limit, 'offset' => $offset]);
+    }
+
+    /**
+     * Cập nhật sản phẩm
+     */
+    public function update(int $id, array $data): bool
+    {
+        $sql = "UPDATE products SET 
+            name = :name, 
+            price = :price,
+            quantity = :quantity,
+            description = :description,
+            category_id = :category_id,
+            status = :status";
+
+        $params = [
+            'id' => $id,
+            'name' => $data['name'],
+            'price' => $data['price'],
+            'quantity' => $data['quantity'] ?? 1,
+            'description' => $data['description'] ?? '',
+            'category_id' => $data['category_id'],
+            'status' => $data['status'] ?? 'active'
+        ];
+
+        // Nếu có upload ảnh mới
+        if (!empty($data['image'])) {
+            $sql .= ", image = :image";
+            $params['image'] = $data['image'];
+        }
+
+        $sql .= " WHERE id = :id";
+
+        return $this->db->execute($sql, $params);
+    }
+
+    /**
+     * Xóa sản phẩm
+     */
+    public function delete(int $id): bool
+    {
+        $sql = "DELETE FROM products WHERE id = :id";
+        return $this->db->execute($sql, ['id' => $id]);
+    }
 }

@@ -15,37 +15,9 @@ if (!isset($_SESSION['user'])) {
 
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16">
         <!-- User Info Card -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
-            <div class="px-6 py-6 md:flex md:items-center md:justify-between">
-                <div class="flex items-center">
-                    <div class="relative flex-shrink-0">
-                        <img class="h-24 w-24 rounded-full ring-4 ring-white bg-white object-cover" src="https://ui-avatars.com/api/?name=<?= urlencode($_SESSION['user']['full_name']) ?>&background=random&size=128" alt="">
-                    </div>
-                    <div class="ml-5">
-                        <h1 class="text-2xl font-bold text-gray-900"><?= htmlspecialchars($_SESSION['user']['full_name']) ?></h1>
-                         <p class="text-sm text-gray-500">Đánh giá của tôi</p>
-                    </div>
-                </div>
-            </div>
+        <!-- User Info Card -->
+        <?php $activeTab = 'reviews'; include __DIR__ . '/../partials/profile_card.php'; ?>
 
-            <!-- Navigation Tabs -->
-            <div class="bg-gray-50 px-6 border-t border-gray-200">
-                <nav class="-mb-px flex gap-8" aria-label="Tabs">
-                    <a href="/profile" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
-                        <i class="fa-regular fa-id-card"></i> Thông tin
-                    </a>
-                    <a href="/wallet" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
-                         <i class="fa-solid fa-wallet"></i> Ví & Giao dịch
-                    </a>
-                    <a href="/reviews" class="border-orange-500 text-orange-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
-                         <i class="fa-regular fa-star"></i> Đánh giá
-                    </a>
-                    <a href="/shop/orders" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
-                         <i class="fa-solid fa-box"></i> Quản lý đơn hàng
-                    </a>
-                </nav>
-            </div>
-        </div>
 
         <!-- Content Area -->
         <!-- Tabs -->
@@ -91,7 +63,10 @@ if (!isset($_SESSION['user'])) {
                                                 <div class="mb-2">
                                                     <textarea name="comment" rows="2" class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:border-orange-500" placeholder="Chia sẻ trải nghiệm của bạn..."></textarea>
                                                 </div>
-                                                <button type="submit" class="bg-orange-600 text-white text-sm px-4 py-1.5 rounded hover:bg-orange-700">Gửi đánh giá</button>
+                                                <button type="submit" class="w-full mt-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:from-orange-600 hover:to-red-700 transition-all transform hover:scale-[1.01] flex items-center justify-center gap-2" style="background: linear-gradient(to right, #f97316, #dc2626);">
+                                                    <i class="fa-solid fa-paper-plane"></i>
+                                                    Gửi Đánh Giá
+                                                </button>
                                             </form>
                                         </div>
                                     </div>
@@ -158,6 +133,13 @@ function switchTab(tab) {
         document.getElementById('tab-unreviewed').classList.add('text-gray-500', 'border-transparent');
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if(urlParams.get('tab') === 'reviewed') {
+        switchTab('reviewed');
+    }
+});
 </script>
     </div>
 </main>

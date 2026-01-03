@@ -63,6 +63,12 @@ class AuthController extends BaseController
             $_SESSION['pending_verification_email'] = $result['email'];
             header('Location: /verify-email');
             exit;
+        } elseif ($result['reason'] === 'locked') {
+            // Tài khoản bị khóa
+            $this->view('auth/login', [
+                'errors' => ['login' => $result['message']],
+                'old' => ['username' => $email]
+            ]);
         } else {
             $this->view('auth/login', [
                 'error' => 'Email hoặc mật khẩu không đúng', // Sửa key thành 'error' để khớp với view
@@ -110,6 +116,8 @@ class AuthController extends BaseController
             ]);
         }
     }
+
+
 
     // --- ĐĂNG XUẤT ---
     public function logout()

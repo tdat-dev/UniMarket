@@ -43,40 +43,41 @@ class CheckoutController extends BaseController
         $products = [];
 
         // Prepare products for review
+        // Prepare products for review
         foreach ($selectedIds as $id) {
-            if (isset($allCart[$id])) {
-                // If from DB, we already have product info, but let's be consistent and fetch fresh or use DB data?
-                // DB Cart getByUserId already joins products, so we have name, price, image.
-                // Session cart only has quantity (usually). 
-                // To be safe and consistent, let's fetch fresh product data or use what we have.
-                // If from DB cart, $allCart[$id] is the full row.
-                // If from Session, $allCart[$id] is ['quantity'=>...] or int.
-                
-                $cartItem = $allCart[$id];
-                
-                if (is_array($cartItem) && isset($cartItem['name'])) {
-                    // DB Cart Item (Already has product info)
-                    $p = $cartItem; 
-                    // Ensure 'id' is set (getByUserId SELECT c.*, p.name... columns might result in 'product_id' vs 'id' collision?)
-                    // Cart table has 'id' (cart_id), Product table has 'id'. 
-                    // The JOIN SELECT c.*, p.name... might override 'id'.
-                    // Let's trust productModel->find($id) for consistency and safety.
-                }
+            $qty = 0;
 
+            // 1. Check in Database/Session Cart
+            if (isset($allCart[$id])) {
+                $cartItem = $allCart[$id];
+                $qty = is_array($cartItem) ? ($cartItem['quantity'] ?? $cartItem['cart_quantity'] ?? 1) : $cartItem;
+            } 
+            // 2. Check in POST data (Buy Now flow)
+            elseif (isset($_POST['quantities'][$id])) {
+                $qty = (int) $_POST['quantities'][$id];
+            }
+
+            // If we have a valid quantity, fetch product details
+            if ($qty > 0) {
                 $p = $productModel->find($id);
                 if ($p) {
-                    $qty = is_array($cartItem) ? ($cartItem['quantity'] ?? $cartItem['cart_quantity'] ?? 1) : $cartItem;
                     $p['cart_quantity'] = (int) $qty;
                     $products[] = $p;
                 }
             }
         }
 
+        // Fetch User Info for Address
+        $userModel = new \App\Models\User();
+        $user = $userModel->find($userId);
+
         // Render checkout view
         $this->view('cart/checkout', [
             'products' => $products,
-            'selected_ids' => $selectedIds
+            'selected_ids' => $selectedIds,
+            'user' => $user
         ]);
+
     }
 
     // confirm method: Handles POST from Checkout View -> Creates Order -> Deducts Stock

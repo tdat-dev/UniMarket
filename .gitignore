@@ -1,6 +1,7 @@
 # Dependencies
 /vendor/
 /node_modules/
+chat-server/node_modules/
 /package-lock.json
 /composer.lock
 
@@ -9,6 +10,8 @@
 .env.local
 .env.*.local
 *.env
+CREDENTIALS.md
+docs/CREDENTIALS.md
 
 # Logs
 *.log

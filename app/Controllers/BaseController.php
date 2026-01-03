@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\Cart;
 use App\Models\SearchKeyword;
 use App\Core\RedisCache;
+use \App\Models\Setting;
 
 class BaseController
 {
@@ -15,6 +16,8 @@ class BaseController
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+        $this->checkUserLocked();
+        $this->checkMaintenance();
     }
 
     /**
@@ -103,6 +106,9 @@ class BaseController
      */
     protected function view($viewPath, $data = [])
     {
+        // Thêm settings vào tất cả views
+        $settingModel = new Setting();
+        $data['siteSettings'] = $settingModel->getAll();
         // Tự động thêm cartCount và topKeywords vào mọi view
         $data['cartCount'] = $this->getCartCount();
         $data['topKeywords'] = $this->getTopKeywords();
@@ -116,6 +122,61 @@ class BaseController
             require_once $viewFile;
         } else {
             echo "View not found: $viewPath";
+        }
+    }
+
+    /**
+     * Kiểm tra user hiện tại có bị khóa không
+     * Nếu bị khóa -> logout và redirect về login
+     */
+    protected function checkUserLocked()
+    {
+        if (isset($_SESSION['user']['id'])) {
+            $userModel = new \App\Models\User();
+            $user = $userModel->find($_SESSION['user']['id']);
+
+            // Nếu user bị khóa hoặc không tồn tại
+            if (!$user || !empty($user['is_locked'])) {
+                // Xóa session
+                unset($_SESSION['user']);
+                session_destroy();
+
+                // Redirect về login với thông báo
+                $_SESSION['error'] = 'Tài khoản của bạn đã bị khóa.';
+                header('Location: /login');
+                exit;
+            }
+        }
+    }
+
+    /**
+     * Kiểm tra chế độ bảo trì
+     * Nếu bật -> hiển thị trang bảo trì (trừ admin)
+     */
+    protected function checkMaintenance()
+    {
+        // Bỏ qua nếu là admin
+        if (isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'admin') {
+            return;
+        }
+
+        // Bỏ qua các route admin và login
+        $currentUri = $_SERVER['REQUEST_URI'] ?? '/';
+        if (strpos($currentUri, '/admin') === 0 || strpos($currentUri, '/login') === 0) {
+            return;
+        }
+
+        // Kiểm tra maintenance mode
+        $settingModel = new Setting();
+        $maintenanceMode = $settingModel->get('maintenance_mode', '0');
+
+        if ($maintenanceMode === '1') {
+            $message = $settingModel->get('maintenance_message', 'Website đang bảo trì, vui lòng quay lại sau.');
+
+            // Hiển thị trang bảo trì
+            http_response_code(503);
+            include __DIR__ . '/../../resources/views/maintenance.php';
+            exit;
         }
     }
 }
