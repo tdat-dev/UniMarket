@@ -210,6 +210,12 @@ Hệ thống sử dụng cơ chế migration tự viết (`app/Core/Database.php
 
 Ngoài README chính, dự án còn có các tài liệu hướng dẫn chi tiết cho từng module:
 
+### 🚀 Bắt đầu (Getting Started)
+
+- [**Hướng dẫn Cài đặt Chi tiết**](docs/SETUP.md): Step-by-step setup cho developer mới, bao gồm cài đặt môi trường, database, chat server.
+- [**Hướng dẫn Deployment**](docs/DEPLOYMENT.md): Deploy lên Production/Staging, CI/CD, SSL, monitoring.
+- [**Template Credentials**](docs/CREDENTIALS.template.md): Mẫu lưu trữ thông tin truy cập cho team.
+
 ### 🔐 Google OAuth (Đăng nhập Google)
 
 - [**Hướng dẫn tích hợp Google Login**](docs/GOOGLE_OAUTH_GUIDE.md): Chi tiết cách tạo App trên Google Console và cấu hình code.

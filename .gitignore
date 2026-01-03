@@ -10,6 +10,8 @@ chat-server/node_modules/
 .env.local
 .env.*.local
 *.env
+CREDENTIALS.md
+docs/CREDENTIALS.md
 
 # Logs
 *.log
