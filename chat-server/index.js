@@ -75,21 +75,6 @@ async function updateLastSeen(userId) {
     }
 }
 
-/**
- * Lấy last_seen của một user
- */
-async function getLastSeen(userId) {
-    try {
-        const [rows] = await dbPool.execute(
-            'SELECT last_seen FROM users WHERE id = ?',
-            [userId]
-        );
-        return rows[0]?.last_seen || null;
-    } catch (error) {
-        return null;
-    }
-}
-
 // ============ LƯU TRỮ ONLINE USERS ============
 const onlineUsers = new Map(); // userId -> socketId
 
