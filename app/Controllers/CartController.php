@@ -27,41 +27,36 @@ class CartController extends BaseController
     }
 
     /**
-     * Thêm sản phẩm vào giỏ hàng
+     * Thêm sản phẩm vào giỏ hàng hoặc Mua ngay
      */
     public function add()
     {
-        VerificationMiddleware::requireVerified();
         $userId = $this->getUserId();
+        $action = $_POST['action'] ?? 'add';
         $productId = $_POST['product_id'] ?? null;
         $quantity = (int) ($_POST['quantity'] ?? 1);
-        $action = $_POST['action'] ?? 'add';
+
+        // Bắt buộc đăng nhập mới được mua hàng
+        if (!$userId) {
+            if (session_status() == PHP_SESSION_NONE) {
+                session_start();
+            }
+            $_SESSION['error'] = 'Vui lòng đăng nhập để mua hàng.';
+            $_SESSION['redirect_after_login'] = $_SERVER['HTTP_REFERER'] ?? '/products';
+            header('Location: /login');
+            exit;
+        }
+
+        VerificationMiddleware::requireVerified();
 
         if (!$productId) {
             header('Location: /products');
             exit;
         }
 
-        if ($userId) {
-            // Đã đăng nhập -> Lưu vào Database
-            $this->cartModel->addItem($userId, $productId, $quantity);
-        } else {
-            // Chưa đăng nhập -> Lưu vào Session (tạm thời)
-            if (!isset($_SESSION['cart'])) {
-                $_SESSION['cart'] = [];
-            }
-            if (isset($_SESSION['cart'][$productId])) {
-                $_SESSION['cart'][$productId]['quantity'] += $quantity;
-            } else {
-                $_SESSION['cart'][$productId] = ['quantity' => $quantity];
-            }
-        }
-
-        // Redirect based on action
+        // Xử lý theo action
         if ($action === 'buy') {
-            // If "Buy Now", we want to go straight to checkout with JUST this item selected.
-            // Since checkout expects POST data (selected_products[]), we can't just header header('Location: ...').
-            // We'll render a simple auto-submitting form.
+            // MUA NGAY: Đi thẳng checkout, KHÔNG thêm vào giỏ hàng
             echo '<form id="buy_now_form" action="/checkout" method="POST">';
             echo '<input type="hidden" name="selected_products[]" value="' . $productId . '">';
             echo '<input type="hidden" name="quantities[' . $productId . ']" value="' . $quantity . '">';
@@ -69,9 +64,11 @@ class CartController extends BaseController
             echo '<script>document.getElementById("buy_now_form").submit();</script>';
             exit;
         } else {
-            header("Location: /product-detail?id=$productId");
+            // THÊM VÀO GIỎ: Lưu vào Database
+            $this->cartModel->addItem($userId, $productId, $quantity);
+            header("Location: /product-detail?id=$productId&added=1");
+            exit;
         }
-        exit;
     }
 
     /**
@@ -79,34 +76,29 @@ class CartController extends BaseController
      */
     public function index()
     {
-        VerificationMiddleware::requireVerified();
         $userId = $this->getUserId();
+
+        // Bắt buộc đăng nhập mới được xem giỏ hàng
+        if (!$userId) {
+            if (session_status() == PHP_SESSION_NONE) {
+                session_start();
+            }
+            $_SESSION['error'] = 'Vui lòng đăng nhập để xem giỏ hàng.';
+            header('Location: /login');
+            exit;
+        }
+
+        VerificationMiddleware::requireVerified();
+
         $products = [];
         $total = 0;
 
-        if ($userId) {
-            // Đã đăng nhập -> Lấy từ Database
-            $cartItems = $this->cartModel->getByUserId($userId);
-            foreach ($cartItems as $item) {
-                $item['cart_quantity'] = $item['quantity'];
-                $products[] = $item;
-                $total += $item['price'] * $item['quantity'];
-            }
-        } else {
-            // Chưa đăng nhập -> Lấy từ Session
-            $cart = $_SESSION['cart'] ?? [];
-            if (!empty($cart)) {
-                $productModel = new Product();
-                foreach ($cart as $id => $item) {
-                    $p = $productModel->find($id);
-                    if ($p) {
-                        $qty = is_array($item) ? ($item['quantity'] ?? 1) : $item;
-                        $p['cart_quantity'] = $qty;
-                        $products[] = $p;
-                        $total += $p['price'] * $qty;
-                    }
-                }
-            }
+        // Lấy giỏ hàng từ Database
+        $cartItems = $this->cartModel->getByUserId($userId);
+        foreach ($cartItems as $item) {
+            $item['cart_quantity'] = $item['quantity'];
+            $products[] = $item;
+            $total += $item['price'] * $item['quantity'];
         }
 
         $this->view('cart/index', [
