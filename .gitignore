@@ -1,6 +1,7 @@
 # Dependencies
 /vendor/
 /node_modules/
+chat-server/node_modules/
 /package-lock.json
 /composer.lock
 
