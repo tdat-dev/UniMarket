@@ -17,7 +17,6 @@
     const messagesContainer = document.getElementById('messages-container');
     const messageForm = document.querySelector('form[action="/chat/send"]');
     const messageInput = document.querySelector('input[name="content"]');
-    const typingIndicator = document.getElementById('typing-indicator');
     const imageBtn = document.querySelector('.fa-image')?.closest('button');
     const fileBtn = document.querySelector('.fa-paperclip')?.closest('button');
     // ============ ONLINE STATUS ============
