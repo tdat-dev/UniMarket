@@ -83,17 +83,18 @@ include __DIR__ . '/../partials/header.php';
                                 </span>
                             </div>
                         </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <a href="/shop?id=<?= $activePartner['id'] ?>"
-                            class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-50 text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all border border-transparent hover:border-blue-100"
-                            title="Xem Shop">
-                            <i class="fa-solid fa-store"></i>
-                        </a>
-                        <button
-                            class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-50 text-gray-500 hover:text-red-500 hover:bg-red-50 transition-all">
-                            <i class="fa-solid fa-circle-info"></i>
-                        </button>
+                        <!-- Icons - nằm bên phải header -->
+                        <div class="flex items-center gap-3">
+                            <a href="/shop?id=<?= $activePartner['id'] ?>"
+                                class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-50 text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all border border-transparent hover:border-blue-100"
+                                title="Xem Shop">
+                                <i class="fa-solid fa-store"></i>
+                            </a>
+                            <button
+                                class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-50 text-gray-500 hover:text-red-500 hover:bg-red-50 transition-all">
+                                <i class="fa-solid fa-circle-info"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Messages -->
