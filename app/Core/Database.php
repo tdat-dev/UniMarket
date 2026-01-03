@@ -49,8 +49,19 @@ class Database
             FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 
+        // Tạo bảng settings
+        $sqlSettings = "CREATE TABLE IF NOT EXISTS settings (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            setting_key VARCHAR(100) NOT NULL UNIQUE,
+            setting_value TEXT,
+            setting_group VARCHAR(50) DEFAULT 'general',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+
         try {
             $this->connection->exec($sql);
+            $this->connection->exec($sqlSettings);
         } catch (PDOException $e) {
             // Bỏ qua nếu lỗi, tránh chết trang vì lỗi tạo bảng phụ
             error_log("Error creating tables: " . $e->getMessage());

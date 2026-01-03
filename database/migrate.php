@@ -48,6 +48,7 @@ foreach ($files as $file) {
             $pdo->exec($sql);
         } elseif ($extension === 'php') {
             // Chạy file PHP
+<<<<<<< HEAD
             // File PHP phải có hàm run($pdo) hoặc tên hàm dựa trên tên file
             require_once $file;
 
@@ -58,6 +59,17 @@ foreach ($files as $file) {
             if (function_exists($functionName)) {
                 $functionName($pdo);
             } elseif (function_exists('run')) {
+=======
+            // Cách mới: File trả về một anonymous object có phương thức run()
+            // return new class { public function run($pdo) { ... } };
+            $migration = require_once $file;
+
+            if (is_object($migration) && method_exists($migration, 'run')) {
+                $migration->run($pdo);
+            } elseif (function_exists('run')) {
+                // Cách cũ: File định nghĩa hàm run() global
+                // Warning: Dễ gây lỗi "Cannot redeclare run()" nếu có nhiều file PHP
+>>>>>>> 98c3c855e9323bd8051f18b796c1fede8aabae8a
                 run($pdo);
             }
         }

@@ -281,7 +281,7 @@ class ProfileController extends BaseController
             ]);
         }
         
-        header('Location: /reviews?success=1');
+        header('Location: /reviews?tab=reviewed');
         exit;
     }
     public function cancelOrder()
