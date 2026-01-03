@@ -80,10 +80,17 @@ jobs:
             **/.git*
             **/.git*/**
             **/node_modules/**
+            **/vendor/**
             **/.env
             **/README.md
             **/tests/**
             **/.github/**
+            **/.agent/**
+            **/.agent*
+            **/docs/**
+            **/*.md
+            **/.vscode/**
+            **/.idea/**
 
       - name: 🔔 Notify Success
         if: success()
@@ -141,11 +148,18 @@ jobs:
             **/.git*
             **/.git*/**
             **/node_modules/**
+            **/vendor/**
             **/.env
             **/README.md
             **/tests/**
             **/.github/**
             **/chat-server/**
+            **/.agent/**
+            **/.agent*
+            **/docs/**
+            **/*.md
+            **/.vscode/**
+            **/.idea/**
 
       - name: 🔔 Notify Success
         if: success()
