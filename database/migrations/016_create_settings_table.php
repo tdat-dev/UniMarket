@@ -95,21 +95,8 @@ class CreateSettingsTable
 /**
  * Hàm run() để tương thích với migrate.php
  */
-<<<<<<< HEAD
 function run_016_create_settings_table($pdo)
 {
     $migration = new CreateSettingsTable();
     $migration->up();
 }
-=======
-/**
- * Hàm run() để tương thích với migrate.php
- */
-return new class {
-    public function run($pdo)
-    {
-        $migration = new CreateSettingsTable();
-        $migration->up();
-    }
-};
->>>>>>> 98c3c855e9323bd8051f18b796c1fede8aabae8a
