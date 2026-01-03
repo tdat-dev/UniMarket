@@ -124,6 +124,38 @@ class User extends BaseModel
 		]);
 	}
 
+	// Cập nhật thông tin profile (cho User thường)
+	public function updateProfile($id, $data)
+	{
+		$fields = [];
+		$params = ['id' => $id];
+
+		// Chỉ cập nhật các trường được truyền vào
+		if (isset($data['full_name'])) {
+			$fields[] = 'full_name = :full_name';
+			$params['full_name'] = $data['full_name'];
+		}
+		if (isset($data['phone_number'])) {
+			$fields[] = 'phone_number = :phone_number';
+			$params['phone_number'] = $data['phone_number'];
+		}
+		if (isset($data['address'])) {
+			$fields[] = 'address = :address';
+			$params['address'] = $data['address'];
+		}
+		if (isset($data['avatar'])) {
+			$fields[] = 'avatar = :avatar';
+			$params['avatar'] = $data['avatar'];
+		}
+
+		// Nếu không có gì để update
+		if (empty($fields)) {
+			return false;
+		}
+
+		$sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = :id";
+		return $this->db->execute($sql, $params);
+	}
 	// Khóa / Mở khóa tài khoản
 	public function toggleLock($id)
 	{

@@ -1,27 +1,27 @@
-name: Deploy to CloudPanel
-
+name: 🚀 Deploy to aaPanel via FTP
 on:
   push:
     branches:
-      - main # Hoặc master, tùy branch chính của em
-
+      - main # hoặc master - branch chính của bạn
 jobs:
   deploy:
+    name: 📦 Deploy
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: 🔄 Checkout code
         uses: actions/checkout@v4
-
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+      - name: 📤 Upload via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            cd /home/tdatdev-zoldify/htdocs/zoldify.tdatdev.software
-            git pull origin main
-            composer install --no-dev --optimize-autoloader
-            php migrate.php
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./ # Thư mục local cần upload
+          server-dir: /www/wwwroot/zoldify.com # Thư mục đích trên server
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.env
+            **/README.md
