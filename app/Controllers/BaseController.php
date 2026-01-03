@@ -106,6 +106,9 @@ class BaseController
      */
     protected function view($viewPath, $data = [])
     {
+        // Thêm settings vào tất cả views
+        $settingModel = new Setting();
+        $data['siteSettings'] = $settingModel->getAll();
         // Tự động thêm cartCount và topKeywords vào mọi view
         $data['cartCount'] = $this->getCartCount();
         $data['topKeywords'] = $this->getTopKeywords();
