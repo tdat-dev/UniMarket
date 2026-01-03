@@ -1,8 +1,6 @@
 <p align="center">
-  <img src="public/images/UniMarketHead.svg" alt="UniMarket Logo" width="100" height="100">
+  <img src="public/images/logouni.png" alt="Zoldify Logo" width="150">
 </p>
-
-<h1 align="center">UniMarket</h1>
 
 <p align="center">
   <strong>Nền Tảng Thương Mại Điện Tử Dành Cho Sinh Viên</strong>
@@ -10,539 +8,277 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/version-1.0.0-blue.svg" alt="Version">
-  <img src="https://img.shields.io/badge/build-passing-brightgreen.svg" alt="Build">
   <img src="https://img.shields.io/badge/php-8.0+-777BB4.svg" alt="PHP">
   <img src="https://img.shields.io/badge/mysql-8.0+-4479A1.svg" alt="MySQL">
   <img src="https://img.shields.io/badge/tailwind-3.x-38B2AC.svg" alt="Tailwind">
 </p>
 
-<p align="center">
-  <code>🔒 CONFIDENTIAL - Internal Use Only</code>
-</p>
+---
+
+## 📋 Mục lục
+
+- [Giới thiệu](#-giới-thiệu)
+- [Yêu cầu hệ thống](#-yêu-cầu-hệ-thống)
+- [Cài đặt nhanh](#-cài-đặt-nhanh)
+- [Cấu trúc dự án](#-cấu-trúc-dự-án)
+- [Database & Migrations](#-database--migrations)
+- [Quy trình làm việc](#-quy-trình-làm-việc)
+- [Thành viên nhóm](#-thành-viên-nhóm)
+- [Tiến độ dự án](#-tiến-độ-dự-án)
 
 ---
 
-## Table of Contents
+## 🎯 Giới thiệu
 
-1. [Overview](#overview)
-2. [System Requirements](#system-requirements)
-3. [Architecture](#architecture)
-4. [Installation](#installation)
-5. [Project Structure](#project-structure)
-6. [Database Schema](#database-schema)
-7. [Development Workflow](#development-workflow)
-8. [Team Members](#team-members)
-9. [Task Assignment](#task-assignment)
-10. [Project Timeline](#project-timeline)
-11. [Changelog](#changelog)
+**UniMarket** là nền tảng mua bán đồ cũ dành cho sinh viên - một dự án môn học tâm huyết giúp kết nối sinh viên có nhu cầu mua bán, trao đổi đồ dùng học tập, giáo trình và thiết bị cũ.
 
----
+Với khẩu hiệu _"Đồ Cũ, Vẫn CHẤT"_, chúng tôi mong muốn tạo ra một môi trường giao dịch an toàn, tiết kiệm và thân thiện.
 
-## Overview
+### Tính năng chính
 
-### Project Description
-
-**UniMarket** là nền tảng thương mại điện tử C2C (Consumer-to-Consumer) được phát triển dành riêng cho sinh viên Việt Nam. Hệ thống cho phép sinh viên đăng bán, tìm kiếm và mua các sản phẩm đã qua sử dụng với giá cả phải chăng.
-
-### Business Objectives
-
-| Objective              | Description                        | Priority |
-| ---------------------- | ---------------------------------- | :------: |
-| User Authentication    | Hệ thống đăng ký/đăng nhập an toàn |    P0    |
-| Product Listing        | Đăng bán sản phẩm với hình ảnh     |    P0    |
-| Search & Filter        | Tìm kiếm và lọc sản phẩm           |    P1    |
-| User Profile           | Quản lý thông tin cá nhân          |    P1    |
-| Product Recommendation | Gợi ý sản phẩm phù hợp             |    P2    |
-
-### Key Features
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        UNIMARKET                            │
-├─────────────────┬─────────────────┬─────────────────────────┤
-│   AUTH MODULE   │  PRODUCT MODULE │     USER MODULE         │
-├─────────────────┼─────────────────┼─────────────────────────┤
-│ • Register      │ • Create        │ • Profile Management    │
-│ • Login         │ • Read (List)   │ • Order History         │
-│ • Logout        │ • Update        │ • Wishlist              │
-│ • Password Reset│ • Delete        │ • Notifications         │
-└─────────────────┴─────────────────┴─────────────────────────┘
-```
+| Tính năng             | Mô tả                                 | Trạng thái |
+| --------------------- | ------------------------------------- | :--------: |
+| **Đăng ký/Đăng nhập** | Xác thực, quản lý profile             |     ✅     |
+| **Sản phẩm**          | Đăng bán, quản lý, upload ảnh         |     ✅     |
+| **Tìm kiếm**          | Tìm theo tên, danh mục, giá           |     ✅     |
+| **Gợi ý thông minh**  | Gợi ý từ khóa, sản phẩm liên quan     |     ✅     |
+| **Giỏ hàng**          | Thêm vào giỏ, cập nhật số lượng       |     ✅     |
+| **Thanh toán**        | Quy trình đặt hàng (Checkout)         |     🔄     |
+| **Admin Dashboard**   | Quản lý người dùng, sản phẩm (cơ bản) |     ⏳     |
 
 ---
 
-## System Requirements
+## 💻 Yêu cầu hệ thống
 
-### Minimum Requirements
+Để chạy dự án mượt mà, bạn cần môi trường sau:
 
-| Component    | Requirement                               |
-| ------------ | ----------------------------------------- |
-| **OS**       | Windows 10 / macOS 10.15+ / Ubuntu 20.04+ |
-| **PHP**      | >= 8.0                                    |
-| **MySQL**    | >= 8.0                                    |
-| **Composer** | >= 2.0                                    |
-| **Node.js**  | >= 16.0                                   |
-| **RAM**      | 4GB                                       |
-| **Storage**  | 1GB                                       |
-
-### Development Tools
-
-| Tool            | Purpose                  | Required |
-| --------------- | ------------------------ | :------: |
-| Laragon         | Local server environment |    ✅    |
-| VS Code         | Code editor              |    ✅    |
-| Git             | Version control          |    ✅    |
-| MySQL Workbench | Database management      | Optional |
-| Postman         | API testing              | Optional |
+| Thành phần   | Yêu cầu | Ghi chú                      |
+| ------------ | ------- | ---------------------------- |
+| **PHP**      | >= 8.0  | Bật extension `pdo_mysql`    |
+| **MySQL**    | >= 8.0  | Hỗ trợ JSON, UTF8mb4         |
+| **Composer** | >= 2.0  | Quản lý thư viện PHP         |
+| **Node.js**  | >= 16.0 | Để build Tailwind CSS        |
+| **Laragon**  | Đề xuất | Môi trường dev tiện lợi nhất |
 
 ---
 
-## Architecture
+## 🚀 Cài đặt nhanh
 
-### System Architecture
+Hãy làm theo các bước sau để khởi chạy dự án trên máy local:
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│                         CLIENT                               │
-│                    (Web Browser)                             │
-└─────────────────────────┬────────────────────────────────────┘
-                          │ HTTP/HTTPS
-                          ▼
-┌──────────────────────────────────────────────────────────────┐
-│                      WEB SERVER                              │
-│                  (Apache/Nginx)                              │
-└─────────────────────────┬────────────────────────────────────┘
-                          │
-                          ▼
-┌──────────────────────────────────────────────────────────────┐
-│                     APPLICATION                              │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐   │
-│  │   Router    │──│ Controllers │──│     Services        │   │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘   │
-│                          │                    │              │
-│                          ▼                    ▼              │
-│                   ┌─────────────┐      ┌───────────┐         │
-│                   │   Models    │──────│  Database │         │
-│                   └─────────────┘      │  (MySQL)  │         │
-│                                        └───────────┘         │
-└──────────────────────────────────────────────────────────────┘
-```
-
-### Technology Stack
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      FRONTEND                               │
-│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌──────────┐  │
-│  │   HTML5   │  │   CSS3    │  │    JS     │  │  Assets  │  │
-│  └───────────┘  └───────────┘  └───────────┘  └──────────┘  │
-│  ┌─────────────────────────────────────────────────────────┐│
-│  │              Tailwind CSS 3.x                           ││
-│  └─────────────────────────────────────────────────────────┘│
-│  ┌─────────────────────────────────────────────────────────┐│
-│  │              Font Awesome 6.x                           ││
-│  └─────────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      BACKEND                                │
-│  ┌─────────────────────────────────────────────────────────┐│
-│  │                    PHP 8.0+                             ││
-│  └─────────────────────────────────────────────────────────┘│
-│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌──────────┐  │
-│  │  Router   │  │Controllers│  │  Models   │  │ Services │  │
-│  └───────────┘  └───────────┘  └───────────┘  └──────────┘  │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      DATABASE                               │
-│  ┌─────────────────────────────────────────────────────────┐│
-│  │                   MySQL 8.0+                            ││
-│  └─────────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Installation
-
-### Step 1: Clone Repository
+### 1. Clone project
 
 ```bash
 git clone <repository-url>
 cd UniMarket
 ```
 
-### Step 2: Install Dependencies
+### 2. Cài dependencies
+
+Cài đặt các gói thư viện cần thiết cho PHP và JS:
 
 ```bash
-# PHP dependencies
 composer install
-
-# Node.js dependencies
 npm install
 ```
 
-### Step 3: Environment Configuration
+### 3. Cấu hình database
+
+Copy file cấu hình mẫu và cập nhật thông tin kết nối CSDL của bạn:
 
 ```bash
-# Copy environment file
 cp .env.example .env
 ```
 
-Edit `.env` file:
+Mở file `.env` và chỉnh sửa các thông số `DB_` cho phù hợp (ví dụ dùng root/rỗng mặc định của Laragon):
 
 ```env
-# Application
-APP_NAME=UniMarket
-APP_ENV=local
-APP_DEBUG=true
-APP_URL=http://unimarket.test
-
-# Database
 DB_HOST=127.0.0.1
-DB_PORT=3306
 DB_DATABASE=unimarket
 DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-### Step 4: Database Setup
+### 4. Khởi tạo Database
+
+Bạn cần tạo database trống trước, sau đó chạy script migration để tạo bảng và dữ liệu mẫu:
 
 ```bash
-# Create database
-mysql -u root -p -e "CREATE DATABASE unimarket CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+# Tạo database (nếu chưa có)
+# CREATE DATABASE unimarket CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-# Import schema
-mysql -u root -p unimarket < db.sql
+# Chạy migrations
+php database/migrate.php
 ```
 
-### Step 5: Build Assets
+> **Lưu ý:** Script `migrate.php` sẽ tự động chạy tất cả các file SQL và PHP trong thư mục `database/migrations` chưa được thực thi.
+
+### 5. Build Assets
+
+Biên dịch Tailwind CSS:
 
 ```bash
-# Development (with watch)
-npm run dev
-
-# Production
-npm run build
+npm run dev    # Chế độ development (tự động build khi sửa file)
+# hoặc
+npm run build  # Build bản production (tối ưu hóa)
 ```
 
-### Step 6: Start Development Server
+### 6. Khởi chạy
 
-**Option A: Using Laragon**
-
-- Start Laragon
-- Access: `http://unimarket.test`
-
-**Option B: Using PHP Built-in Server**
-
-```bash
-php -S localhost:8000 -t public
-```
-
-### Verification
-
-| Check                 | Expected Result |
-| --------------------- | --------------- |
-| Homepage loads        | ✅              |
-| CSS styles applied    | ✅              |
-| Database connected    | ✅              |
-| Login page accessible | ✅              |
+- **Nếu dùng Laragon**: Chỉ cần Start All, truy cập `http://unimarket.test`.
+- **Nếu dùng PHP Server**:
+  ```bash
+  php -S localhost:8000 -t public
+  ```
+  Truy cập `http://localhost:8000`.
 
 ---
 
-## Project Structure
+## 📁 Cấu trúc dự án
+
+Cấu trúc thư mục được tổ chức theo mô hình MVC (gần giống Laravel nhưng đơn giản hơn):
 
 ```
 UniMarket/
 │
-├── 📁 app/                          # Application Source Code
-│   ├── 📁 Controllers/              # Request Handlers
-│   │   ├── AuthController.php       # Authentication logic
-│   │   ├── BaseController.php       # Base controller class
-│   │   ├── HomeController.php       # Homepage logic
-│   │   └── ProductController.php    # Product CRUD
-│   │
-│   ├── 📁 Core/                     # Framework Core
-│   │   ├── App.php                  # Application bootstrap
-│   │   ├── Database.php             # Database connection
-│   │   └── Router.php               # URL routing
-│   │
-│   ├── 📁 Models/                   # Data Models (ORM)
-│   │   ├── BaseModel.php            # Base model class
-│   │   ├── Product.php              # Product model
-│   │   └── User.php                 # User model
-│   │
-│   └── 📁 Services/                 # Business Logic
-│       └── RecommendationService.php
+├── app/                         # CORE LOGIC
+│   ├── Controllers/             # Nhận request, xử lý logic, trả về view
+│   ├── Core/                    # Framework base (Router, Database, App)
+│   ├── Models/                  # Tương tác dữ liệu (Active Record pattern)
+│   └── Services/                # Xử lý nghiệp vụ phức tạp
 │
-├── 📁 config/                       # Configuration Files
-│   ├── app.php                      # App configuration
-│   └── database.php                 # Database configuration
+├── config/                      # CẤU HÌNH
+│   ├── app.php                  # Config chung
+│   └── database.php             # Config DB
 │
-├── 📁 public/                       # Public Directory (Web Root)
-│   ├── 📁 css/                      # Compiled CSS
-│   ├── 📁 images/                   # Image assets
-│   ├── 📁 js/                       # JavaScript files
-│   ├── 📁 uploads/                  # User uploads
-│   └── index.php                    # Entry point
+├── database/                    # MIGRATIONS & SEEDS
+│   ├── migrate.php              # Script chạy migration
+│   └── migrations/              # Danh sách file thay đổi CSDL theo thời gian
 │
-├── 📁 resources/                    # Source Resources
-│   ├── 📁 css/
-│   │   └── app.css                  # Tailwind source
-│   ├── 📁 lang/
-│   │   └── lang.php                 # Language strings
-│   └── 📁 views/                    # View Templates
-│       ├── 📁 auth/                 # Auth pages
-│       │   ├── login.php
-│       │   └── register.php
-│       ├── 📁 home/                 # Homepage
-│       ├── 📁 layouts/              # Layout templates
-│       └── 📁 partials/             # Reusable components
-│           ├── header.php
-│           └── footer.php
+├── public/                      # WEB ROOT
+│   ├── index.php                # Entry point duy nhất
+│   ├── css/                     # File CSS đầu ra
+│   ├── images/                  # Ảnh tĩnh
+│   └── uploads/                 # Ảnh user upload
 │
-├── 📁 routes/                       # Route Definitions
-│   └── web.php                      # Web routes
+├── resources/                   # FRONTEND SOURCE
+│   ├── css/                     # Tailwind source
+│   ├── lang/                    # Ngôn ngữ
+│   └── views/                   # Các file giao diện (.php)
 │
-├── 📁 vendor/                       # Composer Dependencies
-│
-├── .env                             # Environment Variables
-├── .env.example                     # Environment Template
-├── .gitignore                       # Git Ignore Rules
-├── composer.json                    # PHP Dependencies
-├── db.sql                           # Database Schema
-├── package.json                     # Node.js Dependencies
-├── README.md                        # This Documentation
-└── tailwind.config.js               # Tailwind Configuration
+└── routes/                      # ĐỊNH TUYẾN
+    └── web.php                  # Khai báo URL và Controller tương ứng
 ```
 
 ---
 
-## Database Schema
+## 🗄️ Database & Migrations
 
-### Entity Relationship Diagram
+Hệ thống sử dụng cơ chế migration tự viết (`app/Core/Database.php` và `database/migrate.php`) để quản lý version database.
 
-```
-┌──────────────────┐       ┌──────────────────┐
-│      users       │       │    products      │
-├──────────────────┤       ├──────────────────┤
-│ id (PK)          │       │ id (PK)          │
-│ username         │       │ user_id (FK)     │──┐
-│ email            │       │ name             │  │
-│ password         │       │ description      │  │
-│ full_name        │       │ price            │  │
-│ phone            │       │ category_id      │  │
-│ avatar           │       │ image            │  │
-│ created_at       │       │ status           │  │
-│ updated_at       │       │ created_at       │  │
-└──────────────────┘       │ updated_at       │  │
-         │                 └──────────────────┘  │
-         │                          │            │
-         └──────────────────────────┼────────────┘
-                                    │
-                         ┌──────────────────┐
-                         │   categories     │
-                         ├──────────────────┤
-                         │ id (PK)          │
-                         │ name             │
-                         │ slug             │
-                         │ icon             │
-                         └──────────────────┘
-```
+### Danh sách Migrations hiện tại
 
-### Tables Description
+| File                                     | Mô tả                                         |
+| :--------------------------------------- | :-------------------------------------------- |
+| `001_create_base_tables.sql`             | Tạo bảng cơ sở: users, categories             |
+| `002_create_products_table.sql`          | Tạo bảng products                             |
+| `003_create_orders_tables.sql`           | Tạo bảng orders, order_details                |
+| `004_create_social_tables.sql`           | Tạo bảng messages, reviews, favorites         |
+| `005_create_system_tables.sql`           | Tạo bảng interactions, notifications, reports |
+| `006_create_search_keywords.sql`         | Tạo bảng search_keywords (tracking tìm kiếm)  |
+| `007_add_quantity_if_missing.sql`        | Bổ sung cột quantity cho products             |
+| `008_seed_categories_data.sql`           | Thêm dữ liệu danh mục mẫu                     |
+| `009_correct_category_images.sql`        | Sửa đường dẫn ảnh danh mục                    |
+| `010_update_renamed_category_images.sql` | Cập nhật lại tên ảnh danh mục                 |
+| `011_fix_password_hash.sql`              | Sửa logic hash password                       |
+| `012_reset_users_with_correct_hash.sql`  | Reset user mẫu với pass mới                   |
+| `013_fix_password_final.sql`             | Fix lỗi password cuối cùng                    |
+| `014_seed_admin.php`                     | Script PHP tạo tài khoản Admin mặc định       |
+| `015_create_carts_table.sql`             | Tạo bảng carts (Giỏ hàng)                     |
 
-| Table        | Description        | Records (Est.) |
-| ------------ | ------------------ | -------------- |
-| `users`      | User accounts      | 100+           |
-| `products`   | Product listings   | 500+           |
-| `categories` | Product categories | 10-20          |
+### Cách tạo Migration mới
+
+Để thay đổi Database, **ĐỪNG** sửa file SQL cũ. Hãy tạo file mới theo thứ tự tăng dần:
+
+1. Đặt tên file logic: `NNN_ten_thay_doi.sql` (hoặc `.php`)
+2. Viết câu lệnh SQL vào file.
+3. Chạy lệnh `php database/migrate.php`.
 
 ---
 
-## Development Workflow
+## 📚 Tài liệu chi tiết (Documentation)
 
-### Git Branch Strategy
+Ngoài README chính, dự án còn có các tài liệu hướng dẫn chi tiết cho từng module:
 
-```
-main (production)
-  │
-  └── develop (staging)
-        │
-        ├── feature/auth-login
-        ├── feature/product-listing
-        └── feature/search-filter
-```
+### 🔐 Google OAuth (Đăng nhập Google)
 
-### Commit Convention
+- [**Hướng dẫn tích hợp Google Login**](docs/GOOGLE_OAUTH_GUIDE.md): Chi tiết cách tạo App trên Google Console và cấu hình code.
+- [**Checklist Debug lỗi OAuth**](docs/GOOGLE_OAUTH_CHECKLIST.md): Các bước kiểm tra khi gặp lỗi "Not Found" hoặc "Mismatch URI".
 
-```
-<type>(<scope>): <description>
+### ⚡ Performance & Caching (Redis)
 
-[optional body]
+- [**Cài đặt Redis**](docs/REDIS_SETUP.md): Hướng dẫn cài Redis trên Windows/Laragon và tích hợp vào dự án.
+- [**Redis Advanced**](docs/REDIS_ADVANCED.md): Chiến lược caching nâng cao cho Search và Product data.
 
-[optional footer]
-```
+### 👤 Quản lý Vai trò (Roles)
 
-**Types:**
-| Type | Description |
-|------|-------------|
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `docs` | Documentation |
-| `style` | Formatting (no code change) |
-| `refactor` | Code restructuring |
-| `test` | Adding tests |
-| `chore` | Maintenance |
+- [**Role Migration Guide**](docs/ROLE_MIGRATION_GUIDE.md): Hướng dẫn migration và phân quyền user.
+- [**Role Changes Summary**](docs/ROLE_CHANGES_SUMMARY.md): Tổng hợp các thay đổi về logic phân quyền.
 
-**Examples:**
+### 🛠 Troubleshooting (Sửa lỗi)
 
-```bash
-feat(auth): add login functionality
-fix(product): resolve image upload issue
-docs(readme): update installation guide
-```
-
-### Code Review Checklist
-
-- [ ] Code follows PSR-12 standard
-- [ ] No hardcoded values
-- [ ] Proper error handling
-- [ ] SQL injection prevention
-- [ ] XSS prevention
-- [ ] Responsive design tested
-- [ ] Cross-browser tested
+- [**Fix Lỗi Checkout**](docs/BUG_FIX_CHECKOUT_TYPEERROR.md): Hướng dẫn fix lỗi TypeError khi thanh toán.
 
 ---
 
-## Team Members
+## 🔄 Quy trình làm việc
 
-|  #  | Name           | Student ID | Role          | Responsibilities                      |
-| :-: | -------------- | :--------: | ------------- | ------------------------------------- |
-|  1  | [Thành viên 1] |   [MSSV]   | **Team Lead** | Project management, Backend, Database |
-|  2  | [Thành viên 2] |   [MSSV]   | Developer     | Frontend, UI/UX Design                |
-|  3  | [Thành viên 3] |   [MSSV]   | Developer     | Frontend, Integration, Testing        |
+### Git Flow
+
+Chúng ta tuân thủ quy trình Git Flow đơn giản:
+
+```
+main (bản ổn định)
+  ↑
+develop (bản đang code) ──── feature/chuc-nang-moi
+                             feature/fix-loi-abc
+```
+
+### Commit Message chuẩn
+
+Vui lòng viết commit message bằng tiếng Anh theo Convention:
+
+- `feat(scope)`: tính năng mới (vd: `feat(auth): add login page`)
+- `fix(scope)`: sửa lỗi (vd: `fix(cart): update total calculation`)
+- `docs(...)`: tài liệu
+- `style(...)`: format, CSS
+- `refactor(...)`: viết lại code cho gọn, không đổi logic
 
 ---
 
-## Task Assignment
+## 👥 Thành viên nhóm
 
-### Member 1 - Team Lead
-
-| Task                                 |     Status     | Priority |
-| ------------------------------------ | :------------: | :------: |
-| Database schema design               |    ✅ Done     |    P0    |
-| User authentication (Login/Register) |    ✅ Done     |    P0    |
-| Product CRUD API                     | 🔄 In Progress |    P0    |
-| Project management & code review     |   🔄 Ongoing   |    P0    |
-
-### Member 2 - Frontend Developer
-
-| Task                    |     Status     | Priority |
-| ----------------------- | :------------: | :------: |
-| UI/UX Design (Figma)    |    ✅ Done     |    P0    |
-| Homepage implementation |    ✅ Done     |    P0    |
-| Product detail page     | 🔄 In Progress |    P1    |
-| Responsive design       |   ⏳ Pending   |    P1    |
-
-### Member 3 - Frontend Developer
-
-| Task                          |     Status     | Priority |
-| ----------------------------- | :------------: | :------: |
-| Header & Footer components    |    ✅ Done     |    P0    |
-| Search & Filter functionality | 🔄 In Progress |    P1    |
-| Frontend-Backend integration  |   ⏳ Pending   |    P1    |
-| Testing & bug fixes           |   ⏳ Pending   |    P1    |
+|  #  | Họ tên |  MSSV  | Vai trò       | Nhiệm vụ chính                             |
+| :-: | ------ | :----: | ------------- | ------------------------------------------ |
+|  1  | [Tên]  | [MSSV] | **Team Lead** | Kiến trúc hệ thống, Database, Core, Review |
+|  2  | [Tên]  | [MSSV] | Frontend      | Giao diện, UX/UI, Responsive               |
+|  3  | [Tên]  | [MSSV] | Dev           | Chức năng Search, Cart, Testing            |
 
 ---
 
-## Project Timeline
+## 📅 Tiến độ dự án
 
-### Gantt Chart
-
-```
-Week    1    2    3    4    5    6    7    8
-        |----|----|----|----|----|----|----|----|
-Phase 1 ████████                                   Planning & Design
-Phase 2           ████████                         Core Development
-Phase 3                     ████████               Feature Implementation
-Phase 4                               ████████     Testing & Deployment
-```
-
-### Milestones
-
-| Milestone              | Due Date |     Status     | Deliverables                |
-| ---------------------- | :------: | :------------: | --------------------------- |
-| **M1**: Project Setup  |  Week 2  |  ✅ Complete   | Repo, DB schema, Basic UI   |
-| **M2**: Auth Module    |  Week 4  |  ✅ Complete   | Login, Register, Session    |
-| **M3**: Product Module |  Week 6  | 🔄 In Progress | CRUD, Search, Filter        |
-| **M4**: Final Release  |  Week 8  |   ⏳ Pending   | Full testing, Documentation |
-
-### Sprint Progress
-
-**Current Sprint: Sprint 3 (Week 5-6)**
-
-```
-Progress: ████████░░░░░░░░░░░░ 40%
-
-Completed: 4/10 tasks
-In Progress: 3/10 tasks
-Pending: 3/10 tasks
-```
+| Giai đoạn | Nội dung                        |   Trạng thái   |
+| :-------: | ------------------------------- | :------------: |
+|  **P1**   | Phân tích, Database, Setup Base |  ✅ Completed  |
+|  **P2**   | Auth, Homepage, Product Listing |  ✅ Completed  |
+|  **P3**   | Search, Filter, Product Detail  |  ✅ Completed  |
+|  **P4**   | Cart, Checkout                  | 🔄 In Progress |
+|  **P5**   | Admin, Report, Polish           |   ⏳ Pending   |
 
 ---
-
-## Changelog
-
-### [1.0.0] - 2025-XX-XX (Planned)
-
-- Initial release
-- User authentication
-- Product management
-- Search functionality
-
-### [0.2.0] - 2025-12-28
-
-#### Added
-
-- Header & Footer components
-- Login page UI
-- Register page UI
-- Tailwind CSS integration
-
-#### Changed
-
-- Updated project structure
-- Improved responsive design
-
-### [0.1.0] - 2025-12-15
-
-#### Added
-
-- Initial project setup
-- Database schema
-- Basic routing system
-- MVC architecture
-
----
-
-<br>
 
 <p align="center">
-  <img src="public/images/UniMarketHead.svg" alt="UniMarket" width="50">
-</p>
-
-<p align="center">
-  <strong>UniMarket</strong><br>
-  <sub>Đồ Cũ, Vẫn CHẤT</sub>
-</p>
-
-<p align="center">
-  <sub>
-    📅 Last Updated: December 28, 2025<br>
-    🔒 Confidential - For Internal Use Only
-  </sub>
+  <strong>Zoldify Team</strong><br>
+  <sub>📅 Cập nhật lần cuối: 30/12/2025</sub>
 </p>

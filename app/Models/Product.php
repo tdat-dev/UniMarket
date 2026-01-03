@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Core\RedisCache;
+
 class Product extends BaseModel  // Kế thừa BaseModel → tự động có $this->db
 {
     // Lấy tất cả sản phẩm
@@ -15,26 +17,61 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
     // Lấy 1 sản phẩm theo ID
     public function find($id)
     {
+        // ✅ FIXED: Validate ID trước khi query
+        // Chỉ chấp nhận số nguyên dương
+        if (!is_numeric($id) || $id <= 0) {
+            return null;
+        }
+
         // fetchOne = lấy 1 dòng
         // :id là placeholder (prepared statement) để tránh SQL injection
         return $this->db->fetchOne(
             "SELECT * FROM products WHERE id = :id",
-            ['id' => $id]  // Gán giá trị $id vào :id
+            ['id' => (int) $id]  // Cast sang int để đảm bảo an toàn
         );
     }
 
     public function getLatest($limit = 12)
     {
-        // Lấy sản phẩm mới nhất, giới hạn 12 cái để trang chủ không bị quá dài
-        return $this->db->fetchAll("SELECT * FROM products ORDER BY id DESC LIMIT :limit", ['limit' => $limit]);
+        $cacheKey = "latest_products_{$limit}";
+        $cacheTTL = 300; // 5 phút (products thay đổi thường xuyên hơn)
+
+        // Thử dùng Redis cache
+        $redis = RedisCache::getInstance();
+
+        if ($redis->isAvailable()) {
+            $products = $redis->get($cacheKey);
+
+            if ($products === null) {
+                // Cache miss → Query DB
+                $products = $this->db->fetchAll(
+                    "SELECT * FROM products ORDER BY id DESC LIMIT :limit",
+                    ['limit' => (int) $limit]
+                );
+
+                // Lưu vào Redis
+                $redis->set($cacheKey, $products, $cacheTTL);
+            }
+
+            return $products;
+        }
+
+        // Fallback: Redis không khả dụng
+        return $this->db->fetchAll(
+            "SELECT * FROM products ORDER BY id DESC LIMIT :limit",
+            ['limit' => (int) $limit]
+        );
     }
 
     public function getRandom($limit = 12)
     {
+        // ✅ FIXED: Validate và dùng prepared statement
+        $limit = (int) $limit; // Đảm bảo là số nguyên
+
         // Sử dụng ORDER BY RAND() của MySQL để lấy dữ liệu ngẫu nhiên
         // Chỉ lấy những sản phẩm đang ở trạng thái 'active'
-        $sql = "SELECT * FROM products WHERE status = 'active' ORDER BY RAND() LIMIT $limit";
-        return $this->db->fetchAll($sql);
+        $sql = "SELECT * FROM products WHERE status = 'active' ORDER BY RAND() LIMIT :limit";
+        return $this->db->fetchAll($sql, ['limit' => $limit]);
     }
 
     // Tạo sản phẩm mới
@@ -59,8 +96,8 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
     public function getPaginated($limit, $offset)
     {
         return $this->db->fetchAll("SELECT * FROM products ORDER BY id DESC LIMIT :limit OFFSET :offset", [
-            'limit' => $limit,
-            'offset' => $offset
+            'limit' => (int) $limit,
+            'offset' => (int) $offset
         ]);
     }
 
@@ -71,7 +108,7 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
         return $result['total'];
     }
 
-    // Lấy sản phẩm theo từ khóa tìm kiếm phổ biến nhất
+    // ✅ FIXED: Lấy sản phẩm theo từ khóa tìm kiếm phổ biến nhất
     public function getByTopKeywords($limit = 6)
     {
         // Lấy 5 keyword phổ biến nhất
@@ -101,15 +138,27 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
             $allWords = array_unique($allWords);
 
             if (!empty($allWords)) {
-                // Tạo điều kiện LIKE cho mỗi từ
+                // ✅ FIXED: Sử dụng prepared statements thay vì string concatenation
                 $conditions = [];
-                foreach ($allWords as $word) {
-                    $conditions[] = "name LIKE '%$word%'";
-                }
-                $whereClause = implode(' OR ', $conditions);
+                $params = [];
+                $index = 0;
 
-                $sql = "SELECT * FROM products WHERE status = 'active' AND ($whereClause) LIMIT $limit";
-                $products = $this->db->fetchAll($sql);
+                foreach ($allWords as $word) {
+                    $paramName = "word_$index";
+                    $conditions[] = "name LIKE :$paramName";
+                    $params[$paramName] = "%$word%";
+                    $index++;
+                }
+
+                $whereClause = implode(' OR ', $conditions);
+                $params['limit'] = (int) $limit;
+
+                $sql = "SELECT * FROM products 
+                        WHERE status = 'active' 
+                        AND ($whereClause) 
+                        LIMIT :limit";
+
+                $products = $this->db->fetchAll($sql, $params);
             }
         }
 
@@ -138,7 +187,7 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
         return $products;
     }
 
-    // Tìm kiếm sản phẩm theo keyword
+    // ✅ FIXED: Tìm kiếm sản phẩm theo keyword
     public function searchByKeyword($keyword, $limit, $offset)
     {
         $keyword = trim($keyword);
@@ -146,12 +195,17 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
             return $this->getPaginated($limit, $offset);
         }
 
+        // ✅ FIXED: Dùng prepared statement cho LIMIT/OFFSET
         $sql = "SELECT * FROM products 
             WHERE (name LIKE :keyword) 
             ORDER BY id DESC 
-            LIMIT $limit OFFSET $offset";
+            LIMIT :limit OFFSET :offset";
 
-        return $this->db->fetchAll($sql, ['keyword' => "%$keyword%"]);
+        return $this->db->fetchAll($sql, [
+            'keyword' => "%$keyword%",
+            'limit' => (int) $limit,
+            'offset' => (int) $offset
+        ]);
     }
 
     // Đếm số sản phẩm theo keyword
@@ -166,4 +220,50 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
         $result = $this->db->fetchOne($sql, ['keyword' => "%$keyword%"]);
         return $result['total'];
     }
+
+
+    // ✅ FIXED: Lấy sản phẩm theo danh mục (cho phần "Sản phẩm tương tự")
+    public function getByCategory($categoryId, $limit = 4, $excludeId = null)
+    {
+        $sql = "SELECT * FROM products 
+                WHERE category_id = :category_id 
+                AND status = 'active'";
+
+        $params = ['category_id' => (int) $categoryId];
+
+        if ($excludeId) {
+            $sql .= " AND id != :exclude_id";
+            $params['exclude_id'] = (int) $excludeId;
+        }
+
+        // ✅ FIXED: Dùng prepared statement cho LIMIT
+        $sql .= " ORDER BY RAND() LIMIT :limit";
+        $params['limit'] = (int) $limit;
+
+        return $this->db->fetchAll($sql, $params);
+    }
+
+    // Giảm số lượng tồn kho
+    public function decreaseQuantity($id, $amount)
+    {
+        // Sửa lỗi HY093: Đặt tên tham số khác nhau cho mỗi lần xuất hiện
+        $sql = "UPDATE products 
+                SET quantity = quantity - :amount_dec 
+                WHERE id = :id AND quantity >= :amount_check";
+
+        return $this->db->execute($sql, [
+            'id' => (int) $id,
+            'amount_dec' => (int) $amount,   // Dùng cho phép trừ
+            'amount_check' => (int) $amount  // Dùng cho điều kiện WHERE
+        ]);
+    }
+
+    // Get products by user ID (for Shop page)
+    public function getByUserId($userId)
+    {
+        return $this->db->fetchAll("SELECT * FROM products WHERE user_id = :user_id ORDER BY id DESC", [
+            'user_id' => (int) $userId
+        ]);
+    }
+
 }

@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: ["main", "develop"]
   pull_request:
-    branches: [ "main", "develop" ]
+    branches: ["main", "develop"]
 
 jobs:
   lint:
@@ -70,5 +70,9 @@ jobs:
 
           while IFS= read -r f; do
             [[ -z "$f" ]] && continue
-            php -l "$f"
+            if [[ -f "$f" ]]; then
+              php -l "$f"
+            else
+              echo "Skipping deleted file: $f"
+            fi
           done <<< "$FILES"
