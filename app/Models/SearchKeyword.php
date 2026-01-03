@@ -36,7 +36,8 @@ class SearchKeyword extends BaseModel
     public function getTopKeywords($limit = 6)
     {
         return $this->db->fetchAll(
-            "SELECT * FROM search_keywords ORDER BY search_count DESC LIMIT $limit"
+            "SELECT * FROM search_keywords ORDER BY search_count DESC LIMIT :limit",
+            ['limit' => (int) $limit]
         );
     }
 }

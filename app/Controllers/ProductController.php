@@ -11,7 +11,7 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
     public function index()
     {
         $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
-        $limit = 22; // Số sản phẩm trên mỗi trang
+        $limit = 24; // Số sản phẩm trên mỗi trang
         $offset = ($page - 1) * $limit;
 
         $productModel = new Product();
@@ -92,14 +92,14 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
         }
 
         if (empty($data['quantity']) || $data['quantity'] < 1) {
-             $data['quantity'] = 1; // Default
+            $data['quantity'] = 1; // Default
         }
 
         // Validate Image
         if (!isset($_FILES['images']) || $_FILES['images']['error'][0] != UPLOAD_ERR_OK) {
-             // Optional: Allow product without image? Usually no for a marketplace.
-             // For now require at least one image
-             $errors['images'] = 'Vui lòng chọn ít nhất 1 ảnh sản phẩm';
+            // Optional: Allow product without image? Usually no for a marketplace.
+            // For now require at least one image
+            $errors['images'] = 'Vui lòng chọn ít nhất 1 ảnh sản phẩm';
         }
 
         if (!empty($errors)) {
@@ -110,12 +110,12 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
         // 2. Handle Image Upload
         // Lấy ảnh đầu tiên làm ảnh đại diện (Do bảng products hiện tại chỉ lưu 1 ảnh)
         $mainImage = 'default_product.png'; // Fallback
-        
+
         if (isset($_FILES['images']) && !empty($_FILES['images']['name'][0])) {
             $fileTmp = $_FILES['images']['tmp_name'][0];
             $fileName = time() . '_' . $_FILES['images']['name'][0];
             $uploadDir = 'uploads/products/'; // Relative to public
-            
+
             // Đảm bảo thư mục tồn tại (cần check absolute path)
             $rootDir = __DIR__ . '/../../public/';
             if (!is_dir($rootDir . $uploadDir)) {
@@ -124,7 +124,7 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
 
             if (move_uploaded_file($fileTmp, $rootDir . $uploadDir . $fileName)) {
                 // View prepends '/uploads/', so we save 'products/filename.ext'
-                $mainImage = 'products/' . $fileName; 
+                $mainImage = 'products/' . $fileName;
             }
         }
 
@@ -149,15 +149,15 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
             $newId = $productModel->create($productData);
             if ($newId) {
                 // Success -> Redirect to product detail or shop
-                header('Location: /shop?id=' . $_SESSION['user']['id']); 
+                header('Location: /shop?id=' . $_SESSION['user']['id']);
                 exit;
             } else {
                 $errors['db'] = 'Lỗi hệ thống, không thể tạo sản phẩm';
-                 $this->view('products/create', ['errors' => $errors, 'old' => $data]);
+                $this->view('products/create', ['errors' => $errors, 'old' => $data]);
             }
         } catch (\Exception $e) {
-             $errors['db'] = 'Lỗi: ' . $e->getMessage();
-             $this->view('products/create', ['errors' => $errors, 'old' => $data]);
+            $errors['db'] = 'Lỗi: ' . $e->getMessage();
+            $this->view('products/create', ['errors' => $errors, 'old' => $data]);
         }
     }
 }

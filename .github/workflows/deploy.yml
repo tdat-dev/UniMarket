@@ -1,43 +1,27 @@
-name: 🚀 Deploy to CloudPanel
-
+name: 🚀 Deploy to aaPanel via FTP
 on:
   push:
     branches:
-      - main
-
+      - main # hoặc master - branch chính của bạn
 jobs:
   deploy:
-    name: 🎉 Deploy
+    name: 📦 Deploy
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🚚 Get latest code
+      - name: 🔄 Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
-      - name: 📂 Sync files via FTP (only changed files)
+      - name: 📤 Upload via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: ${{ secrets.FTP_SERVER_DIR }}
-          state-name: .ftp-deploy-sync-state.json
+          local-dir: ./ # Thư mục local cần upload
+          server-dir: /www/wwwroot/zoldify.com # Thư mục đích trên server
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
-            **/.github/**
-            *.sql
-            .agent
-            .env
-            .env.example
-            composer.lock
-            package-lock.json
-            README.md
-            README2.md
-            ARCHITECTURE.md
-            .gitignore
-            .rsyncignore
-            .ftp-deploy-sync-state.json
+            **/.env
+            **/README.md

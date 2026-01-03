@@ -6,6 +6,8 @@ use App\Core\Database;
 
 class User extends BaseModel
 {
+	protected $table = 'users';
+
 	// Đăng ký tài khoản mới
 	public function register($data)
 	{
@@ -92,74 +94,75 @@ class User extends BaseModel
 		return $this->db->execute($sql, ['id' => $userId]);
 	}
 
-    // Đếm tổng số users
-    public function count(): int
-    {
-        $sql = "SELECT COUNT(*) as total FROM users";
-        $result = $this->db->fetchOne($sql);
-        return $result['total'] ?? 0;
-    }
+	// Đếm tổng số users
+	public function count(): int
+	{
+		$sql = "SELECT COUNT(*) as total FROM users";
+		$result = $this->db->fetchOne($sql);
+		return $result['total'] ?? 0;
+	}
 
-    /**
-     * Lấy tất cả users (thường dùng cho Admin)
-     */
-    public function getAll()
-    {
-        // Lấy tất cả thông tin quan trọng (trừ password)
-        // Sắp xếp người mới nhất lên đầu
-        $sql = "SELECT id, full_name, email, phone_number, address, role, created_at, email_verified, is_locked, avatar 
+	/**
+	 * Lấy tất cả users (thường dùng cho Admin)
+	 */
+	public function getAll()
+	{
+		// Lấy tất cả thông tin quan trọng (trừ password)
+		// Sắp xếp người mới nhất lên đầu
+		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at, email_verified, is_locked, avatar 
                 FROM users 
                 ORDER BY created_at DESC";
-        return $this->db->fetchAll($sql);
-    }
+		return $this->db->fetchAll($sql);
+	}
 
-    /**
-     * Cập nhật thông tin user (Admin)
-     */
-    public function update($id, $data)
-    {
-        $sql = "UPDATE users SET 
+	/**
+	 * Cập nhật thông tin user (Admin)
+	 */
+	public function update($id, $data)
+	{
+		$sql = "UPDATE users SET 
                 full_name = :full_name,
                 email = :email,
                 phone_number = :phone_number,
                 role = :role,
                 email_verified = :email_verified
                 WHERE id = :id";
-        
-        return $this->db->execute($sql, [
-            'id' => $id,
-            'full_name' => $data['full_name'],
-            'email' => $data['email'],
-            'phone_number' => $data['phone_number'],
-            'role' => $data['role'],
-            'email_verified' => $data['email_verified']
-        ]);
-    }
 
-    /**
-     * Khóa/Mở khóa tài khoản
-     */
-    public function toggleLock($id)
-    {
-        // Kiểm tra trạng thái hiện tại
-        $user = $this->find($id);
-        if (!$user) return false;
+		return $this->db->execute($sql, [
+			'id' => $id,
+			'full_name' => $data['full_name'],
+			'email' => $data['email'],
+			'phone_number' => $data['phone_number'],
+			'role' => $data['role'],
+			'email_verified' => $data['email_verified']
+		]);
+	}
 
-        // Đảo ngược trạng thái: nếu đang locked (1) -> mở (0), và ngược lại
-        // Lưu ý: database có thể đang lưu is_locked là NULL hoặc 0
-        $currentStatus = !empty($user['is_locked']) ? 1 : 0;
-        $newStatus = $currentStatus == 1 ? 0 : 1;
+	/**
+	 * Khóa/Mở khóa tài khoản
+	 */
+	public function toggleLock($id)
+	{
+		// Kiểm tra trạng thái hiện tại
+		$user = $this->find($id);
+		if (!$user)
+			return false;
 
-        $sql = "UPDATE users SET is_locked = :new_status WHERE id = :id";
-        return $this->db->execute($sql, ['new_status' => $newStatus, 'id' => $id]);
-    }
+		// Đảo ngược trạng thái: nếu đang locked (1) -> mở (0), và ngược lại
+		// Lưu ý: database có thể đang lưu is_locked là NULL hoặc 0
+		$currentStatus = !empty($user['is_locked']) ? 1 : 0;
+		$newStatus = $currentStatus == 1 ? 0 : 1;
 
-    /**
-     * Đổi trạng thái xác minh email
-     */
-    public function toggleVerified($id)
-    {
-        $sql = "UPDATE users SET email_verified = NOT email_verified WHERE id = :id";
-        return $this->db->execute($sql, ['id' => $id]);
-    }
+		$sql = "UPDATE users SET is_locked = :new_status WHERE id = :id";
+		return $this->db->execute($sql, ['new_status' => $newStatus, 'id' => $id]);
+	}
+
+	/**
+	 * Đổi trạng thái xác minh email
+	 */
+	public function toggleVerified($id)
+	{
+		$sql = "UPDATE users SET email_verified = NOT email_verified WHERE id = :id";
+		return $this->db->execute($sql, ['id' => $id]);
+	}
 }
