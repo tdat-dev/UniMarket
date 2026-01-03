@@ -1,43 +1,27 @@
-name: 🚀 Deploy to CloudPanel
+name: Deploy to CloudPanel
 
 on:
   push:
     branches:
-      - main
+      - main # Hoặc master, tùy branch chính của em
 
 jobs:
   deploy:
-    name: 🎉 Deploy
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🚚 Get latest code
+      - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
-      - name: 📂 Sync files via FTP (only changed files)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: ${{ secrets.FTP_SERVER_DIR }}
-          state-name: .ftp-deploy-sync-state.json
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            **/.github/**
-            *.sql
-            .agent
-            .env
-            .env.example
-            composer.lock
-            package-lock.json
-            README.md
-            README2.md
-            ARCHITECTURE.md
-            .gitignore
-            .rsyncignore
-            .ftp-deploy-sync-state.json
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /home/tdatdev-zoldify/htdocs/zoldify.tdatdev.software
+            git pull origin main
+            composer install --no-dev --optimize-autoloader
+            php migrate.php
