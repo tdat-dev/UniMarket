@@ -1,5 +1,5 @@
 <?php
-function run($pdo)
+function run_014_seed_admin($pdo)
 {
     // Hash password bằng PHP
     $hash = password_hash('admin123', PASSWORD_BCRYPT);

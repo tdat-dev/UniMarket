@@ -48,7 +48,7 @@ class User extends BaseModel
 	// Lấy thông tin user theo email (cho Google OAuth)
 	public function findByEmail($email)
 	{
-		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at FROM users WHERE email = :email";
+		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at, balance, avatar FROM users WHERE email = :email";
 		return $this->db->fetchOne($sql, ['email' => $email]);
 	}
 

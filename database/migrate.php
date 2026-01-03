@@ -48,11 +48,16 @@ foreach ($files as $file) {
             $pdo->exec($sql);
         } elseif ($extension === 'php') {
             // Chạy file PHP
-            // File PHP phải có hàm run($pdo) hoặc chạy trực tiếp
+            // File PHP phải có hàm run($pdo) hoặc tên hàm dựa trên tên file
             require_once $file;
 
-            // Nếu file có hàm run(), gọi nó
-            if (function_exists('run')) {
+            // Lấy tên hàm từ tên file (vd: 014_seed_admin.php -> run_014_seed_admin)
+            $functionName = 'run_' . pathinfo($filename, PATHINFO_FILENAME);
+            
+            // Thử gọi hàm theo tên file trước, nếu không có thì gọi run()
+            if (function_exists($functionName)) {
+                $functionName($pdo);
+            } elseif (function_exists('run')) {
                 run($pdo);
             }
         }

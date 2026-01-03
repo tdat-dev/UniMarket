@@ -55,27 +55,10 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
     // Hàm hiện form đăng tin
     public function create()
     {
-        $this->view('products/create'); // Bạn cần tạo file view này
+        $this->view('products/create');
     }
-}
+
     // Hàm xử lý lưu tin
-   public function store() {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-        $data = [
-            'name'        => $_POST['name'] ?? '',
-            'price'       => $_POST['price'] ?? 0,
-            'description' => $_POST['description'] ?? '',
-            'category_id' => $_POST['category_id'] ?? 0,
-        ];
-
-        $productModel = new Product();
-        $productModel->create($data);
-
-        // Sau khi đăng tin xong → quay về trang danh sách
-        header('Location: /products');
-        exit;
-=======
     public function store()
     {
         if (session_status() == PHP_SESSION_NONE) {
@@ -177,5 +160,4 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
              $this->view('products/create', ['errors' => $errors, 'old' => $data]);
         }
     }
-  }
 }

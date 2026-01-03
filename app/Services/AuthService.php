@@ -46,7 +46,14 @@ class AuthService
         $user = $userModel->login($email, $password);
 
         if ($user) {
-
+            // Kiểm tra user có bị khóa không
+            if (!empty($user['is_locked'])) {
+                return [
+                    'success' => false,
+                    'reason' => 'locked',
+                    'message' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ admin.'
+                ];
+            }
             // Lưu session
             if (session_status() === PHP_SESSION_NONE)
                 session_start();

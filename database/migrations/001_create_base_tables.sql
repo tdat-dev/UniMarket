@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     phone_number VARCHAR(20),
     address VARCHAR(255),
     role ENUM('buyer', 'seller', 'admin', 'moderator') DEFAULT 'buyer',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 -- Bảng Danh mục

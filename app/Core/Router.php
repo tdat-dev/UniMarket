@@ -19,7 +19,22 @@ class Router
     public function dispatch()
     {
         // Lấy URL từ query string (Apache/Laragon) hoặc parse từ REQUEST_URI (PHP Built-in Server)
-        $url = $_GET['url'] ?? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        if (isset($_GET['url'])) {
+            $url = $_GET['url'];
+        } else {
+            // Parse từ REQUEST_URI và loại bỏ base path
+            $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+            
+            // Lấy base path từ SCRIPT_NAME (vd: /Zodify/public/index.php -> /Zodify/public)
+            $scriptName = dirname($_SERVER['SCRIPT_NAME']);
+            
+            // Loại bỏ base path khỏi REQUEST_URI
+            if ($scriptName !== '/' && strpos($requestUri, $scriptName) === 0) {
+                $url = substr($requestUri, strlen($scriptName));
+            } else {
+                $url = $requestUri;
+            }
+        }
 
         // Normalize URL: bỏ dấu / ở đầu và cuối
         $url = trim($url, '/');

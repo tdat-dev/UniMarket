@@ -29,7 +29,6 @@ $router->get('auth/google/callback', [GoogleAuthController::class, 'handleGoogle
 $router->get('products', [ProductController::class, 'index']);
 $router->get('product-detail', [ProductController::class, 'show']);
 
-<<<<<<< HEAD
 // Route search
 $router->get('search', [SearchController::class, 'index']);
 $router->get('api/search-suggest', [SearchController::class, 'suggest']);
@@ -38,7 +37,7 @@ $router->get('api/search-suggest', [SearchController::class, 'suggest']);
 $router->get('/products', [ProductController::class, 'index']);
 $router->get('/products/create', [ProductController::class, 'create']);
 $router->post('/products/store', [ProductController::class, 'store']);
-=======
+
 // Cart & Checkout
 $router->post('cart/add', [\App\Controllers\CartController::class, 'add']);
 $router->get('cart', [\App\Controllers\CartController::class, 'index']);
@@ -65,6 +64,11 @@ $router->get('reviews', [\App\Controllers\ProfileController::class, 'reviews']);
 $router->post('reviews/store', [\App\Controllers\ProfileController::class, 'storeReview']);
 $router->get('shop/orders', [\App\Controllers\ShopController::class, 'orders']);
 $router->post('shop/orders/update', [\App\Controllers\ShopController::class, 'updateOrderStatus']);
+$router->get('profile/orders', [\App\Controllers\ProfileController::class, 'orders']);
+$router->post('profile/orders/cancel', [\App\Controllers\ProfileController::class, 'cancelOrder']);
+$router->post('profile/orders/rebuy', [\App\Controllers\ProfileController::class, 'rebuyOrder']);
+$router->get('profile/orders/detail', [\App\Controllers\ProfileController::class, 'orderDetail']);
+$router->post('profile/avatar', [\App\Controllers\ProfileController::class, 'updateAvatar']);
 
 // Route search (yêu cầu đăng nhập)
 $router->get('search', [SearchController::class, 'search']);
@@ -78,4 +82,4 @@ $router->post('verify-email/resend', [VerificationController::class, 'resendVeri
 
 // Đăng xuất
 $router->post('logout', [AuthController::class, 'logout']);
->>>>>>> a63b53b6c0861cecaf3edbf922424649479981fa
+

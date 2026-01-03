@@ -4,7 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zoldify - Mua sắm đồ cũ online</title>
+    <title><?= htmlspecialchars($siteSettings['general']['site_name'] ?? 'Zoldify') ?> -
+        <?= htmlspecialchars($siteSettings['general']['site_description'] ?? '') ?></title>
+
+    <?php if (!empty($siteSettings['general']['site_favicon'])): ?>
+        <link rel="icon" href="<?= $siteSettings['general']['site_favicon'] ?>">
+    <?php endif; ?>
 
     <link rel="icon" href="/images/icons/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/images/icons/favicon-32x32.png" />
