@@ -266,6 +266,34 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
         return $result['total'] ?? 0;
     }
 
+    /**
+     * Lấy tất cả sản phẩm của một user (seller)
+     * Dùng cho trang Shop cá nhân
+     */
+    public function getByUserId($userId, $limit = 50, $offset = 0)
+    {
+        $sql = "SELECT * FROM products 
+                WHERE user_id = :user_id 
+                ORDER BY created_at DESC 
+                LIMIT :limit OFFSET :offset";
+
+        return $this->db->fetchAll($sql, [
+            'user_id' => (int) $userId,
+            'limit' => (int) $limit,
+            'offset' => (int) $offset
+        ]);
+    }
+
+    /**
+     * Đếm số sản phẩm của một user
+     */
+    public function countByUserId($userId): int
+    {
+        $sql = "SELECT COUNT(*) as total FROM products WHERE user_id = :user_id";
+        $result = $this->db->fetchOne($sql, ['user_id' => (int) $userId]);
+        return $result['total'] ?? 0;
+    }
+
     // ===================== ADMIN METHODS =====================
 
     /**

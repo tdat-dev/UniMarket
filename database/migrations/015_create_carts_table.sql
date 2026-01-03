@@ -1,4 +1,8 @@
 -- Tạo bảng giỏ hàng (lưu vĩnh viễn trong Database)
+-- Đảm bảo các bảng users và products đã được tạo trước
+
+SET FOREIGN_KEY_CHECKS = 0;
+
 CREATE TABLE IF NOT EXISTS carts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -14,3 +18,5 @@ CREATE TABLE IF NOT EXISTS carts (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+SET FOREIGN_KEY_CHECKS = 1;
