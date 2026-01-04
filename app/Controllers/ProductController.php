@@ -55,7 +55,7 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
     // Hàm hiện form đăng tin
     public function create()
     {
-        $this->view('products/create'); // Bạn cần tạo file view này
+        $this->view('products/create');
     }
 
     // Hàm xử lý lưu tin

@@ -48,15 +48,16 @@ foreach ($files as $file) {
             $pdo->exec($sql);
         } elseif ($extension === 'php') {
             // Chạy file PHP
-            // Cách mới: File trả về một anonymous object có phương thức run()
-            // return new class { public function run($pdo) { ... } };
-            $migration = require_once $file;
+            // File PHP phải có hàm run($pdo) hoặc tên hàm dựa trên tên file
+            require_once $file;
 
-            if (is_object($migration) && method_exists($migration, 'run')) {
-                $migration->run($pdo);
+            // Lấy tên hàm từ tên file (vd: 014_seed_admin.php -> run_014_seed_admin)
+            $functionName = 'run_' . pathinfo($filename, PATHINFO_FILENAME);
+            
+            // Thử gọi hàm theo tên file trước, nếu không có thì gọi run()
+            if (function_exists($functionName)) {
+                $functionName($pdo);
             } elseif (function_exists('run')) {
-                // Cách cũ: File định nghĩa hàm run() global
-                // Warning: Dễ gây lỗi "Cannot redeclare run()" nếu có nhiều file PHP
                 run($pdo);
             }
         }
