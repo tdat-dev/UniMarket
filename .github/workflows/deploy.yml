@@ -62,44 +62,43 @@ jobs:
     if: |
       github.ref == 'refs/heads/develop' || 
       github.ref_name == 'develop' ||
+      github.ref == 'refs/heads/main' ||
+      github.ref_name == 'main' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
     environment:
       name: staging
       url: https://staging.zoldify.com
 
     steps:
-      - name: 🔍 Debug - Show branch info
-        run: |
-          echo "github.ref: ${{ github.ref }}"
-          echo "github.ref_name: ${{ github.ref_name }}"
-          echo "github.event_name: ${{ github.event_name }}"
-
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: 📤 Deploy to Staging via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME_STAGING }}
-          password: ${{ secrets.FTP_PASSWORD_STAGING }}
-          local-dir: ./
-          server-dir: /www/wwwroot/staging.zoldify.com/
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            **/vendor/**
-            **/.env
-            **/README.md
-            **/tests/**
-            **/.github/**
-            **/.agent/**
-            **/.agent*
-            **/docs/**
-            **/*.md
-            **/.vscode/**
-            **/.idea/**
+      - name: 🔑 Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: 📤 Deploy to Staging via Rsync
+        run: |
+          rsync -avz --delete \
+            --exclude='.git*' \
+            --exclude='node_modules' \
+            --exclude='vendor' \
+            --exclude='.env' \
+            --exclude='README.md' \
+            --exclude='tests' \
+            --exclude='.github' \
+            --exclude='.agent' \
+            --exclude='docs' \
+            --exclude='*.md' \
+            --exclude='.vscode' \
+            --exclude='.idea' \
+            --exclude='storage/logs/*' \
+            --exclude='storage/cache/*' \
+            -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no" \
+            ./ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/www/wwwroot/staging.zoldify.com/
 
       - name: 🔔 Notify Success
         if: success()
