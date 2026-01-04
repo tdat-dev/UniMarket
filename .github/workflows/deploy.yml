@@ -105,7 +105,7 @@ jobs:
             --exclude='.user.ini' \
             --exclude='.well-known' \
             -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no" \
-            ./ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/www/wwwroot/staging.zoldify.com/ || true
+            ./ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:./ || true
 
       - name: 🔔 Notify Success
         if: success()
@@ -158,7 +158,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
-          server-dir: /www/wwwroot/zoldify.com/
+          server-dir: ./
           exclude: |
             **/.git*
             **/.git*/**
@@ -228,7 +228,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./chat-server/
-          server-dir: /www/wwwroot/zoldify.com/chat-server/
+          server-dir: ./chat-server/
           exclude: |
             **/.git*
             **/.env
