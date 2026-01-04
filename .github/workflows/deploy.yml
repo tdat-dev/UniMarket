@@ -84,7 +84,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME_STAGING }}
           password: ${{ secrets.FTP_PASSWORD_STAGING }}
           local-dir: ./
-          server-dir: /www/wwwroot/staging.zoldify.com
+          server-dir: /www/wwwroot/staging.zoldify.com/
           exclude: |
             **/.git*
             **/.git*/**
