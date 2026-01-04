@@ -224,26 +224,39 @@ include __DIR__ . '/../partials/header.php';
 </main>
 
 <script>
+    const isLoggedIn = <?= isset($_SESSION['user']['id']) ? 'true' : 'false' ?>;
+
     document.addEventListener('DOMContentLoaded', function () {
         const btnDecrease = document.getElementById('btn-decrease');
         const btnIncrease = document.getElementById('btn-increase');
         const inputQuantity = document.getElementById('input-quantity');
-        const maxStock = parseInt(document.getElementById('max-stock').value) || 0;
+        const maxStock = parseInt(document.getElementById('max-stock')?.value) || 0;
         const inputSubmit = document.getElementById('input-quantity-submit');
         const btnSubmitCart = document.querySelector('button[value="add"]');
         const btnSubmitBuy = document.querySelector('button[value="buy"]');
+        
+        const formCart = document.querySelector('form[action="/cart/add"]');
+
+        if (formCart) {
+            formCart.addEventListener('submit', function(e) {
+                if (!isLoggedIn) {
+                    e.preventDefault();
+                    window.location.href = '/login';
+                }
+            });
+        }
 
         function updateQuantity(val) {
             let newVal = parseInt(val);
             if (isNaN(newVal) || newVal < 1) newVal = 1;
             if (newVal > maxStock) newVal = maxStock;
 
-            inputQuantity.value = newVal;
+            if (inputQuantity) inputQuantity.value = newVal;
             if (inputSubmit) inputSubmit.value = newVal; // Update hidden input for form
 
             // Validate functionality if stock is somehow 0 (though covered by PHP)
             if (maxStock <= 0) {
-                inputQuantity.value = 0;
+                if (inputQuantity) inputQuantity.value = 0;
                 if (btnSubmitCart) btnSubmitCart.disabled = true;
                 if (btnSubmitBuy) btnSubmitBuy.disabled = true;
             }
@@ -251,13 +264,13 @@ include __DIR__ . '/../partials/header.php';
 
         if (btnDecrease) {
             btnDecrease.addEventListener('click', function () {
-                updateQuantity(parseInt(inputQuantity.value) - 1);
+                if (inputQuantity) updateQuantity(parseInt(inputQuantity.value) - 1);
             });
         }
 
         if (btnIncrease) {
             btnIncrease.addEventListener('click', function () {
-                updateQuantity(parseInt(inputQuantity.value) + 1);
+                if (inputQuantity) updateQuantity(parseInt(inputQuantity.value) + 1);
             });
         }
 
@@ -265,10 +278,9 @@ include __DIR__ . '/../partials/header.php';
             inputQuantity.addEventListener('change', function () {
                 updateQuantity(this.value);
             });
+            // Initial check
+            updateQuantity(inputQuantity.value);
         }
-
-        // Initial check
-        updateQuantity(inputQuantity.value);
     });
 </script>
 
