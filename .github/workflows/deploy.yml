@@ -78,7 +78,12 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          echo "🔍 Testing SSH connection to ${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }}"
+          ssh-keyscan -H -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>&1 || echo "⚠️ ssh-keyscan failed, continuing anyway"
+          echo "🔍 Checking key file:"
+          ls -la ~/.ssh/deploy_key
+          echo "🔍 Testing SSH connection:"
+          ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "echo 'SSH connection successful!'" || echo "❌ SSH connection failed"
 
       - name: 📤 Deploy to Staging via Rsync
         run: |
