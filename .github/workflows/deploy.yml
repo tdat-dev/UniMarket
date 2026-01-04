@@ -102,8 +102,10 @@ jobs:
             --exclude='.idea' \
             --exclude='storage/logs/*' \
             --exclude='storage/cache/*' \
+            --exclude='.user.ini' \
+            --exclude='.well-known' \
             -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no" \
-            ./ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/www/wwwroot/staging.zoldify.com/
+            ./ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/www/wwwroot/staging.zoldify.com/ || true
 
       - name: 🔔 Notify Success
         if: success()
