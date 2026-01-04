@@ -29,7 +29,6 @@ docs/CREDENTIALS.md
 # Uploads (giữ cấu trúc thư mục nhưng ignore files)
 /public/uploads/*
 !/public/uploads/.gitkeep
-/public/css/
 
 # Playwright
 /test-results/
@@ -100,3 +99,4 @@ yarn-error.log*
 # System files
 .htaccess.local
 .htpasswd
+public/assets/css/app.css

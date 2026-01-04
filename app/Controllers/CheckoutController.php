@@ -7,7 +7,8 @@ use App\Models\Product;
 
 class CheckoutController extends BaseController
 {
-    private function getCartItems($userId) {
+    private function getCartItems($userId)
+    {
         if ($userId) {
             $cartModel = new \App\Models\Cart();
             $dbItems = $cartModel->getByUserId($userId);
@@ -30,7 +31,7 @@ class CheckoutController extends BaseController
 
         $userId = $_SESSION['user']['id'] ?? null;
         $allCart = $this->getCartItems($userId);
-        
+
         $selectedIds = $_POST['selected_products'] ?? [];
 
         // If no products selected, redirect back to cart
@@ -51,7 +52,7 @@ class CheckoutController extends BaseController
             if (isset($allCart[$id])) {
                 $cartItem = $allCart[$id];
                 $qty = is_array($cartItem) ? ($cartItem['quantity'] ?? $cartItem['cart_quantity'] ?? 1) : $cartItem;
-            } 
+            }
             // 2. Check in POST data (Buy Now flow)
             elseif (isset($_POST['quantities'][$id])) {
                 $qty = (int) $_POST['quantities'][$id];
@@ -98,14 +99,15 @@ class CheckoutController extends BaseController
             foreach ($selectedIds as $id) {
                 if (isset($postQuantities[$id])) {
                     $qty = (int) $postQuantities[$id];
-                    if ($qty > 0) $cartToProcess[$id] = $qty;
+                    if ($qty > 0)
+                        $cartToProcess[$id] = $qty;
                 } elseif (isset($allCart[$id])) {
                     $cartItem = $allCart[$id];
                     $cartToProcess[$id] = is_array($cartItem) ? ($cartItem['quantity'] ?? $cartItem['cart_quantity'] ?? 1) : $cartItem;
                 }
             }
         }
-        
+
         if (empty($cartToProcess)) {
             header('Location: /cart');
             exit;
@@ -155,6 +157,13 @@ class CheckoutController extends BaseController
         $orderModel = new \App\Models\Order();
         $orderItemModel = new \App\Models\OrderItem();
         $cartModel = new \App\Models\Cart();
+
+        // Check if user is logged in
+        if (!isset($_SESSION['user']['id'])) {
+            $_SESSION['error'] = 'Vui lòng đăng nhập để thanh toán.';
+            header('Location: /login');
+            exit;
+        }
         $buyerId = $_SESSION['user']['id'];
 
         foreach ($ordersBySeller as $sellerId => $orderData) {
@@ -163,7 +172,7 @@ class CheckoutController extends BaseController
                 'buyer_id' => $buyerId,
                 'seller_id' => $sellerId,
                 'total_amount' => $orderData['total'],
-                'status' => 'pending' 
+                'status' => 'pending'
             ]);
 
             // Create Order Items & Update Stock
@@ -180,7 +189,7 @@ class CheckoutController extends BaseController
 
                 // Decrease Stock
                 $productModel->decreaseQuantity($product['id'], $qty);
-                
+
                 // Remove from Cart (DB or Session)
                 if ($userId) {
                     $cartModel->removeItem($userId, $product['id']);
