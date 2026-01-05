@@ -293,27 +293,40 @@
     
 // ============ ONLINE STATUS ============
 function setupOnlineStatus() {
-    if (!window.chatSocket || !window.chatSocket.socket) return;
-    
-    const socket = window.chatSocket.socket;
-    
-    // Lắng nghe danh sách user online
-    socket.on('online_users', (userIds) => {
-        console.log('[OnlineStatus] Online users:', userIds);
-        onlineUsersList = userIds.map(id => id.toString());
-        updatePartnerOnlineStatus();
-    });
-    
-    // Lắng nghe khi user offline
-    socket.on('user_offline', (data) => {
-        console.log('[OnlineStatus] User offline:', data);
-        if (data.user_id == activePartnerId) {
-            updatePartnerOnlineStatus(data.last_seen);
-        }
-    });
-    
-    // Cập nhật ngay khi load trang
+    // Fallback: Hiển thị từ last_seen ngay lập tức (không chờ socket)
     updatePartnerOnlineStatus();
+    
+    // Nếu có socket, lắng nghe realtime updates
+    if (window.chatSocket && window.chatSocket.socket) {
+        const socket = window.chatSocket.socket;
+        
+        // Lắng nghe danh sách user online
+        socket.on('online_users', (userIds) => {
+            console.log('[OnlineStatus] Online users:', userIds);
+            onlineUsersList = userIds.map(id => id.toString());
+            updatePartnerOnlineStatus();
+        });
+        
+        // Lắng nghe khi user online
+        socket.on('user_online', (data) => {
+            console.log('[OnlineStatus] User online:', data);
+            if (data.user_id && !onlineUsersList.includes(data.user_id.toString())) {
+                onlineUsersList.push(data.user_id.toString());
+            }
+            if (data.user_id == activePartnerId) {
+                updatePartnerOnlineStatus();
+            }
+        });
+        
+        // Lắng nghe khi user offline
+        socket.on('user_offline', (data) => {
+            console.log('[OnlineStatus] User offline:', data);
+            onlineUsersList = onlineUsersList.filter(id => id != data.user_id?.toString());
+            if (data.user_id == activePartnerId) {
+                updatePartnerOnlineStatus(data.last_seen);
+            }
+        });
+    }
 }
 
 /**
@@ -340,12 +353,17 @@ function updatePartnerOnlineStatus(lastSeen = null) {
         statusDot.className = 'status-dot absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-gray-400 ring-2 ring-white';
         statusText.className = 'status-text text-xs text-gray-500 font-medium flex items-center gap-1';
         
-        if (lastSeen) {
-            statusText.textContent = formatLastSeen(lastSeen);
-        } else {
-            // Lấy từ data attribute nếu có
+        // Lấy last_seen từ tham số hoặc data attribute
+        let lastSeenValue = lastSeen;
+        if (!lastSeenValue) {
             const lastSeenData = document.querySelector('[data-partner-last-seen]')?.dataset.partnerLastSeen;
-            statusText.textContent = lastSeenData ? formatLastSeen(lastSeenData) : 'Không hoạt động';
+            lastSeenValue = lastSeenData;
+        }
+        
+        if (lastSeenValue && lastSeenValue !== '') {
+            statusText.textContent = formatLastSeen(lastSeenValue);
+        } else {
+            statusText.textContent = 'Không hoạt động';
         }
     }
 }

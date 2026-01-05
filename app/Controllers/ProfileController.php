@@ -9,7 +9,7 @@ class ProfileController extends BaseController
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
         }
-        
+
         if (!isset($_SESSION['user'])) {
             header('Location: /login');
             exit;
@@ -18,7 +18,7 @@ class ProfileController extends BaseController
         // Fetch fresh user data
         $userModel = new \App\Models\User();
         $user = $userModel->find($_SESSION['user']['id']);
-        
+
         // Update session to keep it fresh
         if ($user) {
             $_SESSION['user'] = array_merge($_SESSION['user'], $user);
@@ -56,14 +56,14 @@ class ProfileController extends BaseController
         }
         // Gender is not in users table based on steps 29/47, maybe store in address or add column.
         // Skipping gender for now as it's not in DB schema provided.
-        
+
         // Email update often requires verification, let's allow it for now but check duplicates?
         // skipping email update complexity for this turn to avoid errors.
 
         $userModel = new \App\Models\User();
         if (!empty($data)) {
-            $userModel->update($userId, $data);
-            
+            $userModel->updateProfile($userId, $data);
+
             // Refresh session
             $_SESSION['user'] = array_merge($_SESSION['user'], $data);
         }
@@ -74,14 +74,18 @@ class ProfileController extends BaseController
 
     public function updateAvatar()
     {
-        if (session_status() == PHP_SESSION_NONE) session_start();
-        if (!isset($_SESSION['user'])) { header('Location: /login'); exit; }
+        if (session_status() == PHP_SESSION_NONE)
+            session_start();
+        if (!isset($_SESSION['user'])) {
+            header('Location: /login');
+            exit;
+        }
 
         if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] == 0) {
             $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
             $filename = $_FILES['avatar']['name'];
             $filesize = $_FILES['avatar']['size'];
-        
+
             $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
             if (!in_array($ext, $allowed)) {
                 // Keep it simple for now, maybe add flash message later
@@ -90,8 +94,8 @@ class ProfileController extends BaseController
             }
 
             if ($filesize > 5 * 1024 * 1024) { // 5MB
-                 header('Location: ' . $_SERVER['HTTP_REFERER'] . '?error=too_large');
-                 exit;
+                header('Location: ' . $_SERVER['HTTP_REFERER'] . '?error=too_large');
+                exit;
             }
 
             // Using direct path relative to public for simplicity in this setup
@@ -106,16 +110,16 @@ class ProfileController extends BaseController
             if (move_uploaded_file($_FILES['avatar']['tmp_name'], $uploadPath)) {
                 // Update DB
                 $userModel = new \App\Models\User();
-                
+
                 // We need to use update method. 
                 // Note: user implementation might need column mapping if not transparent
-                $userModel->update($_SESSION['user']['id'], ['avatar' => $newFilename]);
-                
+                $userModel->updateProfile($_SESSION['user']['id'], ['avatar' => $newFilename]);
+
                 // Update session
                 $_SESSION['user']['avatar'] = $newFilename;
             }
         }
-        
+
         header('Location: ' . $_SERVER['HTTP_REFERER']);
         exit;
     }
@@ -131,7 +135,7 @@ class ProfileController extends BaseController
         }
 
         $userId = $_SESSION['user']['id'];
-        
+
         // Refresh User Balance
         $userModel = new \App\Models\User();
         $user = $userModel->find($userId); // Includes 'balance' if added to DB
@@ -150,8 +154,12 @@ class ProfileController extends BaseController
 
     public function processWallet()
     {
-        if (session_status() == PHP_SESSION_NONE) session_start();
-        if (!isset($_SESSION['user'])) { header('Location: /login'); exit; }
+        if (session_status() == PHP_SESSION_NONE)
+            session_start();
+        if (!isset($_SESSION['user'])) {
+            header('Location: /login');
+            exit;
+        }
 
         $userId = $_SESSION['user']['id'];
         $type = $_POST['type'] ?? 'deposit'; // deposit or withdraw
@@ -165,12 +173,12 @@ class ProfileController extends BaseController
 
         $transModel = new \App\Models\Transaction();
         if ($type == 'withdraw') {
-             $userModel = new \App\Models\User();
-             $user = $userModel->find($userId);
-             if (($user['balance'] ?? 0) < $amount) {
-                 header('Location: /wallet?error=insufficient_balance');
-                 exit;
-             }
+            $userModel = new \App\Models\User();
+            $user = $userModel->find($userId);
+            if (($user['balance'] ?? 0) < $amount) {
+                header('Location: /wallet?error=insufficient_balance');
+                exit;
+            }
         }
 
         $transModel->create([
@@ -198,7 +206,7 @@ class ProfileController extends BaseController
         $userId = $_SESSION['user']['id'];
         $reviewModel = new \App\Models\Review();
         $reviews = $reviewModel->getByUserId($userId);
-        
+
         // Get unreviewed items
         $orderItemModel = new \App\Models\OrderItem();
         $unreviewed = $orderItemModel->getUnreviewedItems($userId);
@@ -224,10 +232,10 @@ class ProfileController extends BaseController
         $status = $_GET['status'] ?? 'all';
 
         $orderModel = new \App\Models\Order();
-        
+
         // Fetch User's Purchases
         $allOrders = $orderModel->getByBuyerId($userId);
-        
+
         $orders = [];
         $counts = [
             'all' => count($allOrders),
@@ -241,12 +249,12 @@ class ProfileController extends BaseController
             if (isset($counts[$o['status']])) {
                 $counts[$o['status']]++;
             }
-            
+
             if ($status == 'all' || $o['status'] == $status) {
                 $orders[] = $o;
             }
         }
-        
+
         // Enrich orders with item details
         $orderItemModel = new \App\Models\OrderItem();
         foreach ($orders as &$order) {
@@ -263,9 +271,13 @@ class ProfileController extends BaseController
 
     public function storeReview()
     {
-        if (session_status() == PHP_SESSION_NONE) session_start();
-        if (!isset($_SESSION['user'])) { header('Location: /login'); exit; }
-        
+        if (session_status() == PHP_SESSION_NONE)
+            session_start();
+        if (!isset($_SESSION['user'])) {
+            header('Location: /login');
+            exit;
+        }
+
         $userId = $_SESSION['user']['id'];
         $productId = $_POST['product_id'] ?? null;
         $rating = $_POST['rating'] ?? 5;
@@ -280,34 +292,38 @@ class ProfileController extends BaseController
                 'comment' => $comment
             ]);
         }
-        
+
         header('Location: /reviews?tab=reviewed');
         exit;
     }
     public function cancelOrder()
     {
-        if (session_status() == PHP_SESSION_NONE) session_start();
-        if (!isset($_SESSION['user'])) { header('Location: /login'); exit; }
+        if (session_status() == PHP_SESSION_NONE)
+            session_start();
+        if (!isset($_SESSION['user'])) {
+            header('Location: /login');
+            exit;
+        }
 
         $userId = $_SESSION['user']['id'];
         $orderId = $_POST['order_id'] ?? null;
 
         if (!$orderId) {
-             header('Location: /profile/orders?error=invalid_order');
-             exit;
+            header('Location: /profile/orders?error=invalid_order');
+            exit;
         }
 
         $orderModel = new \App\Models\Order();
         $order = $orderModel->find($orderId);
 
         if (!$order || $order['buyer_id'] != $userId) {
-             header('Location: /profile/orders?error=unauthorized'); 
-             exit;
+            header('Location: /profile/orders?error=unauthorized');
+            exit;
         }
 
         if ($order['status'] !== 'pending') {
-             header('Location: /profile/orders?error=cannot_cancel');
-             exit;
+            header('Location: /profile/orders?error=cannot_cancel');
+            exit;
         }
 
         // Process cancellation
@@ -329,23 +345,27 @@ class ProfileController extends BaseController
 
     public function rebuyOrder()
     {
-        if (session_status() == PHP_SESSION_NONE) session_start();
-        if (!isset($_SESSION['user'])) { header('Location: /login'); exit; }
+        if (session_status() == PHP_SESSION_NONE)
+            session_start();
+        if (!isset($_SESSION['user'])) {
+            header('Location: /login');
+            exit;
+        }
 
         $userId = $_SESSION['user']['id'];
         $orderId = $_POST['order_id'] ?? null;
 
         if (!$orderId) {
-             header('Location: /profile/orders?error=invalid_order');
-             exit;
+            header('Location: /profile/orders?error=invalid_order');
+            exit;
         }
 
         $orderModel = new \App\Models\Order();
         $oldOrder = $orderModel->find($orderId);
 
         if (!$oldOrder || $oldOrder['buyer_id'] != $userId) {
-             header('Location: /profile/orders?error=unauthorized'); 
-             exit;
+            header('Location: /profile/orders?error=unauthorized');
+            exit;
         }
 
         $orderItemModel = new \App\Models\OrderItem();
@@ -358,7 +378,7 @@ class ProfileController extends BaseController
 
         foreach ($oldItems as $item) {
             $product = $productModel->find($item['product_id']);
-            
+
             // Check if product exists, is active
             if (!$product || $product['status'] != 'active') {
                 // Determine what to do. Skip or error? 
@@ -369,8 +389,8 @@ class ProfileController extends BaseController
 
             // Check stock
             if ($product['quantity'] < $item['quantity']) {
-                 header('Location: /profile/orders?error=out_of_stock');
-                 exit;
+                header('Location: /profile/orders?error=out_of_stock');
+                exit;
             }
 
             // Prepare item data
@@ -379,13 +399,13 @@ class ProfileController extends BaseController
                 'quantity' => $item['quantity'],
                 'price' => $product['price'] // Use current price
             ];
-            
+
             $totalAmount += $product['price'] * $item['quantity'];
         }
 
         if (empty($itemsToBuy)) {
-             header('Location: /profile/orders?error=no_items');
-             exit;
+            header('Location: /profile/orders?error=no_items');
+            exit;
         }
 
         // Create New Order
@@ -415,29 +435,33 @@ class ProfileController extends BaseController
 
     public function orderDetail()
     {
-        if (session_status() == PHP_SESSION_NONE) session_start();
-        if (!isset($_SESSION['user'])) { header('Location: /login'); exit; }
+        if (session_status() == PHP_SESSION_NONE)
+            session_start();
+        if (!isset($_SESSION['user'])) {
+            header('Location: /login');
+            exit;
+        }
 
         $userId = $_SESSION['user']['id'];
         $orderId = $_GET['id'] ?? null;
 
         if (!$orderId) {
-             header('Location: /profile/orders');
-             exit;
+            header('Location: /profile/orders');
+            exit;
         }
 
         $orderModel = new \App\Models\Order();
         $order = $orderModel->find($orderId);
 
         if (!$order || $order['buyer_id'] != $userId) {
-             header('Location: /profile/orders?error=unauthorized'); 
-             exit;
+            header('Location: /profile/orders?error=unauthorized');
+            exit;
         }
 
         // Get Details
         $orderItemModel = new \App\Models\OrderItem();
         $order['items'] = $orderItemModel->getByOrderId($orderId);
-        
+
         // Get Buyer Info for Address display (Assuming current user info or snapshot)
         // Since we don't have snapshot address in order table, we use current user profile
         $userModel = new \App\Models\User();
