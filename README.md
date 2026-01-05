@@ -235,6 +235,10 @@ Ngoài README chính, dự án còn có các tài liệu hướng dẫn chi ti�
 
 - [**Fix Lỗi Checkout**](docs/BUG_FIX_CHECKOUT_TYPEERROR.md): Hướng dẫn fix lỗi TypeError khi thanh toán.
 
+### 🧪 Testing
+
+- [**Hướng dẫn Testing**](docs/TESTING.md): Cách chạy Jest (JS) và PHPUnit (PHP) tests, viết tests mới, coverage.
+
 ---
 
 ## 🔄 Quy trình làm việc
