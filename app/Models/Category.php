@@ -54,7 +54,8 @@ class Category extends BaseModel
      */
     public function getParents(int $limit = 20): array
     {
-        $sql = "SELECT * FROM {$this->table} WHERE parent_id IS NULL ORDER BY sort_order ASC LIMIT :limit";
+        // Tạm thời lấy tất cả, vì bảng chưa có parent_id và sort_order
+        $sql = "SELECT * FROM {$this->table} ORDER BY id DESC LIMIT :limit";
         return $this->db->fetchAll($sql, ['limit' => $limit]);
     }
 
