@@ -71,9 +71,15 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
         $userModel = new User();
         $seller = $userModel->find($product['user_id']);
 
-        // Lấy tất cả ảnh của sản phẩm
-        $productImageModel = new ProductImage();
-        $productImages = $productImageModel->getByProductId($id);
+        // Lấy tất cả ảnh của sản phẩm (có try-catch phòng trường hợp bảng chưa tồn tại)
+        $productImages = [];
+        try {
+            $productImageModel = new ProductImage();
+            $productImages = $productImageModel->getByProductId($id);
+        } catch (\Exception $e) {
+            // Bảng product_images chưa tồn tại, bỏ qua
+            $productImages = [];
+        }
 
         // Nếu chưa có ảnh trong bảng mới, dùng ảnh từ cột image
         if (empty($productImages) && !empty($product['image'])) {
@@ -203,10 +209,15 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
         try {
             $newId = $productModel->create($productData);
             if ($newId) {
-                // Lưu TẤT CẢ ảnh vào bảng product_images
+                // Lưu TẤT CẢ ảnh vào bảng product_images (nếu bảng tồn tại)
                 if (!empty($uploadedImages)) {
-                    $productImageModel = new ProductImage();
-                    $productImageModel->addMultiple($newId, $uploadedImages);
+                    try {
+                        $productImageModel = new ProductImage();
+                        $productImageModel->addMultiple($newId, $uploadedImages);
+                    } catch (\Exception $e) {
+                        // Bảng product_images chưa tồn tại, bỏ qua
+                        // Ảnh chính đã được lưu vào cột image của products
+                    }
                 }
 
                 // Success -> Redirect to product detail or shop
