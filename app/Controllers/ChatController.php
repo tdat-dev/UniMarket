@@ -37,6 +37,13 @@ class ChatController extends BaseController
         if ($activePartnerId) {
              // Validate partner
              $activePartner = $userModel->find($activePartnerId);
+             
+             // Prevent chatting with self
+             if ($activePartnerId == $currentUserId) {
+                 header('Location: /chat');
+                 exit;
+             }
+
              if ($activePartner) {
                  // Fetch messages
                  $messages = $messageModel->getConversation($currentUserId, $activePartnerId);
@@ -73,6 +80,12 @@ class ChatController extends BaseController
 
         if (!$receiverId || empty($content)) {
              echo json_encode(['status' => 'error', 'message' => 'Invalid data']);
+             exit;
+        }
+
+        // Prevent sending message to self
+        if ($receiverId == $_SESSION['user']['id']) {
+             echo json_encode(['status' => 'error', 'message' => 'Cannot send message to yourself']);
              exit;
         }
 

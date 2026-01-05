@@ -220,6 +220,23 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
                     }
                 }
 
+                // Notify followers
+                try {
+                    $followModel = new \App\Models\Follow();
+                    $notifModel = new \App\Models\Notification();
+                    
+                    $followers = $followModel->getFollowers($_SESSION['user']['id']);
+                    $senderName = $_SESSION['user']['full_name'];
+                    $productName = $productData['name'];
+                    
+                    foreach ($followers as $follower) {
+                        $content = "Shop $senderName vừa đăng bán sản phẩm mới: $productName";
+                        $notifModel->create($follower['id'], $content);
+                    }
+                } catch (\Exception $e) {
+                    // Ignore notification errors
+                }
+
                 // Success -> Redirect to product detail or shop
                 header('Location: /shop?id=' . $_SESSION['user']['id']);
                 exit;

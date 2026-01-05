@@ -133,7 +133,16 @@ include __DIR__ . '/../partials/header.php';
 
                     <!-- Buttons -->
                     <div class="flex gap-4 pt-4">
-                        <?php if ($product['quantity'] > 0 && $product['status'] === 'active'): ?>
+                        <?php 
+                        $currentUserId = $_SESSION['user']['id'] ?? null;
+                        $isOwner = $currentUserId && $currentUserId == $product['user_id'];
+                        ?>
+                        
+                        <?php if ($isOwner): ?>
+                             <div class="w-full px-8 py-3 bg-gray-100 text-gray-500 font-medium rounded-sm border border-gray-200 text-center select-none">
+                                <i class="fa-solid fa-user-tag mr-2"></i>Bạn là người bán sản phẩm này
+                             </div>
+                        <?php elseif ($product['quantity'] > 0 && $product['status'] === 'active'): ?>
                             <form action="/cart/add" method="POST" class="flex gap-4 w-full">
                                 <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
                                 <input type="hidden" name="quantity" value="1" id="input-quantity-submit">
@@ -192,10 +201,12 @@ include __DIR__ . '/../partials/header.php';
                     </div>
                 </div>
                 <div class="flex gap-2">
+                    <?php if (($currentUserId ?? ($_SESSION['user']['id'] ?? null)) != $seller['id']): ?>
                     <a href="/chat?user_id=<?= $seller['id'] ?>"
                         class="px-4 py-2 border border-[#2C67C8] text-[#2C67C8] rounded-sm hover:bg-blue-50 font-medium text-sm flex items-center gap-1">
                         <i class="fa-regular fa-comment-dots"></i> Chat ngay
                     </a>
+                    <?php endif; ?>
                     <a href="/shop?id=<?= $seller['id'] ?>"
                         class="px-4 py-2 bg-gray-100 text-gray-600 rounded-sm hover:bg-gray-200 font-medium text-sm flex items-center gap-1">
                         <i class="fa-solid fa-store"></i> Xem Shop

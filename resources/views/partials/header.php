@@ -11,11 +11,64 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
 <div class="w-full bg-gray-100 border-b border-gray-200 hidden md:block relative" style="z-index: 9999;">
     <div class="max-w-[1200px] mx-auto px-4">
         <div class="h-[34px] flex items-center justify-end gap-6 text-[13px] text-gray-600">
-            <a href="#" class="flex items-center gap-1 hover:text-[#2C67C8] transition-colors">
-                <i class="fa-regular fa-bell"></i>
-                <span>Thông Báo</span>
-            </a>
-            <a href="#" class="flex items-center gap-1 hover:text-[#2C67C8] transition-colors">
+<?php
+            $unreadNotifs = [];
+            $unreadCount = 0;
+            if (isset($_SESSION['user']['id'])) {
+                try {
+                    $notifModel = new \App\Models\Notification();
+                    // Get latest 5 unread or recent
+                    $unreadNotifs = $notifModel->getUnread($_SESSION['user']['id']);
+                    $unreadCount = count($unreadNotifs);
+                } catch (\Exception $e) {
+                    // Ignore if model not found or db error during header render
+                }
+            }
+            ?>
+            <div class="relative group z-50">
+                <a href="#" class="flex items-center gap-1 hover:text-[#2C67C8] transition-colors cursor-pointer py-2">
+                    <div class="relative">
+                        <i class="fa-regular fa-bell text-lg"></i>
+                        <?php if ($unreadCount > 0): ?>
+                            <span class="absolute -top-2 -right-2 bg-[#EE4D2D] text-white text-[10px] font-bold px-1 rounded-full h-4 min-w-[16px] flex items-center justify-center">
+                                <?= $unreadCount > 99 ? '99+' : $unreadCount ?>
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                    <span>Thông Báo</span>
+                </a>
+
+                <!-- Notification Dropdown -->
+                <div class="absolute right-0 top-full mt-0 w-80 bg-white rounded-sm shadow-xl border border-gray-100 hidden group-hover:block z-[100] origin-top-right">
+                    <div class="p-3 border-b border-gray-100 text-gray-500 text-sm">Thông báo mới nhận</div>
+                    <div class="max-h-[350px] overflow-y-auto">
+                        <?php if (empty($unreadNotifs)): ?>
+                            <div class="flex flex-col items-center justify-center p-8 text-gray-400 gap-2">
+                                <i class="fa-regular fa-bell-slash text-2xl"></i>
+                                <span class="text-sm">Chưa có thông báo nào</span>
+                            </div>
+                        <?php else: ?>
+                            <?php foreach ($unreadNotifs as $notif): ?>
+                                <a href="/shop?id=<?= $notif['user_id'] // Just a guess link, better to parse content or have link column ?>" 
+                                   class="block p-3 hover:bg-gray-50 border-b border-gray-50 bg-red-50/10 transition-colors">
+                                    <div class="flex gap-3">
+                                        <div class="flex-shrink-0 mt-1">
+                                            <div class="w-8 h-8 rounded-full bg-[#2C67C8]/10 flex items-center justify-center text-[#2C67C8]">
+                                                <i class="fa-solid fa-bag-shopping text-xs"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-800 line-clamp-2"><?= htmlspecialchars($notif['content']) ?></p>
+                                            <span class="text-xs text-gray-400 mt-1 block"><?= date('H:i d/m', strtotime($notif['created_at'])) ?></span>
+                                        </div>
+                                    </div>
+                                </a>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            <a href="/support" class="flex items-center gap-1 hover:text-[#2C67C8] transition-colors">
                 <i class="fa-regular fa-circle-question"></i>
                 <span>Hỗ Trợ</span>
             </a>
@@ -195,4 +248,3 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
     </div>
 </header>
 
-</html>
