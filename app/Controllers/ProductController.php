@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductImage;
 use App\Models\User;
 use App\Models\Category;
 use App\Middleware\VerificationMiddleware;
@@ -70,12 +71,24 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
         $userModel = new User();
         $seller = $userModel->find($product['user_id']);
 
+        // Lấy tất cả ảnh của sản phẩm
+        $productImageModel = new ProductImage();
+        $productImages = $productImageModel->getByProductId($id);
+
+        // Nếu chưa có ảnh trong bảng mới, dùng ảnh từ cột image
+        if (empty($productImages) && !empty($product['image'])) {
+            $productImages = [
+                ['image_path' => $product['image'], 'is_primary' => 1]
+            ];
+        }
+
         // Lấy sản phẩm liên quan (cùng danh mục, trừ sản phẩm hiện tại)
         $relatedProducts = $productModel->getByCategory($product['category_id'], 4, $product['id']);
 
         $this->view('products/detail', [
             'product' => $product,
             'seller' => $seller,
+            'productImages' => $productImages,
             'relatedProducts' => $relatedProducts
         ]);
     }
@@ -137,24 +150,36 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
             return;
         }
 
-        // 2. Handle Image Upload
-        // Lấy ảnh đầu tiên làm ảnh đại diện (Do bảng products hiện tại chỉ lưu 1 ảnh)
-        $mainImage = 'default_product.png'; // Fallback
+        // 2. Handle Image Upload - Upload TẤT CẢ ảnh
+        $uploadedImages = []; // Mảng chứa đường dẫn các ảnh đã upload
+        $mainImage = 'default_product.png'; // Fallback cho cột image (backwards compatible)
 
         if (isset($_FILES['images']) && !empty($_FILES['images']['name'][0])) {
-            $fileTmp = $_FILES['images']['tmp_name'][0];
-            $fileName = time() . '_' . $_FILES['images']['name'][0];
-            $uploadDir = 'uploads/products/'; // Relative to public
-
-            // Đảm bảo thư mục tồn tại (cần check absolute path)
             $rootDir = __DIR__ . '/../../public/';
+            $uploadDir = 'uploads/products/';
+
+            // Đảm bảo thư mục tồn tại
             if (!is_dir($rootDir . $uploadDir)) {
                 mkdir($rootDir . $uploadDir, 0777, true);
             }
 
-            if (move_uploaded_file($fileTmp, $rootDir . $uploadDir . $fileName)) {
-                // View prepends '/uploads/', so we save 'products/filename.ext'
-                $mainImage = 'products/' . $fileName;
+            // Loop qua TẤT CẢ ảnh được upload
+            $fileCount = count($_FILES['images']['name']);
+            for ($i = 0; $i < $fileCount; $i++) {
+                if ($_FILES['images']['error'][$i] === UPLOAD_ERR_OK) {
+                    $fileTmp = $_FILES['images']['tmp_name'][$i];
+                    $fileName = time() . '_' . $i . '_' . $_FILES['images']['name'][$i];
+
+                    if (move_uploaded_file($fileTmp, $rootDir . $uploadDir . $fileName)) {
+                        $imagePath = 'products/' . $fileName;
+                        $uploadedImages[] = $imagePath;
+
+                        // Ảnh đầu tiên làm main image
+                        if ($i === 0) {
+                            $mainImage = $imagePath;
+                        }
+                    }
+                }
             }
         }
 
@@ -167,10 +192,10 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
             'user_id' => $_SESSION['user']['id'],
             'category_id' => (int) $data['category_id'],
             'quantity' => (int) $data['quantity'],
-            'image' => $mainImage
+            'image' => $mainImage // Vẫn lưu ảnh chính vào cột image (backwards compatible)
         ];
 
-        // Nếu có trường condition từ form và model chưa hỗ trợ, ta có thể nối vào description hoặc bỏ qua
+        // Nếu có trường condition từ form
         if (!empty($data['condition'])) {
             $productData['description'] .= "\n\nTình trạng: " . ($data['condition'] == 'new' ? 'Mới 100%' : $data['condition']);
         }
@@ -178,6 +203,12 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
         try {
             $newId = $productModel->create($productData);
             if ($newId) {
+                // Lưu TẤT CẢ ảnh vào bảng product_images
+                if (!empty($uploadedImages)) {
+                    $productImageModel = new ProductImage();
+                    $productImageModel->addMultiple($newId, $uploadedImages);
+                }
+
                 // Success -> Redirect to product detail or shop
                 header('Location: /shop?id=' . $_SESSION['user']['id']);
                 exit;

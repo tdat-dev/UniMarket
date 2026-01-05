@@ -21,22 +21,71 @@ include __DIR__ . '/../partials/header.php';
 
                 <!-- Left: Image Gallery -->
                 <div class="md:col-span-5">
+                    <?php
+                    // Lấy ảnh chính (ảnh đầu tiên hoặc ảnh có is_primary = 1)
+                    $mainImagePath = '';
+                    if (!empty($productImages)) {
+                        foreach ($productImages as $img) {
+                            if (!empty($img['is_primary'])) {
+                                $mainImagePath = $img['image_path'];
+                                break;
+                            }
+                        }
+                        if (empty($mainImagePath)) {
+                            $mainImagePath = $productImages[0]['image_path'];
+                        }
+                    } else {
+                        $mainImagePath = $product['image'] ?? '';
+                    }
+                    ?>
                     <div
                         class="relative w-full aspect-square bg-gray-100 rounded-sm overflow-hidden border border-gray-200">
-                        <img src="/uploads/<?= htmlspecialchars($product['image'] ?? '') ?>"
+                        <img id="main-product-image" src="/uploads/<?= htmlspecialchars($mainImagePath) ?>"
                             alt="<?= htmlspecialchars($product['name'] ?? '') ?>"
-                            class="w-full h-full object-contain cursor-zoom-in"
-                            onclick="window.open(this.src, '_blank')">
+                            class="w-full h-full object-contain cursor-zoom-in" onclick="openLightbox(0)">
                     </div>
-                    <!-- Thumbnails (Placeholder for now since we only have 1 image) -->
-                    <div class="flex gap-2 mt-4 overflow-x-auto">
-                        <?php for ($i = 0; $i < 5; $i++): ?>
-                            <div
-                                class="w-20 h-20 border border-gray-200 hover:border-[#2C67C8] cursor-pointer rounded-sm overflow-hidden <?= $i === 0 ? 'border-[#2C67C8]' : '' ?>">
-                                <img src="/uploads/<?= htmlspecialchars($product['image'] ?? '') ?>"
-                                    class="w-full h-full object-cover">
-                            </div>
-                        <?php endfor; ?>
+                    <!-- Thumbnails - Hiển thị đúng số ảnh thực tế -->
+                    <?php if (!empty($productImages) && count($productImages) > 0): ?>
+                        <div class="flex gap-2 mt-4 overflow-x-auto">
+                            <?php foreach ($productImages as $index => $image): ?>
+                                <div class="product-thumbnail w-20 h-20 border border-gray-200 hover:border-[#2C67C8] cursor-pointer rounded-sm overflow-hidden flex-shrink-0 <?= $index === 0 ? 'border-[#2C67C8]' : '' ?>"
+                                    data-image="/uploads/<?= htmlspecialchars($image['image_path']) ?>"
+                                    data-index="<?= $index ?>">
+                                    <img src="/uploads/<?= htmlspecialchars($image['image_path']) ?>"
+                                        class="w-full h-full object-cover">
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Lightbox Modal -->
+                <div id="image-lightbox"
+                    class="fixed inset-0 z-50 hidden bg-black/90 flex items-center justify-center p-8">
+                    <!-- Nút đóng -->
+                    <button onclick="closeLightbox()"
+                        class="absolute top-4 right-4 text-white text-3xl hover:text-gray-300 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition">&times;</button>
+
+                    <!-- Nút Previous -->
+                    <button onclick="prevImage()"
+                        class="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition">
+                        <i class="fa-solid fa-chevron-left text-xl"></i>
+                    </button>
+
+                    <!-- Ảnh chính trong lightbox - Giới hạn kích thước vừa màn hình -->
+                    <img id="lightbox-image" src="" alt=""
+                        class="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                        style="max-width: min(800px, 80vw); max-height: 75vh;">
+
+                    <!-- Nút Next -->
+                    <button onclick="nextImage()"
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition">
+                        <i class="fa-solid fa-chevron-right text-xl"></i>
+                    </button>
+
+                    <!-- Chỉ số ảnh -->
+                    <div id="lightbox-counter"
+                        class="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-3 py-1 rounded-full">
                     </div>
                 </div>
 
@@ -234,11 +283,11 @@ include __DIR__ . '/../partials/header.php';
         const inputSubmit = document.getElementById('input-quantity-submit');
         const btnSubmitCart = document.querySelector('button[value="add"]');
         const btnSubmitBuy = document.querySelector('button[value="buy"]');
-        
+
         const formCart = document.querySelector('form[action="/cart/add"]');
 
         if (formCart) {
-            formCart.addEventListener('submit', function(e) {
+            formCart.addEventListener('submit', function (e) {
                 if (!isLoggedIn) {
                     e.preventDefault();
                     window.location.href = '/login';
@@ -281,6 +330,84 @@ include __DIR__ . '/../partials/header.php';
             // Initial check
             updateQuantity(inputQuantity.value);
         }
+
+        // Xử lý click thumbnail để đổi ảnh chính
+        const thumbnails = document.querySelectorAll('.product-thumbnail');
+        const mainImage = document.getElementById('main-product-image');
+
+        thumbnails.forEach(thumb => {
+            thumb.addEventListener('click', function () {
+                // Đổi ảnh chính
+                const newSrc = this.getAttribute('data-image');
+                if (mainImage && newSrc) {
+                    mainImage.src = newSrc;
+                }
+
+                // Cập nhật currentIndex cho lightbox
+                currentImageIndex = parseInt(this.getAttribute('data-index')) || 0;
+
+                // Highlight thumbnail được chọn
+                thumbnails.forEach(t => t.classList.remove('border-[#2C67C8]'));
+                this.classList.add('border-[#2C67C8]');
+            });
+        });
+    });
+
+    // ===== LIGHTBOX FUNCTIONS =====
+    const productImages = <?= json_encode(array_map(function ($img) {
+        return '/uploads/' . $img['image_path'];
+    }, $productImages ?? [])) ?>;
+
+    let currentImageIndex = 0;
+    const lightbox = document.getElementById('image-lightbox');
+    const lightboxImage = document.getElementById('lightbox-image');
+    const lightboxCounter = document.getElementById('lightbox-counter');
+
+    function openLightbox(index = 0) {
+        if (productImages.length === 0) return;
+
+        currentImageIndex = index;
+        updateLightboxImage();
+        lightbox.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Ngăn scroll trang
+    }
+
+    function closeLightbox() {
+        lightbox.classList.add('hidden');
+        document.body.style.overflow = ''; // Cho phép scroll lại
+    }
+
+    function updateLightboxImage() {
+        if (productImages[currentImageIndex]) {
+            lightboxImage.src = productImages[currentImageIndex];
+            lightboxCounter.textContent = `${currentImageIndex + 1} / ${productImages.length}`;
+        }
+    }
+
+    function nextImage() {
+        currentImageIndex = (currentImageIndex + 1) % productImages.length;
+        updateLightboxImage();
+    }
+
+    function prevImage() {
+        currentImageIndex = (currentImageIndex - 1 + productImages.length) % productImages.length;
+        updateLightboxImage();
+    }
+
+    // Đóng lightbox khi click vào nền đen
+    lightbox?.addEventListener('click', function (e) {
+        if (e.target === lightbox) {
+            closeLightbox();
+        }
+    });
+
+    // Đóng lightbox khi nhấn ESC, chuyển ảnh bằng phím mũi tên
+    document.addEventListener('keydown', function (e) {
+        if (lightbox?.classList.contains('hidden')) return;
+
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowRight') nextImage();
+        if (e.key === 'ArrowLeft') prevImage();
     });
 </script>
 
