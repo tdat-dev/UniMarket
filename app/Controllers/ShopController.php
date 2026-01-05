@@ -10,15 +10,20 @@ class ShopController extends BaseController
     public function index()
     {
         $userId = $_GET['id'] ?? null;
+        $currentUser = null;
+
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        if (isset($_SESSION['user']['id'])) {
+            $currentUser = $_SESSION['user']['id'];
+        }
 
         // If no ID provided, check if logged in -> My Shop
         if (!$userId) {
-            if (session_status() == PHP_SESSION_NONE) {
-                session_start();
-            }
-            if (isset($_SESSION['user']['id'])) {
-                $userId = $_SESSION['user']['id'];
-                // Optional: flag to show 'edit' controls in view
+            if ($currentUser) {
+                $userId = $currentUser;
             } else {
                  header('Location: /login');
                  exit;
@@ -36,10 +41,78 @@ class ShopController extends BaseController
         $productModel = new Product();
         $products = $productModel->getByUserId($userId);
 
+        $reviewModel = new \App\Models\Review();
+        $stats = $reviewModel->getSellerStats($userId);
+
+        $followModel = new \App\Models\Follow();
+        $followerCount = $followModel->getFollowerCount($userId);
+        $isFollowing = false;
+        
+        if ($currentUser && $currentUser != $userId) {
+            $isFollowing = $followModel->isFollowing($currentUser, $userId);
+        }
+
         $this->view('shop/index', [
             'seller' => $seller,
             'products' => $products,
-            'isOwner' => (isset($_SESSION['user']['id']) && $_SESSION['user']['id'] == $userId)
+            'stats' => $stats,
+            'isOwner' => ($currentUser == $userId),
+            'followerCount' => $followerCount,
+            'isFollowing' => $isFollowing
+        ]);
+    }
+
+    public function toggleFollow()
+    {
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        header('Content-Type: application/json');
+
+        if (!isset($_SESSION['user']['id'])) {
+            echo json_encode(['success' => false, 'message' => 'Bạn cần đăng nhập để theo dõi']);
+            return;
+        }
+
+        $followerId = $_SESSION['user']['id'];
+        // Read JSON input
+        $input = json_decode(file_get_contents('php://input'), true);
+        $followingId = $input['shop_id'] ?? null;
+
+        if (!$followingId) {
+            echo json_encode(['success' => false, 'message' => 'Shop ID is required']);
+            return;
+        }
+
+        if ($followerId == $followingId) {
+            echo json_encode(['success' => false, 'message' => 'Bạn không thể tự theo dõi chính mình']);
+            return;
+        }
+
+        $followModel = new \App\Models\Follow();
+        $isFollowing = $followModel->isFollowing($followerId, $followingId);
+
+        if ($isFollowing) {
+            $followModel->unfollow($followerId, $followingId);
+            $newStatus = 'unfollowed';
+        } else {
+            $followModel->follow($followerId, $followingId);
+            $newStatus = 'followed';
+            
+            // Create notification for the seller
+            $notifModel = new \App\Models\Notification();
+            $notifModel->create($followingId, "đã bắt đầu theo dõi cửa hàng của bạn."); // Name will be handled in frontend or model if we want complex text, but simple is fine.
+            // Better: Get current user name
+            // For now simple text.
+        }
+
+        $newCount = $followModel->getFollowerCount($followingId);
+
+        echo json_encode([
+            'success' => true, 
+            'status' => $newStatus, 
+            'new_count' => $newCount
         ]);
     }
 

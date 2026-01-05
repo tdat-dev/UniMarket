@@ -24,18 +24,31 @@ include __DIR__ . '/../partials/header.php';
                 </h1>
                 <div class="flex gap-6 mt-2 text-sm text-gray-500">
                     <span class="flex items-center gap-1"><i class="fa-solid fa-box"></i> <?= count($products) ?> Sản phẩm</span>
-                    <span class="flex items-center gap-1"><i class="fa-solid fa-user-plus"></i> Đang theo dõi: 0</span>
-                    <span class="flex items-center gap-1"><i class="fa-regular fa-star"></i> Đánh giá: 4.9/5.0</span>
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-user-plus"></i> Đang theo dõi: <span id="follower-count"><?= $followerCount ?? 0 ?></span></span>
+                    <span class="flex items-center gap-1" title="Dựa trên <?= $stats['review_count'] ?? 0 ?> đánh giá">
+                        <i class="fa-solid fa-star text-yellow-500"></i> 
+                        Đánh giá: <?= ($stats['review_count'] ?? 0) > 0 ? number_format($stats['avg_rating'], 1) . '/5.0' : 'Chưa có đánh giá' ?>
+                    </span>
                 </div>
             </div>
             
             <div class="flex gap-3">
-                <button class="px-6 py-2 border border-[#2C67C8] text-[#2C67C8] font-medium rounded-sm hover:bg-blue-50 transition-colors">
-                    <i class="fa-solid fa-plus mr-1"></i> Theo dõi
+                <?php 
+                $currentUserId = $_SESSION['user']['id'] ?? null;
+                if ($currentUserId != $seller['id']): 
+                ?>
+                <button id="btn-follow" data-shop-id="<?= $seller['id'] ?>" 
+                        class="px-6 py-2 border border-[#2C67C8] text-[#2C67C8] font-medium rounded-sm hover:bg-blue-50 transition-colors w-[160px]">
+                    <?php if (!empty($isFollowing)): ?>
+                        <i class="fa-solid fa-check mr-1"></i> Đang theo dõi
+                    <?php else: ?>
+                        <i class="fa-solid fa-plus mr-1"></i> Theo dõi
+                    <?php endif; ?>
                 </button>
                 <a href="/chat?user_id=<?= $seller['id'] ?>" class="px-6 py-2 bg-[#2C67C8] text-white font-medium rounded-sm hover:bg-blue-700 transition-colors shadow-sm">
                     <i class="fa-brands fa-rocketchat mr-1"></i> Chat
                 </a>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -82,3 +95,40 @@ include __DIR__ . '/../partials/header.php';
 </main>
 
 <?php include __DIR__ . '/../partials/footer.php'; ?>
+
+<script>
+document.getElementById('btn-follow').addEventListener('click', function() {
+    const btn = this;
+    const shopId = btn.getAttribute('data-shop-id');
+    const countSpan = document.getElementById('follower-count');
+    
+    fetch('/shop/follow', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ shop_id: shopId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update button UI
+            if (data.status === 'followed') {
+                btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Đang theo dõi';
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Theo dõi';
+            }
+            // Update count
+            if (countSpan) {
+                countSpan.innerText = data.new_count;
+            }
+        } else {
+            alert(data.message);
+            if(data.message.includes('đăng nhập')) {
+                 window.location.href = '/login';
+            }
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+</script>

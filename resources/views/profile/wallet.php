@@ -27,12 +27,12 @@
                         </div>
 
                         <div class="flex gap-3 mt-6">
-                            <button onclick="document.getElementById('depositModal').classList.remove('hidden')"
+                            <!-- <button onclick="document.getElementById('depositModal').classList.remove('hidden')"
                                 class="flex-1 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 py-2 rounded-lg text-sm font-medium transition cursor-pointer">
                                 Nạp tiền
-                            </button>
+                            </button> -->
                             <button onclick="alert('Tính năng rút tiền đang bảo trì.')"
-                                class="flex-1 bg-transparent hover:bg-white/5 border border-white/20 py-2 rounded-lg text-sm font-medium transition cursor-pointer">
+                                class="w-full bg-transparent hover:bg-white/5 border border-white/20 py-2 rounded-lg text-sm font-medium transition cursor-pointer">
                                 Rút tiền
                             </button>
                         </div>
@@ -90,72 +90,6 @@
     </div>
 </main>
 
-<!-- Deposit Modal -->
-<div id="depositModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog"
-    aria-modal="true">
-    <!-- Background backdrop -->
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-        onclick="document.getElementById('depositModal').classList.add('hidden')"></div>
-
-    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-        <!-- Modal panel -->
-        <div
-            class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-
-            <!-- Close button (X) -->
-            <button type="button" onclick="document.getElementById('depositModal').classList.add('hidden')"
-                class="absolute top-4 right-4 text-gray-400 hover:text-gray-500 transition-colors">
-                <span class="sr-only">Đóng</span>
-                <i class="fa-solid fa-xmark text-xl"></i>
-            </button>
-
-            <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                <div class="sm:flex sm:items-start">
-                    <div
-                        class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-emerald-100 sm:mx-0 sm:h-10 sm:w-10">
-                        <i class="fa-solid fa-wallet text-emerald-600"></i>
-                    </div>
-                    <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-                        <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">Nạp tiền vào ví
-                        </h3>
-                        <div class="mt-2">
-                            <p class="text-sm text-gray-500">Nhập số tiền bạn muốn nạp vào ví UniMarket.</p>
-
-                            <form action="/wallet/process" method="POST" class="mt-4">
-                                <input type="hidden" name="type" value="deposit">
-                                <div>
-                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="amount">Số tiền
-                                        (VNĐ)</label>
-                                    <div class="relative rounded-md shadow-sm">
-                                        <div
-                                            class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                            <span class="text-gray-500 sm:text-sm">₫</span>
-                                        </div>
-                                        <input type="number" name="amount" id="amount" min="10000" step="10000"
-                                            class="block w-full rounded-md border-0 py-2.5 pl-7 pr-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600 sm:text-sm sm:leading-6"
-                                            placeholder="0" required>
-                                    </div>
-                                    <p class="mt-2 text-xs text-gray-500">Số tiền nạp tối thiểu: 10.000đ</p>
-                                </div>
-
-                                <div class="mt-5 sm:flex sm:flex-row-reverse">
-                                    <button type="submit"
-                                        class="inline-flex w-full justify-center rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 sm:ml-3 sm:w-auto transition-colors">
-                                        Xác nhận nạp
-                                    </button>
-                                    <button type="button"
-                                        onclick="document.getElementById('depositModal').classList.add('hidden')"
-                                        class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto transition-colors">
-                                        Hủy
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Deposit Modal Removed -->
 
 <?php include __DIR__ . '/../partials/footer.php'; ?>

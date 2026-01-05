@@ -24,8 +24,12 @@
                 </button>
             </div>
             <div class="mb-2 min-w-0 flex-1">
-                <h1 class="text-2xl font-bold text-gray-900 truncate">
+                <h1 class="text-2xl font-bold text-gray-900 truncate flex items-center gap-2">
                     <?= htmlspecialchars($_SESSION['user']['full_name']) ?>
+                    <button type="button" onclick="document.getElementById('profile-fullname').focus()" 
+                            class="text-gray-400 hover:text-blue-600 focus:outline-none" title="Sửa tên">
+                        <i class="fa-solid fa-pen-to-square text-lg"></i>
+                    </button>
                 </h1>
                 <p class="text-sm text-gray-500">Thành viên từ
                     <?= date('Y', strtotime($_SESSION['user']['created_at'] ?? 'now')) ?>

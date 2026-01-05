@@ -12,6 +12,7 @@ use App\Controllers\VerificationController;
 
 // Trang chủ (cần check login trong controller)
 $router->get('/', [HomeController::class, 'index']);
+$router->get('support', [HomeController::class, 'support']);
 
 // Đăng nhập
 $router->get('login', [AuthController::class, 'login']);
@@ -47,6 +48,7 @@ $router->post('checkout/confirm', [\App\Controllers\CheckoutController::class, '
 
 // Shop & Chat
 $router->get('shop', [\App\Controllers\ShopController::class, 'index']);
+$router->post('shop/follow', [\App\Controllers\ShopController::class, 'toggleFollow']);
 $router->get('shop/orders', [\App\Controllers\ShopController::class, 'orders']);
 $router->get('chat', [\App\Controllers\ChatController::class, 'index']);
 $router->post('chat/send', [\App\Controllers\ChatController::class, 'send']);
