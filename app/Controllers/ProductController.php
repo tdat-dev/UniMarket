@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\Product;
 use App\Models\User;
+use App\Models\Category;
 use App\Middleware\VerificationMiddleware;
 
 class ProductController extends BaseController // Kế thừa BaseController để dùng hàm view()
@@ -11,18 +12,45 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
     public function index()
     {
         $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
-        $limit = 24; // Số sản phẩm trên mỗi trang
+        $limit = 20; // Giảm xuống để phù hợp với layout 5 cột
         $offset = ($page - 1) * $limit;
 
+        // Lấy các tham số filter từ URL
+        $keyword = $_GET['keyword'] ?? '';
+        $categoryId = isset($_GET['category_id']) ? (int) $_GET['category_id'] : 0;
+        $sort = $_GET['sort'] ?? 'newest'; // Mặc định sắp xếp theo mới nhất
+        $priceMin = isset($_GET['price_min']) && is_numeric($_GET['price_min']) ? (int) $_GET['price_min'] : null;
+        $priceMax = isset($_GET['price_max']) && is_numeric($_GET['price_max']) ? (int) $_GET['price_max'] : null;
+
         $productModel = new Product();
-        $products = $productModel->getPaginated($limit, $offset);
-        $totalProducts = $productModel->countAll();
+        $categoryModel = new Category();
+
+        // Tạo mảng filters để truyền vào model
+        $filters = [
+            'category_id' => $categoryId,
+            'keyword' => $keyword,
+            'price_min' => $priceMin,
+            'price_max' => $priceMax,
+            'sort' => $sort
+        ];
+
+        // Gọi hàm mới hỗ trợ đầy đủ filter + sort
+        $products = $productModel->getFiltered($filters, $limit, $offset);
+        $totalProducts = $productModel->countFiltered($filters);
+
         $totalPages = ceil($totalProducts / $limit);
+        $categories = $categoryModel->getTree();
 
         $this->view('products/index', [
             'products' => $products,
             'currentPage' => $page,
-            'totalPages' => $totalPages
+            'totalPages' => $totalPages,
+            'categories' => $categories,
+            'keyword' => $keyword,
+            'categoryId' => $categoryId,
+            'sort' => $sort,
+            'priceMin' => $priceMin,
+            'priceMax' => $priceMax
         ]);
     }
 
@@ -55,7 +83,9 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
     // Hàm hiện form đăng tin
     public function create()
     {
-        $this->view('products/create');
+        $categoryModel = new Category();
+        $categories = $categoryModel->getTree();
+        $this->view('products/create', ['categories' => $categories]);
     }
 
     // Hàm xử lý lưu tin

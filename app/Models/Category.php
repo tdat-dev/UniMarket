@@ -9,28 +9,53 @@ class Category extends BaseModel
 
     public function getAll()
     {
-        $cacheKey = 'categories_all';
-        $cacheTTL = 300; // 5 phút (categories ít thay đổi)
+        $cacheKey = 'categories_all_v2'; // Changed key to force refresh schema
+        $cacheTTL = 300;
 
-        // Thử dùng Redis cache
         $redis = RedisCache::getInstance();
-
         if ($redis->isAvailable()) {
             $categories = $redis->get($cacheKey);
-
             if ($categories === null) {
-                // Cache miss → Query DB
                 $categories = $this->db->query("SELECT * FROM " . $this->table)->fetchAll();
-
-                // Lưu vào Redis
                 $redis->set($cacheKey, $categories, $cacheTTL);
             }
-
             return $categories;
         }
 
-        // Fallback: Redis không khả dụng → Query trực tiếp
         return $this->db->query("SELECT * FROM " . $this->table)->fetchAll();
+    }
+
+    public function getTree()
+    {
+        $all = $this->getAll();
+        $parents = [];
+        $children = [];
+
+        foreach ($all as $cat) {
+            $cat['children'] = [];
+            if (empty($cat['parent_id'])) {
+                $parents[$cat['id']] = $cat;
+            } else {
+                $children[] = $cat;
+            }
+        }
+
+        foreach ($children as $child) {
+            if (isset($parents[$child['parent_id']])) {
+                $parents[$child['parent_id']]['children'][] = $child;
+            }
+        }
+
+        return array_values($parents);
+    }
+
+    /**
+     * Lấy chỉ danh mục cha (không có parent_id), sắp xếp theo sort_order
+     */
+    public function getParents(int $limit = 20): array
+    {
+        $sql = "SELECT * FROM {$this->table} WHERE parent_id IS NULL ORDER BY sort_order ASC LIMIT :limit";
+        return $this->db->fetchAll($sql, ['limit' => $limit]);
     }
 
     // ===================== ADMIN METHODS =====================

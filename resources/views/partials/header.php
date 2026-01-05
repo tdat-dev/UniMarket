@@ -8,7 +8,7 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
 ?>
 
 <!-- Phần này sẽ bị cuốn đi khi cuộn trang -->
-<div class="w-full bg-gray-100 border-b border-gray-200 hidden md:block relative" style="z-index: 1000;">
+<div class="w-full bg-gray-100 border-b border-gray-200 hidden md:block relative" style="z-index: 9999;">
     <div class="max-w-[1200px] mx-auto px-4">
         <div class="h-[34px] flex items-center justify-end gap-6 text-[13px] text-gray-600">
             <a href="#" class="flex items-center gap-1 hover:text-[#2C67C8] transition-colors">
@@ -21,33 +21,40 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
             </a>
             <div class="flex items-center gap-3">
                 <?php if (isset($_SESSION['user'])): ?>
-                    <div class="relative" id="user-menu-container" style="z-index: 1001;">
-                        <button id="user-menu-btn" class="flex items-center gap-2 text-gray-600 font-medium hover:text-[#2C67C8] transition-colors focus:outline-none">
+                    <div class="relative" id="user-menu-container">
+                        <button id="user-menu-btn"
+                            class="flex items-center gap-2 text-gray-600 font-medium hover:text-[#2C67C8] transition-colors focus:outline-none">
                             <span>Chào, <?= htmlspecialchars($_SESSION['user']['full_name']) ?></span>
                             <i class="fa-solid fa-caret-down text-xs"></i>
                         </button>
 
                         <!-- Dropdown Menu -->
-                        <div id="user-menu-dropdown"style="width: 250px;" class="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-xl border border-gray-100 hidden z-50 overflow-hidden">
+                        <div id="user-menu-dropdown" style="width: 250px;"
+                            class="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-xl border border-gray-100 hidden z-50 overflow-hidden">
                             <!-- User Info Section -->
                             <div class="py-2 border-b border-gray-100">
-                                <a href="/profile" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
+                                <a href="/profile"
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
                                     <i class="fa-regular fa-user w-5 text-center"></i>
                                     Hồ sơ của tôi
                                 </a>
-                                <a href="/chat" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
+                                <a href="/chat"
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
                                     <i class="fa-regular fa-comment-dots w-5 text-center"></i>
                                     Tin nhắn
                                 </a>
-                                <a href="/wallet" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
+                                <a href="/wallet"
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
                                     <i class="fa-solid fa-wallet w-5 text-center"></i>
                                     Tiền của tôi
                                 </a>
-                                <a href="/reviews" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
+                                <a href="/reviews"
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
                                     <i class="fa-regular fa-star w-5 text-center"></i>
                                     Đánh giá của tôi
                                 </a>
-                                <a href="/profile/orders" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
+                                <a href="/profile/orders"
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
                                     <i class="fa-solid fa-bag-shopping w-5 text-center"></i>
                                     Đơn mua
                                 </a>
@@ -55,16 +62,20 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
 
                             <!-- Selling Section -->
                             <div class="py-2 border-b border-gray-100">
-                                <div class="px-4 py-1 text-xs font-bold text-gray-400 uppercase tracking-wider">Bán hàng</div>
-                                <a href="/products/create" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
+                                <div class="px-4 py-1 text-xs font-bold text-gray-400 uppercase tracking-wider">Bán hàng
+                                </div>
+                                <a href="/products/create"
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
                                     <i class="fa-solid fa-plus w-5 text-center"></i>
                                     Thêm sản phẩm
                                 </a>
-                                <a href="/shop" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
+                                <a href="/shop"
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
                                     <i class="fa-solid fa-box-open w-5 text-center"></i>
                                     Tất cả sản phẩm
                                 </a>
-                                <a href="/shop/orders" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
+                                <a href="/shop/orders"
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
                                     <i class="fa-solid fa-clipboard-list w-5 text-center"></i>
                                     Đơn bán
                                 </a>
@@ -73,7 +84,8 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                             <!-- Logout -->
                             <div class="py-1 bg-gray-50">
                                 <form action="/logout" method="POST" class="m-0 p-0">
-                                    <button type="submit" class="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors text-left font-medium">
+                                    <button type="submit"
+                                        class="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors text-left font-medium">
                                         <i class="fa-solid fa-right-from-bracket w-5 text-center"></i>
                                         Đăng xuất
                                     </button>
@@ -83,20 +95,20 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                     </div>
 
                     <script>
-                        document.addEventListener('DOMContentLoaded', function() {
+                        document.addEventListener('DOMContentLoaded', function () {
                             const menuBtn = document.getElementById('user-menu-btn');
                             const menuDropdown = document.getElementById('user-menu-dropdown');
                             const container = document.getElementById('user-menu-container');
 
-                            if(menuBtn && menuDropdown) {
+                            if (menuBtn && menuDropdown) {
                                 // Toggle click
-                                menuBtn.addEventListener('click', function(e) {
+                                menuBtn.addEventListener('click', function (e) {
                                     e.stopPropagation();
                                     menuDropdown.classList.toggle('hidden');
                                 });
 
                                 // Close when clicking outside
-                                document.addEventListener('click', function(e) {
+                                document.addEventListener('click', function (e) {
                                     if (!container.contains(e.target)) {
                                         menuDropdown.classList.add('hidden');
                                     }
@@ -117,7 +129,7 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
 </div>
 
 <!-- Thẻ Header này sẽ dính vào đỉnh màn hình khi cuộn xuống -->
-<header class="w-full z-50 bg-white font-sans shadow-sm <?= !$is_auth_page ? 'sticky top-0' : '' ?>">
+<header class="w-full z-[1100] bg-white font-sans shadow-sm <?= !$is_auth_page ? 'sticky top-0' : '' ?>">
     <div class="bg-white pb-3">
         <div class="max-w-[1200px] mx-auto px-4 pt-4">
             <div class="flex flex-col md:flex-row items-center gap-4 md:gap-8">
@@ -171,7 +183,7 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                         <?php endif; ?>
                     </a>
 
-                    <a href="#"
+                    <a href="/products/create"
                         class="w-full md:w-auto justify-center px-6 py-2.5 bg-gradient-to-r from-[#2C67C8] to-[#1990AA] text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all transform flex items-center gap-2 no-underline">
                         <i class="fa-solid fa-plus text-sm"></i>
                         <span>Đăng Bán</span>

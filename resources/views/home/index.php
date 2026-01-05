@@ -20,13 +20,31 @@ include __DIR__ . '/../partials/header.php';
                             class="flex flex-col items-center justify-center h-[150px] border-r border-b border-gray-50 hover:shadow-md transition-shadow group/item">
                             <div
                                 class="w-[70%] aspect-square rounded-full overflow-hidden mb-2 transition-transform group-hover/item:-translate-y-1">
-                                <!-- Hỗ trợ cả emoji hoặc đường dẫn ảnh -->
-                                <?php if (strpos($cat['icon'] ?? '', '/') !== false || strpos($cat['icon'] ?? '', '.') !== false): ?>
-                                    <img src="<?= $cat['icon'] ?>" alt="<?= $cat['name'] ?>"
-                                        class="w-full h-full object-contain p-2">
+                                <?php
+                                // Ưu tiên cột 'image' nếu có
+                                if (!empty($cat['image'])): ?>
+                                    <img src="<?= $cat['image'] ?>" alt="<?= $cat['name'] ?>"
+                                        class="w-full h-full object-contain p-2 bg-indigo-50">
+                                <?php elseif (!empty($cat['icon'])):
+                                    // Kiểm tra nếu icon là class FontAwesome (bắt đầu bằng fa-)
+                                    $isFontAwesome = (strpos($cat['icon'], 'fa-') === 0);
+                                    $isImagePath = (strpos($cat['icon'], '/') === 0 || strpos($cat['icon'], 'http') === 0);
+
+                                    if ($isFontAwesome): ?>
+                                        <div class="w-full h-full flex items-center justify-center bg-indigo-50">
+                                            <i class="fa-solid <?= $cat['icon'] ?> text-3xl text-indigo-400"></i>
+                                        </div>
+                                    <?php elseif ($isImagePath): ?>
+                                        <img src="<?= $cat['icon'] ?>" alt="<?= $cat['name'] ?>"
+                                            class="w-full h-full object-contain p-2 bg-indigo-50">
+                                    <?php else: ?>
+                                        <div class="w-full h-full flex items-center justify-center bg-blue-50 text-3xl">
+                                            <?= $cat['icon'] ?>
+                                        </div>
+                                    <?php endif; ?>
                                 <?php else: ?>
-                                    <div class="w-full h-full flex items-center justify-center bg-blue-50 text-3xl">
-                                        <?= $cat['icon'] ?? '📦' ?>
+                                    <div class="w-full h-full flex items-center justify-center bg-slate-100 text-3xl">
+                                        📦
                                     </div>
                                 <?php endif; ?>
                             </div>

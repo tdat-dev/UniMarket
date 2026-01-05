@@ -352,4 +352,170 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
         $sql = "DELETE FROM products WHERE id = :id";
         return $this->db->execute($sql, ['id' => $id]);
     }
+
+    // ===================== SEARCH & FILTER METHODS =====================
+
+    /**
+     * Tìm sản phẩm theo keyword VÀ category
+     */
+    public function searchByKeywordAndCategory($keyword, $categoryId, $limit, $offset)
+    {
+        $keyword = trim($keyword);
+        $sql = "SELECT * FROM products 
+                WHERE name LIKE :keyword 
+                AND category_id = :category_id
+                AND status = 'active'
+                ORDER BY id DESC 
+                LIMIT :limit OFFSET :offset";
+
+        return $this->db->fetchAll($sql, [
+            'keyword' => "%$keyword%",
+            'category_id' => (int) $categoryId,
+            'limit' => (int) $limit,
+            'offset' => (int) $offset
+        ]);
+    }
+
+    /**
+     * Đếm sản phẩm theo keyword VÀ category (cho phân trang)
+     */
+    public function countByKeywordAndCategory($keyword, $categoryId)
+    {
+        $keyword = trim($keyword);
+        $sql = "SELECT COUNT(*) as total FROM products 
+                WHERE name LIKE :keyword 
+                AND category_id = :category_id
+                AND status = 'active'";
+
+        $result = $this->db->fetchOne($sql, [
+            'keyword' => "%$keyword%",
+            'category_id' => (int) $categoryId
+        ]);
+        return $result['total'];
+    }
+
+    /**
+     * Lấy sản phẩm theo category có phân trang
+     */
+    public function getByCategoryPaginated($categoryId, $limit, $offset)
+    {
+        $sql = "SELECT * FROM products 
+                WHERE category_id = :category_id 
+                AND status = 'active'
+                ORDER BY id DESC 
+                LIMIT :limit OFFSET :offset";
+
+        return $this->db->fetchAll($sql, [
+            'category_id' => (int) $categoryId,
+            'limit' => (int) $limit,
+            'offset' => (int) $offset
+        ]);
+    }
+
+    /**
+     * Đếm sản phẩm theo category (cho phân trang)
+     */
+    public function countByCategory($categoryId)
+    {
+        $sql = "SELECT COUNT(*) as total FROM products 
+                WHERE category_id = :category_id 
+                AND status = 'active'";
+
+        $result = $this->db->fetchOne($sql, [
+            'category_id' => (int) $categoryId
+        ]);
+        return $result['total'];
+    }
+
+    // ===================== ADVANCED FILTER + SORT =====================
+
+    /**
+     * Lấy sản phẩm với đầy đủ filter (category, keyword, price) và sort
+     */
+    public function getFiltered(array $filters, int $limit, int $offset): array
+    {
+        $sql = "SELECT * FROM products WHERE status = 'active'";
+        $params = [];
+
+        // Filter theo category
+        if (!empty($filters['category_id'])) {
+            $sql .= " AND category_id = :category_id";
+            $params['category_id'] = (int) $filters['category_id'];
+        }
+
+        // Filter theo keyword
+        if (!empty($filters['keyword'])) {
+            $sql .= " AND name LIKE :keyword";
+            $params['keyword'] = "%" . trim($filters['keyword']) . "%";
+        }
+
+        // Filter theo khoảng giá
+        if (!empty($filters['price_min'])) {
+            $sql .= " AND price >= :price_min";
+            $params['price_min'] = (int) $filters['price_min'];
+        }
+        if (!empty($filters['price_max'])) {
+            $sql .= " AND price <= :price_max";
+            $params['price_max'] = (int) $filters['price_max'];
+        }
+
+        // Sort
+        $sort = $filters['sort'] ?? 'newest';
+        switch ($sort) {
+            case 'price_asc':
+                $sql .= " ORDER BY price ASC";
+                break;
+            case 'price_desc':
+                $sql .= " ORDER BY price DESC";
+                break;
+            case 'bestseller':
+                $sql .= " ORDER BY quantity DESC"; // Hoặc thêm cột sold_count
+                break;
+            case 'popular':
+            case 'newest':
+            default:
+                $sql .= " ORDER BY id DESC";
+                break;
+        }
+
+        $sql .= " LIMIT :limit OFFSET :offset";
+        $params['limit'] = $limit;
+        $params['offset'] = $offset;
+
+        return $this->db->fetchAll($sql, $params);
+    }
+
+    /**
+     * Đếm sản phẩm với đầy đủ filter (cho phân trang)
+     */
+    public function countFiltered(array $filters): int
+    {
+        $sql = "SELECT COUNT(*) as total FROM products WHERE status = 'active'";
+        $params = [];
+
+        // Filter theo category
+        if (!empty($filters['category_id'])) {
+            $sql .= " AND category_id = :category_id";
+            $params['category_id'] = (int) $filters['category_id'];
+        }
+
+        // Filter theo keyword
+        if (!empty($filters['keyword'])) {
+            $sql .= " AND name LIKE :keyword";
+            $params['keyword'] = "%" . trim($filters['keyword']) . "%";
+        }
+
+        // Filter theo khoảng giá
+        if (!empty($filters['price_min'])) {
+            $sql .= " AND price >= :price_min";
+            $params['price_min'] = (int) $filters['price_min'];
+        }
+        if (!empty($filters['price_max'])) {
+            $sql .= " AND price <= :price_max";
+            $params['price_max'] = (int) $filters['price_max'];
+        }
+
+        $result = $this->db->fetchOne($sql, $params);
+        return $result['total'] ?? 0;
+    }
 }

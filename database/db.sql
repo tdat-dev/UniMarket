@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS users (
     email_verification_token VARCHAR(64) NULL,
     email_verification_expires_at DATETIME NULL,
     is_locked TINYINT(1) DEFAULT 0,
+    last_seen DATETIME DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -33,7 +34,10 @@ CREATE TABLE IF NOT EXISTS categories (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     icon VARCHAR(255),
-    image VARCHAR(255)
+    image VARCHAR(255),
+    description TEXT DEFAULT NULL,
+    parent_id INT DEFAULT NULL,
+    FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ==========================================
@@ -48,6 +52,7 @@ CREATE TABLE IF NOT EXISTS products (
     price DECIMAL(10,2) NOT NULL,
     image VARCHAR(255),
     quantity INT NOT NULL DEFAULT 1,
+    `condition` ENUM('new', 'like_new', 'good', 'fair') DEFAULT 'good',
     status ENUM('active', 'sold', 'hidden') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -93,6 +98,21 @@ CREATE TABLE IF NOT EXISTS messages (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ==========================================
+-- 6b. BẢNG TỆP ĐÍNH KÈM TIN NHẮN (MESSAGE_ATTACHMENTS)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS message_attachments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    message_id INT NOT NULL,
+    filename VARCHAR(255) NOT NULL,
+    original_name VARCHAR(255) NOT NULL,
+    file_type VARCHAR(50) NOT NULL,
+    file_size INT NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ==========================================
@@ -215,6 +235,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 DELETE FROM carts;
 DELETE FROM order_details;
 DELETE FROM orders;
+DELETE FROM message_attachments;
 DELETE FROM messages;
 DELETE FROM reviews;
 DELETE FROM favorites;
@@ -241,6 +262,7 @@ ALTER TABLE reports AUTO_INCREMENT = 1;
 ALTER TABLE carts AUTO_INCREMENT = 1;
 ALTER TABLE search_keywords AUTO_INCREMENT = 1;
 ALTER TABLE settings AUTO_INCREMENT = 1;
+ALTER TABLE message_attachments AUTO_INCREMENT = 1;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ==========================================

@@ -14,7 +14,7 @@ class HomeController extends BaseController
         $latestProducts = $productModel->getLatest(8);
         $suggestedProducts = $productModel->getRandom(12);
         $topProducts = $productModel->getByTopKeywords(6);
-        $categories = $categoryModel->getAll();
+        $categories = $categoryModel->getParents(20);
 
         $this->view('home/index', [
             'latestProducts' => $latestProducts,

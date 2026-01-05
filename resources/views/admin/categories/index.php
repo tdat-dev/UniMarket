@@ -9,13 +9,15 @@
 <!-- Alert Messages -->
 <?php if (isset($_SESSION['success'])): ?>
     <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded">
-        <?= $_SESSION['success']; unset($_SESSION['success']); ?>
+        <?= $_SESSION['success'];
+        unset($_SESSION['success']); ?>
     </div>
 <?php endif; ?>
 
 <?php if (isset($_SESSION['error'])): ?>
     <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
-        <?= $_SESSION['error']; unset($_SESSION['error']); ?>
+        <?= $_SESSION['error'];
+        unset($_SESSION['error']); ?>
     </div>
 <?php endif; ?>
 
@@ -28,8 +30,8 @@
                 <?= $editingCategory ? 'Sửa danh mục' : 'Thêm danh mục mới' ?>
             </h2>
 
-            <form action="<?= $editingCategory ? '/admin/categories/update' : '/admin/categories/store' ?>" 
-                  method="POST" enctype="multipart/form-data">
+            <form action="<?= $editingCategory ? '/admin/categories/update' : '/admin/categories/store' ?>"
+                method="POST" enctype="multipart/form-data">
                 <?php if ($editingCategory): ?>
                     <input type="hidden" name="id" value="<?= $editingCategory['id'] ?>">
                 <?php endif; ?>
@@ -102,10 +104,21 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     <?php foreach ($categories as $cat): ?>
-                        <tr class="hover:bg-gray-50 transition <?= ($editingCategory && $editingCategory['id'] == $cat['id']) ? 'bg-blue-50' : '' ?>">
+                        <tr
+                            class="hover:bg-gray-50 transition <?= ($editingCategory && $editingCategory['id'] == $cat['id']) ? 'bg-blue-50' : '' ?>">
                             <td class="py-4 px-6">
-                                <?php if (!empty($cat['icon'])): ?>
-                                    <img src="<?= $cat['icon'] ?>" alt="<?= $cat['name'] ?>" class="w-10 h-10 object-contain">
+                                <?php
+                                // Ưu tiên hiển thị 'image' nếu có
+                                if (!empty($cat['image'])): ?>
+                                    <img src="<?= $cat['image'] ?>" alt="<?= $cat['name'] ?>" class="w-10 h-10 object-contain">
+                                <?php elseif (!empty($cat['icon'])):
+                                    // Kiểm tra xem icon là class FontAwesome hay đường dẫn ảnh
+                                    $isPathIcon = (strpos($cat['icon'], '/') === 0 || strpos($cat['icon'], 'http') === 0);
+                                    if ($isPathIcon): ?>
+                                        <img src="<?= $cat['icon'] ?>" alt="<?= $cat['name'] ?>" class="w-10 h-10 object-contain">
+                                    <?php else: ?>
+                                        <i class="fa-solid <?= $cat['icon'] ?> text-2xl text-slate-500"></i>
+                                    <?php endif; ?>
                                 <?php else: ?>
                                     <span class="text-2xl">📦</span>
                                 <?php endif; ?>
