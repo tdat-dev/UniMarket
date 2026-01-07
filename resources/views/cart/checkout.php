@@ -49,9 +49,9 @@ if (!empty($products)) {
                         <a href="/profile" class="text-blue-600 text-sm hover:underline">Thay đổi</a>
                     </div>
                     <div class="flex flex-col gap-1 text-sm text-gray-800">
-                         <?php if (!empty($user['address'])): ?>
+                        <?php if (!empty($user['address'])): ?>
                             <div class="font-bold">
-                                <?= htmlspecialchars($user['full_name'] ?? $_SESSION['user']['username'] ?? 'Người dùng') ?> 
+                                <?= htmlspecialchars($user['full_name'] ?? $_SESSION['user']['username'] ?? 'Người dùng') ?>
                                 (<?= htmlspecialchars($user['phone_number'] ?? 'Chưa có SĐT') ?>)
                             </div>
                             <div><?= htmlspecialchars($user['address']) ?></div>
@@ -131,14 +131,53 @@ if (!empty($products)) {
                             id="final-total"><?= number_format($grandTotal, 0, ',', '.') ?>đ</span>
                     </div>
 
+                    <h4 class="text-sm font-medium text-gray-700 mb-3">Phương thức thanh toán</h4>
                     <div class="space-y-3">
-                        <div
-                            class="flex items-center gap-3 p-3 border rounded-sm cursor-pointer border-[#EE4D2D] bg-[#FFF5F1]">
-                            <input type="radio" name="payment_method" checked
-                                class="text-[#EE4D2D] focus:ring-[#EE4D2D]">
-                            <span class="text-sm font-medium">Thanh toán khi nhận hàng (COD)</span>
-                        </div>
+                        <!-- PayOS (Recommended) -->
+                        <label
+                            class="payment-method-option flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:border-[#667eea] transition-colors relative overflow-hidden">
+                            <input type="radio" name="payment_method" value="payos" checked
+                                class="text-[#667eea] focus:ring-[#667eea] w-4 h-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-medium">Chuyển khoản QR</span>
+                                    <span
+                                        class="text-[10px] bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white px-2 py-0.5 rounded-full font-medium">Khuyến
+                                        nghị</span>
+                                </div>
+                                <span class="text-xs text-gray-500">Quét mã VietQR bằng app ngân hàng</span>
+                            </div>
+                            <div class="flex items-center gap-1 text-[#667eea]">
+                                <i class="fas fa-qrcode text-lg"></i>
+                            </div>
+                        </label>
+
+                        <!-- COD -->
+                        <label
+                            class="payment-method-option flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:border-[#EE4D2D] transition-colors">
+                            <input type="radio" name="payment_method" value="cod"
+                                class="text-[#EE4D2D] focus:ring-[#EE4D2D] w-4 h-4">
+                            <div class="flex-1">
+                                <span class="text-sm font-medium">Thanh toán khi nhận hàng (COD)</span>
+                                <span class="text-xs text-gray-500 block">Trả tiền mặt khi nhận được hàng</span>
+                            </div>
+                            <div class="text-gray-400">
+                                <i class="fas fa-truck text-lg"></i>
+                            </div>
+                        </label>
                     </div>
+
+                    <style>
+                        .payment-method-option:has(input:checked) {
+                            border-color: #667eea;
+                            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+                        }
+
+                        .payment-method-option:has(input[value="cod"]:checked) {
+                            border-color: #EE4D2D;
+                            background: #FFF5F1;
+                        }
+                    </style>
 
                     <button type="submit" id="btn-order"
                         class="w-full mt-6 py-3 bg-[#EE4D2D] text-white font-bold rounded-sm hover:bg-[#d73211] transition-transform active:scale-[0.98] shadow-md">

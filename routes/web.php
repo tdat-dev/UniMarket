@@ -6,7 +6,7 @@ use App\Controllers\ProductController;
 use App\Controllers\SearchController;
 use App\Controllers\GoogleAuthController;
 use App\Controllers\VerificationController;
-
+use App\Controllers\PaymentController;
 
 
 /** @var \App\Core\Router $router */
@@ -55,6 +55,14 @@ $router->post('cart/update', [\App\Controllers\CartController::class, 'update'])
 $router->post('checkout', [\App\Controllers\CheckoutController::class, 'process']); // Hiển thị trang checkout (review)
 $router->post('checkout/confirm', [\App\Controllers\CheckoutController::class, 'confirm']); // Xử lý đặt hàng thực sự
 
+// Payment (PayOS)
+$router->post('payment/create', [PaymentController::class, 'create']);
+$router->post('payment/webhook', [PaymentController::class, 'webhook']);
+$router->get('payment/return', [PaymentController::class, 'returnUrl']);
+$router->get('payment/cancel', [PaymentController::class, 'cancelUrl']);
+$router->get('payment/qr', [PaymentController::class, 'showQR']);
+$router->get('payment/check-status', [PaymentController::class, 'checkStatus']);
+
 // Shop & Chat
 $router->get('shop', [\App\Controllers\ShopController::class, 'index']);
 $router->post('shop/follow', [\App\Controllers\ShopController::class, 'toggleFollow']);
@@ -81,8 +89,7 @@ $router->post('profile/orders/cancel', [\App\Controllers\ProfileController::clas
 $router->post('profile/orders/rebuy', [\App\Controllers\ProfileController::class, 'rebuyOrder']);
 $router->get('profile/orders/detail', [\App\Controllers\ProfileController::class, 'orderDetail']);
 $router->post('profile/avatar', [\App\Controllers\ProfileController::class, 'updateAvatar']);
-$router->get('profile/change-password', [\App\Controllers\ProfileController::class, 'changePassword']);
-$router->post('profile/change-password/update', [\App\Controllers\ProfileController::class, 'updatePassword']);
+$router->post('profile/orders/confirm-received', [\App\Controllers\ProfileController::class, 'confirmReceived']);
 
 // Route search (yêu cầu đăng nhập)
 $router->get('search', [SearchController::class, 'search']);
@@ -96,5 +103,3 @@ $router->post('verify-email/resend', [VerificationController::class, 'resendVeri
 
 // Đăng xuất
 $router->post('logout', [AuthController::class, 'logout']);
-
-

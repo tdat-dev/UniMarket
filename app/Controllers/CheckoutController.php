@@ -4,13 +4,18 @@ namespace App\Controllers;
 
 use App\Middleware\VerificationMiddleware;
 use App\Models\Product;
+use App\Models\Cart;
+use App\Models\User;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Controllers\PaymentController;
 
 class CheckoutController extends BaseController
 {
     private function getCartItems($userId)
     {
         if ($userId) {
-            $cartModel = new \App\Models\Cart();
+            $cartModel = new Cart();
             $dbItems = $cartModel->getByUserId($userId);
             $cart = [];
             foreach ($dbItems as $item) {
@@ -75,7 +80,7 @@ class CheckoutController extends BaseController
         }
 
         // Fetch User Info for Address
-        $userModel = new \App\Models\User();
+        $userModel = new User();
         $user = $userModel->find($userId);
 
         // Render checkout view
@@ -162,9 +167,9 @@ class CheckoutController extends BaseController
         }
 
         // 3. Create Orders in DB
-        $orderModel = new \App\Models\Order();
-        $orderItemModel = new \App\Models\OrderItem();
-        $cartModel = new \App\Models\Cart();
+        $orderModel = new Order();
+        $orderItemModel = new OrderItem();
+        $cartModel = new Cart();
 
         // Check if user is logged in
         if (!isset($_SESSION['user']['id'])) {
@@ -174,14 +179,39 @@ class CheckoutController extends BaseController
         }
         $buyerId = $_SESSION['user']['id'];
 
+        // Lấy payment method từ form
+        $paymentMethod = $_POST['payment_method'] ?? 'cod';
+        error_log('[Checkout] payment_method: ' . $paymentMethod . ', POST: ' . json_encode($_POST));
+        $createdOrderIds = [];
+
         foreach ($ordersBySeller as $sellerId => $orderData) {
+            // Xác định trạng thái dựa trên payment method
+            // - PayOS (QR): pending_payment (chờ thanh toán)
+            // - COD (tiền mặt): pending (chờ xác nhận từ seller)
+            $orderStatus = ($paymentMethod === 'payos') ? 'pending_payment' : 'pending';
+
             // Create Order
             $orderId = $orderModel->create([
                 'buyer_id' => $buyerId,
                 'seller_id' => $sellerId,
                 'total_amount' => $orderData['total'],
-                'status' => 'pending'
+                'status' => $orderStatus
             ]);
+
+            $createdOrderIds[] = $orderId;
+
+            // Cập nhật payment method cho order
+            $orderModel->updatePaymentInfo($orderId, [
+                'payment_method' => $paymentMethod,
+            ]);
+
+            // Lấy condition của sản phẩm đầu tiên để xác định trial days
+            $firstProduct = $orderData['items'][0]['product'] ?? null;
+            $condition = $firstProduct['condition'] ?? 'new';
+            $escrowService = new \App\Services\EscrowService();
+            $trialDays = $escrowService->getTrialDays($condition);
+
+            $orderModel->update($orderId, ['trial_days' => $trialDays]);
 
             // Create Order Items & Update Stock
             foreach ($orderData['items'] as $item) {
@@ -207,7 +237,26 @@ class CheckoutController extends BaseController
             }
         }
 
-        // 4. Success View
-        $this->view('cart/success');
+        // Nếu chọn PayOS, tạo payment link ngay tại đây
+        if ($paymentMethod === 'payos' && !empty($createdOrderIds)) {
+            // Lấy order đầu tiên để thanh toán
+            $orderId = $createdOrderIds[0];
+
+            // Gọi PaymentController để tạo payment
+            $paymentController = new PaymentController();
+
+            // Set order_id vào POST để PaymentController xử lý
+            $_POST['order_id'] = $orderId;
+
+            // Gọi method create
+            $paymentController->create();
+            exit;
+        }
+
+        // COD: Hiển thị trang success
+        $this->view('cart/success', [
+            'order_ids' => $createdOrderIds,
+            'payment_method' => $paymentMethod,
+        ]);
     }
 }

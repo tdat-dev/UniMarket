@@ -92,7 +92,7 @@ class Order extends BaseModel
      */
     public function updateStatus($orderId, $status, $reason = null)
     {
-        $validStatuses = ['pending', 'shipping', 'completed', 'cancelled'];
+        $validStatuses = ['pending', 'paid', 'shipping', 'received', 'trial_period', 'completed', 'cancelled', 'refunded'];
         if (!in_array($status, $validStatuses)) {
             return false;
         }
@@ -136,9 +136,13 @@ class Order extends BaseModel
 
         $counts = [
             'pending' => 0,
+            'paid' => 0,
             'shipping' => 0,
+            'received' => 0,
+            'trial_period' => 0,
             'completed' => 0,
-            'cancelled' => 0
+            'cancelled' => 0,
+            'refunded' => 0
         ];
 
         foreach ($results as $row) {
@@ -146,5 +150,112 @@ class Order extends BaseModel
         }
 
         return $counts;
+    }
+
+    // ========== PAYMENT METHODS ==========
+
+    /**
+     * Cập nhật thông tin payment
+     */
+    public function updatePaymentInfo(int $orderId, array $data): bool
+    {
+        $setClauses = [];
+        $params = ['id' => $orderId];
+
+        foreach ($data as $key => $value) {
+            $setClauses[] = "{$key} = :{$key}";
+            $params[$key] = $value;
+        }
+
+        $sql = "UPDATE {$this->table} SET " . implode(', ', $setClauses) . " WHERE id = :id";
+        return $this->db->execute($sql, $params);
+    }
+
+    /**
+     * Cập nhật payment status
+     */
+    public function updatePaymentStatus(int $orderId, string $status): bool
+    {
+        $sql = "UPDATE {$this->table} SET payment_status = :status";
+        $params = ['status' => $status, 'id' => $orderId];
+
+        if ($status === 'paid') {
+            $sql .= ", paid_at = NOW()";
+        }
+
+        $sql .= " WHERE id = :id";
+        return $this->db->execute($sql, $params);
+    }
+
+    /**
+     * Tìm order theo PayOS order code
+     */
+    public function findByPayosOrderCode(int $orderCode): ?array
+    {
+        $sql = "SELECT o.*, 
+                       b.full_name as buyer_name, b.email as buyer_email, b.phone_number as buyer_phone,
+                       s.full_name as seller_name, s.email as seller_email
+                FROM {$this->table} o
+                LEFT JOIN users b ON o.buyer_id = b.id
+                LEFT JOIN users s ON o.seller_id = s.id
+                WHERE o.payos_order_code = :order_code";
+        return $this->db->fetchOne($sql, ['order_code' => $orderCode]) ?: null;
+    }
+
+    /**
+     * Cập nhật order (generic update)
+     */
+    public function update(int $orderId, array $data): bool
+    {
+        $setClauses = [];
+        $params = ['id' => $orderId];
+
+        foreach ($data as $key => $value) {
+            $setClauses[] = "{$key} = :{$key}";
+            $params[$key] = $value;
+        }
+
+        $sql = "UPDATE {$this->table} SET " . implode(', ', $setClauses) . " WHERE id = :id";
+        return $this->db->execute($sql, $params);
+    }
+
+    /**
+     * Xác nhận đã nhận hàng (buyer)
+     */
+    public function confirmReceived(int $orderId, int $trialDays): bool
+    {
+        $releaseAt = date('Y-m-d H:i:s', strtotime("+{$trialDays} days"));
+
+        $sql = "UPDATE {$this->table} 
+                SET status = 'received', 
+                    received_at = NOW(),
+                    escrow_release_at = :release_at
+                WHERE id = :id";
+        return $this->db->execute($sql, ['release_at' => $releaseAt, 'id' => $orderId]);
+    }
+
+    /**
+     * Lấy orders cần auto-complete (hết trial period)
+     */
+    public function getOrdersToComplete(): array
+    {
+        $sql = "SELECT * FROM {$this->table} 
+                WHERE status IN ('received', 'trial_period')
+                AND escrow_release_at IS NOT NULL 
+                AND escrow_release_at <= NOW()";
+        return $this->db->fetchAll($sql);
+    }
+
+    /**
+     * Lấy đơn hàng theo buyer với thông tin payment
+     */
+    public function getByBuyerIdWithPayment(int $buyerId): array
+    {
+        $sql = "SELECT o.*, s.full_name as seller_name
+                FROM {$this->table} o
+                JOIN users s ON o.seller_id = s.id
+                WHERE o.buyer_id = :buyer_id 
+                ORDER BY o.created_at DESC";
+        return $this->db->fetchAll($sql, ['buyer_id' => $buyerId]);
     }
 }
