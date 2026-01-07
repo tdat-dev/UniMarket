@@ -23,6 +23,14 @@ $router->post('login', [AuthController::class, 'processLogin']);
 $router->get('register', [AuthController::class, 'register']);
 $router->post('register', [AuthController::class, 'processRegister']);
 
+// Quên mật khẩu
+$router->get('forgot-password', [\App\Controllers\PasswordResetController::class, 'showForgotForm']);
+$router->post('forgot-password', [\App\Controllers\PasswordResetController::class, 'sendResetOtp']);
+$router->post('verify-otp', [\App\Controllers\PasswordResetController::class, 'verifyOtp']);
+$router->get('reset-password', [\App\Controllers\PasswordResetController::class, 'showResetForm']);
+$router->post('reset-password', [\App\Controllers\PasswordResetController::class, 'resetPassword']);
+
+
 // Google OAuth
 $router->get('auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
 $router->get('auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);

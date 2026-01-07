@@ -192,4 +192,71 @@ class User extends BaseModel
 		$sql = "UPDATE users SET email_verified = NOT email_verified WHERE id = :id";
 		return $this->db->execute($sql, ['id' => $id]);
 	}
+    // --- Password Reset Methods ---
+
+    public function findByEmailFull($email)
+    {
+        $sql = "SELECT * FROM users WHERE email = :email";
+        return $this->db->fetchOne($sql, ['email' => $email]);
+    }
+
+    public function savePasswordResetToken($userId, $token)
+    {
+        // Token hết hạn sau 15 phút
+        $expiresAt = date('Y-m-d H:i:s', time() + 900);
+
+        $sql = "UPDATE users SET 
+            password_reset_token = :token, 
+            password_reset_expires_at = :expires,
+            password_reset_attempts = 0,
+            password_reset_locked_until = NULL
+            WHERE id = :id";
+        
+        return $this->db->execute($sql, [
+            'token' => $token,
+            'expires' => $expiresAt,
+            'id' => $userId
+        ]);
+    }
+
+    public function incrementResetAttempts($userId)
+    {
+        // Tăng số lần thử
+        $sql = "UPDATE users SET password_reset_attempts = password_reset_attempts + 1 WHERE id = :id";
+        $this->db->execute($sql, ['id' => $userId]);
+
+        // Kiểm tra nếu quá 5 lần thì lock 5 phút
+        $user = $this->find($userId); // find() only gets basic info, we need reset info.
+        // Let's just fetch attempts from DB to be safe or use findByEmailFull but we only have ID here.
+        // Simplest: Get attempts directly
+        $sqlGet = "SELECT password_reset_attempts FROM users WHERE id = :id";
+        $attempts = $this->db->fetchOne($sqlGet, ['id' => $userId])['password_reset_attempts'];
+
+        if ($attempts >= 5) {
+            $lockedUntil = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+            $sqlLock = "UPDATE users SET password_reset_locked_until = :locked WHERE id = :id";
+            $this->db->execute($sqlLock, ['locked' => $lockedUntil, 'id' => $userId]);
+            return true; // Bị khóa
+        }
+        return false;
+    }
+
+    public function clearPasswordResetToken($userId)
+    {
+        $sql = "UPDATE users SET 
+            password_reset_token = NULL, 
+            password_reset_expires_at = NULL, 
+            password_reset_attempts = 0, 
+            password_reset_locked_until = NULL 
+            WHERE id = :id";
+        return $this->db->execute($sql, ['id' => $userId]);
+    }
+
+    public function updatePassword($userId, $newPassword)
+    {
+        $hash = password_hash($newPassword, PASSWORD_DEFAULT);
+        $sql = "UPDATE users SET password = :password WHERE id = :id";
+        return $this->db->execute($sql, ['password' => $hash, 'id' => $userId]);
+    }
 }
+
