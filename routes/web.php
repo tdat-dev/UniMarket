@@ -23,6 +23,14 @@ $router->post('login', [AuthController::class, 'processLogin']);
 $router->get('register', [AuthController::class, 'register']);
 $router->post('register', [AuthController::class, 'processRegister']);
 
+// Quên mật khẩu
+$router->get('forgot-password', [\App\Controllers\PasswordResetController::class, 'showForgotForm']);
+$router->post('forgot-password', [\App\Controllers\PasswordResetController::class, 'sendResetOtp']);
+$router->post('verify-otp', [\App\Controllers\PasswordResetController::class, 'verifyOtp']);
+$router->get('reset-password', [\App\Controllers\PasswordResetController::class, 'showResetForm']);
+$router->post('reset-password', [\App\Controllers\PasswordResetController::class, 'resetPassword']);
+
+
 // Google OAuth
 $router->get('auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
 $router->get('auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
@@ -73,6 +81,8 @@ $router->post('profile/orders/cancel', [\App\Controllers\ProfileController::clas
 $router->post('profile/orders/rebuy', [\App\Controllers\ProfileController::class, 'rebuyOrder']);
 $router->get('profile/orders/detail', [\App\Controllers\ProfileController::class, 'orderDetail']);
 $router->post('profile/avatar', [\App\Controllers\ProfileController::class, 'updateAvatar']);
+$router->get('profile/change-password', [\App\Controllers\ProfileController::class, 'changePassword']);
+$router->post('profile/change-password/update', [\App\Controllers\ProfileController::class, 'updatePassword']);
 
 // Route search (yêu cầu đăng nhập)
 $router->get('search', [SearchController::class, 'search']);

@@ -60,7 +60,7 @@ ob_start();
                 class="w-full bg-[#5A88FF] text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition duration-300 cursor-pointer shadow-md uppercase tracking-wide text-sm">
 
             <div class="text-center pt-2">
-                <a href="#" class="text-[#5A88FF] hover:text-blue-700 text-sm font-medium">Quên mật khẩu?</a>
+                <a href="/forgot-password" class="text-[#5A88FF] hover:text-blue-700 text-sm font-medium">Quên mật khẩu?</a>
             </div>
 
             <!-- Separator -->

@@ -473,4 +473,58 @@ class ProfileController extends BaseController
             'buyer' => $buyer
         ]);
     }
+
+    public function changePassword()
+    {
+        if (session_status() == PHP_SESSION_NONE)
+            session_start();
+        if (!isset($_SESSION['user'])) {
+            header('Location: /login');
+            exit;
+        }
+
+        $this->view('profile/change_password', [
+            'pageTitle' => 'Đổi mật khẩu'
+        ]);
+    }
+
+    public function updatePassword()
+    {
+        if (session_status() == PHP_SESSION_NONE)
+            session_start();
+        if (!isset($_SESSION['user'])) {
+            header('Location: /login');
+            exit;
+        }
+
+        $currentPassword = $_POST['current_password'] ?? '';
+        $newPassword = $_POST['new_password'] ?? '';
+        $confirmPassword = $_POST['confirm_password'] ?? '';
+        $userId = $_SESSION['user']['id'];
+
+        if (strlen($newPassword) < 6) {
+             header('Location: /profile/change-password?error=password_short');
+             exit;
+        }
+
+        if ($newPassword !== $confirmPassword) {
+            header('Location: /profile/change-password?error=password_mismatch');
+            exit;
+        }
+
+        $userModel = new \App\Models\User();
+        // Use findByEmailFull to get password hash since find() excludes it
+        $user = $userModel->findByEmailFull($_SESSION['user']['email']);
+
+        if (!$user || !password_verify($currentPassword, $user['password'])) {
+            header('Location: /profile/change-password?error=wrong_password');
+            exit;
+        }
+
+        // Update password (model handles hashing)
+        $userModel->updatePassword($userId, $newPassword);
+
+        header('Location: /profile/change-password?success=1');
+        exit;
+    }
 }
