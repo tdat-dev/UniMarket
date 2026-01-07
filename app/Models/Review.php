@@ -36,4 +36,17 @@ class Review extends BaseModel
             'comment' => $data['comment']
         ]);
     }
+
+    public function getSellerStats($sellerId)
+    {
+        $sql = "SELECT 
+                    COUNT(r.id) as review_count, 
+                    COALESCE(AVG(r.rating), 0) as avg_rating 
+                FROM reviews r 
+                JOIN products p ON r.product_id = p.id 
+                WHERE p.user_id = :seller_id";
+        
+        $result = $this->db->fetchOne($sql, ['seller_id' => $sellerId]);
+        return $result ? $result : ['review_count' => 0, 'avg_rating' => 0];
+    }
 }

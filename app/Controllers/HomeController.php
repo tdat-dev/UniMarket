@@ -23,4 +23,9 @@ class HomeController extends BaseController
             'categories' => $categories,
         ]);
     }
+
+    public function support()
+    {
+        $this->view('support/index');
+    }
 }

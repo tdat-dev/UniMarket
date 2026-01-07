@@ -24,8 +24,12 @@
                 </button>
             </div>
             <div class="mb-2 min-w-0 flex-1">
-                <h1 class="text-2xl font-bold text-gray-900 truncate">
+                <h1 class="text-2xl font-bold text-gray-900 truncate flex items-center gap-2">
                     <?= htmlspecialchars($_SESSION['user']['full_name']) ?>
+                    <button type="button" onclick="document.getElementById('profile-fullname').focus()" 
+                            class="text-gray-400 hover:text-blue-600 focus:outline-none" title="Sửa tên">
+                        <i class="fa-solid fa-pen-to-square text-lg"></i>
+                    </button>
                 </h1>
                 <p class="text-sm text-gray-500">Thành viên từ
                     <?= date('Y', strtotime($_SESSION['user']['created_at'] ?? 'now')) ?>
@@ -73,6 +77,11 @@
                 class="<?= ($activeTab ?? '') == 'shop_orders' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' ?> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
                 <i class="fa-solid fa-store"></i> Đơn bán
             </a>
+            <a href="/shop?id=<?= $_SESSION['user']['id'] ?? '' ?>"
+                class="<?= ($activeTab ?? '') == 'my_products' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' ?> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
+                <i class="fa-solid fa-box-open"></i> Tất cả sản phẩm
+            </a>
+            
         </nav>
     </div>
 </div>

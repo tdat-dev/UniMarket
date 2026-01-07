@@ -67,6 +67,12 @@ class CheckoutController extends BaseController
             if ($qty > 0) {
                 $p = $productModel->find($id);
                 if ($p) {
+                    // Check ownership
+                    if ($p['user_id'] == $userId) {
+                        $_SESSION['error'] = 'Bạn không thể mua sản phẩm "' . $p['name'] . '" của chính mình!';
+                        header('Location: /cart');
+                        exit;
+                    }
                     $p['cart_quantity'] = (int) $qty;
                     $products[] = $p;
                 }
@@ -127,6 +133,8 @@ class CheckoutController extends BaseController
             $product = $productModel->find($id);
             if (!$product || $product['quantity'] < $qty) {
                 $errors[] = "Sản phẩm " . ($product['name'] ?? 'Unknown') . " không đủ hàng.";
+            } elseif ($product['user_id'] == $userId) {
+                $errors[] = "Bạn không thể mua sản phẩm '" . $product['name'] . "' của chính mình.";
             } else {
                 $productsToOrder[] = [
                     'product' => $product,

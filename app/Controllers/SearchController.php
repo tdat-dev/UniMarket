@@ -11,6 +11,8 @@ class SearchController extends BaseController
     public function index()
     {
         $keyword = $_GET['q'] ?? '';
+        $categoryId = $_GET['category'] ?? null;
+        
         $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
         $limit = 12; 
         $offset = ($page - 1) * $limit;
@@ -23,14 +25,29 @@ class SearchController extends BaseController
             $searchModel->trackKeyword($keyword);
         }
 
-        // Tìm kiếm sản phẩm
-        $products = $productModel->searchByKeyword($keyword, $limit, $offset);
-        $totalProducts = $productModel->countByKeyword($keyword);
+        // Resolve category children if category is selected
+        $filterCategoryId = $categoryId;
+        if ($categoryId) {
+            $categoryModel = new \App\Models\Category();
+            // Get all children IDs + parent ID
+            $filterCategoryId = $categoryModel->getChildrenIds((int)$categoryId);
+        }
+
+        // Tạo mảng filter
+        $filters = [
+            'keyword' => $keyword,
+            'category_id' => $filterCategoryId
+        ];
+
+        // Sử dụng getFiltered để tìm kiếm tổng quát hơn (hỗ trợ cả keyword và category)
+        $products = $productModel->getFiltered($filters, $limit, $offset);
+        $totalProducts = $productModel->countFiltered($filters);
         $totalPages = ceil($totalProducts / $limit);
 
         $this->view('search/index', [
             'products' => $products,
             'keyword' => $keyword,
+            'categoryId' => $categoryId,
             'currentPage' => $page,
             'totalPages' => $totalPages
         ]);

@@ -26,7 +26,7 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
         // fetchOne = lấy 1 dòng
         // :id là placeholder (prepared statement) để tránh SQL injection
         return $this->db->fetchOne(
-            "SELECT * FROM products WHERE id = :id",
+            "SELECT p.*, (SELECT COALESCE(SUM(od.quantity), 0) FROM order_details od JOIN orders o ON od.order_id = o.id WHERE od.product_id = p.id AND o.status != 'cancelled') as sold_count FROM products p WHERE p.id = :id",
             ['id' => (int) $id]  // Cast sang int để đảm bảo an toàn
         );
     }
@@ -45,7 +45,7 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
             if ($products === null) {
                 // Cache miss → Query DB
                 $products = $this->db->fetchAll(
-                    "SELECT * FROM products ORDER BY id DESC LIMIT :limit",
+                    "SELECT p.*, (SELECT COALESCE(SUM(od.quantity), 0) FROM order_details od JOIN orders o ON od.order_id = o.id WHERE od.product_id = p.id AND o.status != 'cancelled') as sold_count FROM products p ORDER BY id DESC LIMIT :limit",
                     ['limit' => (int) $limit]
                 );
 
@@ -58,7 +58,7 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
 
         // Fallback: Redis không khả dụng
         return $this->db->fetchAll(
-            "SELECT * FROM products ORDER BY id DESC LIMIT :limit",
+            "SELECT p.*, (SELECT COALESCE(SUM(od.quantity), 0) FROM order_details od JOIN orders o ON od.order_id = o.id WHERE od.product_id = p.id AND o.status != 'cancelled') as sold_count FROM products p ORDER BY id DESC LIMIT :limit",
             ['limit' => (int) $limit]
         );
     }
@@ -225,7 +225,7 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
     // ✅ FIXED: Lấy sản phẩm theo danh mục (cho phần "Sản phẩm tương tự")
     public function getByCategory($categoryId, $limit = 4, $excludeId = null)
     {
-        $sql = "SELECT * FROM products 
+        $sql = "SELECT p.*, (SELECT COALESCE(SUM(od.quantity), 0) FROM order_details od JOIN orders o ON od.order_id = o.id WHERE od.product_id = p.id AND o.status != 'cancelled') as sold_count FROM products p 
                 WHERE category_id = :category_id 
                 AND status = 'active'";
 
@@ -285,7 +285,7 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
      */
     public function getByUserId($userId, $limit = 50, $offset = 0)
     {
-        $sql = "SELECT * FROM products 
+        $sql = "SELECT p.*, (SELECT COALESCE(SUM(od.quantity), 0) FROM order_details od JOIN orders o ON od.order_id = o.id WHERE od.product_id = p.id AND o.status != 'cancelled') as sold_count FROM products p
                 WHERE user_id = :user_id 
                 ORDER BY created_at DESC 
                 LIMIT :limit OFFSET :offset";
@@ -364,6 +364,16 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
     {
         $sql = "DELETE FROM products WHERE id = :id";
         return $this->db->execute($sql, ['id' => $id]);
+    }
+
+    /**
+     * Kiểm tra xem sản phẩm có đơn hàng nào không (bất kể trạng thái)
+     */
+    public function hasAnyOrder(int $id): bool
+    {
+        $sql = "SELECT COUNT(*) as total FROM order_details WHERE product_id = :id";
+        $result = $this->db->fetchOne($sql, ['id' => $id]);
+        return ($result['total'] ?? 0) > 0;
     }
 
     // ===================== SEARCH & FILTER METHODS =====================
@@ -447,13 +457,26 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
      */
     public function getFiltered(array $filters, int $limit, int $offset): array
     {
-        $sql = "SELECT * FROM products WHERE status = 'active'";
+        $sql = "SELECT p.*, (SELECT COALESCE(SUM(od.quantity), 0) FROM order_details od JOIN orders o ON od.order_id = o.id WHERE od.product_id = p.id AND o.status != 'cancelled') as sold_count FROM products p WHERE status = 'active'";
         $params = [];
 
         // Filter theo category
         if (!empty($filters['category_id'])) {
-            $sql .= " AND category_id = :category_id";
-            $params['category_id'] = (int) $filters['category_id'];
+            if (is_array($filters['category_id'])) {
+                // Support filtering by multiple categories (parent + children)
+                $placeholders = [];
+                foreach ($filters['category_id'] as $k => $id) {
+                    $key = "cat_id_{$k}";
+                    $placeholders[] = ":$key";
+                    $params[$key] = (int) $id;
+                }
+                if (!empty($placeholders)) {
+                    $sql .= " AND category_id IN (" . implode(',', $placeholders) . ")";
+                }
+            } else {
+                $sql .= " AND category_id = :category_id";
+                $params['category_id'] = (int) $filters['category_id'];
+            }
         }
 
         // Filter theo keyword
@@ -531,4 +554,15 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
         $result = $this->db->fetchOne($sql, $params);
         return $result['total'] ?? 0;
     }
+
+    protected $table = 'products';
+
+    public function hideProduct($id)
+    {
+        $sql = "UPDATE products SET status = 'hidden' WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$id]);
+    }
+
+
 }

@@ -13,6 +13,7 @@ use App\Controllers\PaymentController;
 
 // Trang chủ (cần check login trong controller)
 $router->get('/', [HomeController::class, 'index']);
+$router->get('support', [HomeController::class, 'support']);
 
 // Đăng nhập
 $router->get('login', [AuthController::class, 'login']);
@@ -56,6 +57,7 @@ $router->get('payment/check-status', [PaymentController::class, 'checkStatus']);
 
 // Shop & Chat
 $router->get('shop', [\App\Controllers\ShopController::class, 'index']);
+$router->post('shop/follow', [\App\Controllers\ShopController::class, 'toggleFollow']);
 $router->get('shop/orders', [\App\Controllers\ShopController::class, 'orders']);
 $router->get('chat', [\App\Controllers\ChatController::class, 'index']);
 $router->post('chat/send', [\App\Controllers\ChatController::class, 'send']);
@@ -65,6 +67,7 @@ $router->get('products/create', [ProductController::class, 'create']);
 $router->post('products/store', [ProductController::class, 'store']); // For form submission
 
 // User Profile
+$router->post('products/cancel-sale', [ProductController::class, 'cancelSale']);
 $router->get('profile', [\App\Controllers\ProfileController::class, 'index']);
 $router->post('profile/update', [\App\Controllers\ProfileController::class, 'update']);
 $router->get('wallet', [\App\Controllers\ProfileController::class, 'wallet']);

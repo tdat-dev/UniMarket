@@ -220,6 +220,23 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
                     }
                 }
 
+                // Notify followers
+                try {
+                    $followModel = new \App\Models\Follow();
+                    $notifModel = new \App\Models\Notification();
+                    
+                    $followers = $followModel->getFollowers($_SESSION['user']['id']);
+                    $senderName = $_SESSION['user']['full_name'];
+                    $productName = $productData['name'];
+                    
+                    foreach ($followers as $follower) {
+                        $content = "Shop $senderName vừa đăng bán sản phẩm mới: $productName";
+                        $notifModel->create($follower['id'], $content);
+                    }
+                } catch (\Exception $e) {
+                    // Ignore notification errors
+                }
+
                 // Success -> Redirect to product detail or shop
                 header('Location: /shop?id=' . $_SESSION['user']['id']);
                 exit;
@@ -230,6 +247,60 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
         } catch (\Exception $e) {
             $errors['db'] = 'Lỗi: ' . $e->getMessage();
             $this->view('products/create', ['errors' => $errors, 'old' => $data]);
+        }
+    }
+
+    public function cancelSale()
+    {
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        header('Content-Type: application/json');
+
+        if (!isset($_SESSION['user'])) {
+            echo json_encode(['success' => false, 'message' => 'Bạn chưa đăng nhập']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $productId = $input['product_id'] ?? null;
+
+        if (!$productId) {
+            echo json_encode(['success' => false, 'message' => 'Sản phẩm không hợp lệ']);
+            return;
+        }
+
+        $productModel = new Product();
+        $product = $productModel->find($productId);
+
+        if (!$product) {
+            echo json_encode(['success' => false, 'message' => 'Sản phẩm không tồn tại']);
+            return;
+        }
+
+        if ($product['user_id'] != $_SESSION['user']['id']) {
+            echo json_encode(['success' => false, 'message' => 'Bạn không có quyền xoá sản phẩm này']);
+            return;
+        }
+
+        // Kiểm tra xem sản phẩm đã từng có đơn hàng nào chưa
+        // Nếu đã có đơn hàng (dù đã giao, huỷ hay đang giao) thì KHÔNG được xoá khỏi DB để giữ lịch sử
+        if ($productModel->hasAnyOrder($productId)) {
+             echo json_encode([
+                 'success' => false, 
+                 'message' => 'Sản phẩm này đã từng phát sinh đơn hàng nên không thể xoá vĩnh viễn khỏi hệ thống (để lưu lịch sử cho khách). Bạn chỉ có thể Huỷ bán (ẩn đi) thôi nhé!'
+             ]);
+             return;
+        }
+
+        // Nếu chưa có đơn nào -> Xoá vĩnh viễn
+        $success = $productModel->delete($productId);
+
+        if ($success) {
+            echo json_encode(['success' => true, 'message' => 'Đã xoá sản phẩm thành công']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Lỗi hệ thống, không thể xoá']);
         }
     }
 }

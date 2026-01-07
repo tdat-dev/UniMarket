@@ -54,6 +54,16 @@ class CartController extends BaseController
             exit;
         }
 
+        // Check if user is buying their own product
+        $productModel = new Product();
+        $product = $productModel->find($productId);
+
+        if ($product && $product['user_id'] == $userId) {
+            $_SESSION['error'] = 'Bạn không thể mua sản phẩm của chính mình!';
+            header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? '/products'));
+            exit;
+        }
+
         // Xử lý theo action
         if ($action === 'buy') {
             // MUA NGAY: Đi thẳng checkout, KHÔNG thêm vào giỏ hàng
