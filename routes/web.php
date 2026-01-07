@@ -52,7 +52,8 @@ $router->post('/products/store', [ProductController::class, 'store']);
 $router->post('cart/add', [\App\Controllers\CartController::class, 'add']);
 $router->get('cart', [\App\Controllers\CartController::class, 'index']);
 $router->post('cart/update', [\App\Controllers\CartController::class, 'update']);
-$router->post('checkout', [\App\Controllers\CheckoutController::class, 'process']); // Hiển thị trang checkout (review)
+$router->post('checkout', [\App\Controllers\CheckoutController::class, 'process']); // Xử lý POST từ Cart
+$router->get('checkout', [\App\Controllers\CheckoutController::class, 'process']); // Hiển thị trang checkout (GET)
 $router->post('checkout/confirm', [\App\Controllers\CheckoutController::class, 'confirm']); // Xử lý đặt hàng thực sự
 
 // Payment (PayOS)
@@ -82,6 +83,8 @@ $router->get('wallet', [\App\Controllers\ProfileController::class, 'wallet']);
 $router->post('wallet/process', [\App\Controllers\ProfileController::class, 'processWallet']);
 $router->get('reviews', [\App\Controllers\ProfileController::class, 'reviews']);
 $router->post('reviews/store', [\App\Controllers\ProfileController::class, 'storeReview']);
+$router->get('profile/change-password', [\App\Controllers\ProfileController::class, 'changePassword']);
+$router->post('profile/change-password/update', [\App\Controllers\ProfileController::class, 'updatePassword']);
 $router->get('shop/orders', [\App\Controllers\ShopController::class, 'orders']);
 $router->post('shop/orders/update', [\App\Controllers\ShopController::class, 'updateOrderStatus']);
 $router->get('profile/orders', [\App\Controllers\ProfileController::class, 'orders']);
