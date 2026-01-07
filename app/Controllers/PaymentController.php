@@ -381,7 +381,44 @@ class PaymentController extends BaseController
             exit;
         }
 
-        // Kiểm tra status từ query string (nhưng không tin tuyệt đối, chờ webhook)
+        // Kiểm tra status từ query string
+        $isPaid = ($status === 'PAID' || $status === 'CANCELLED'); // Status trả về từ PayOS redirect
+
+        // Fallback: Nếu chưa paid trong DB, kiểm tra chủ động qua API
+        // (quan trọng cho localhost vì webhook thường không nhận được)
+        if ($order['payment_status'] !== 'paid') {
+            try {
+                $paymentInfo = $this->payosService->getPaymentInfo($order['payment_link_id']);
+                if (($paymentInfo['data']['status'] ?? '') === 'PAID') {
+                    // Payment thành công trên PayOS nhưng chưa cập nhật DB -> cập nhật ngay
+                    $payosData = $paymentInfo['data'];
+
+                    // Lấy giao dịch cuối cùng thành công
+                    $lastTrans = end($payosData['transactions']) ?: [];
+
+                    // Map data để reuse handlePaymentSuccess
+                    $webhookData = [
+                        'orderCode' => $payosData['orderCode'],
+                        'amount' => $payosData['amount'],
+                        'transactionDateTime' => $lastTrans['transactionDateTime'] ?? date('Y-m-d H:i:s'),
+                        'counterAccountBankId' => $lastTrans['counterAccountBankId'] ?? null,
+                        'counterAccountBankName' => $lastTrans['counterAccountBankName'] ?? null,
+                        'counterAccountName' => $lastTrans['counterAccountName'] ?? null,
+                        'counterAccountNumber' => $lastTrans['counterAccountNumber'] ?? null,
+                    ];
+                    $reference = $lastTrans['reference'] ?? 'ActiveCheck-' . time();
+
+                    $this->handlePaymentSuccess($order, $webhookData, $reference);
+
+                    $_SESSION['success'] = 'Thanh toán thành công (đã xác thực)! Đơn hàng đang được xử lý.';
+                    header('Location: /profile/orders/detail?id=' . $order['id']);
+                    exit;
+                }
+            } catch (\Exception $e) {
+                error_log('[Payment Return] Error verifying payment: ' . $e->getMessage());
+            }
+        }
+
         if ($status === 'PAID' || $order['payment_status'] === 'paid') {
             $_SESSION['success'] = 'Thanh toán thành công! Đơn hàng của bạn đang được xử lý.';
         } else {

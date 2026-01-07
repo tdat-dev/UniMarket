@@ -125,9 +125,13 @@ if (!isset($_SESSION['user'])) {
                                         class="px-4 py-2 border border-red-500 text-red-600 text-sm font-medium rounded-md hover:bg-red-50 whitespace-nowrap">Hủy
                                         đơn hàng</button>
                                 <?php endif; ?>
-                                <?php if ($order['status'] == 'pending_payment' && !empty($order['payment_link_id'])): ?>
+                                <?php
+                                $isExpired = (strtotime($order['created_at']) + (15 * 60)) < time();
+                                if ($order['status'] == 'pending_payment' && !empty($order['payment_link_id']) && !$isExpired):
+                                    ?>
                                     <a href="https://pay.payos.vn/web/<?= $order['payment_link_id'] ?>"
-                                        class="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-md hover:bg-orange-600 whitespace-nowrap"><i
+                                        class="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-md hover:bg-orange-600 whitespace-nowrap"
+                                        style="background-color: #f97316 !important; color: white !important;"><i
                                             class="fas fa-qrcode mr-1"></i>Thanh toán ngay</a>
                                 <?php endif; ?>
                                 <button type="button" onclick="initiateRebuy(<?= $order['id'] ?>)"
