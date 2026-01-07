@@ -35,8 +35,8 @@ class AuthController extends BaseController
             // Lấy lỗi đầu tiên để hiển thị ra alert
             $firstError = reset($errors);
             $this->view('auth/login', [
-                'error' => $firstError,
-                'errors' => $errors
+                'errors' => ['login' => $firstError],
+                'old' => $_POST
             ]);
             return;
         }
@@ -71,7 +71,7 @@ class AuthController extends BaseController
             ]);
         } else {
             $this->view('auth/login', [
-                'error' => 'Email hoặc mật khẩu không đúng', // Sửa key thành 'error' để khớp với view
+                'errors' => ['login' => 'Email hoặc mật khẩu không đúng'],
                 'old' => ['username' => $email]
             ]);
         }

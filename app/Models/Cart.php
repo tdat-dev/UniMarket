@@ -99,9 +99,19 @@ class Cart extends BaseModel
             return;
         }
 
+        // Khởi tạo Product model để kiểm tra sản phẩm tồn tại
+        $productModel = new Product();
+
         foreach ($sessionCart as $productId => $item) {
-            $quantity = $item['quantity'] ?? 1;
-            $this->addItem($userId, $productId, $quantity);
+            // Kiểm tra sản phẩm có tồn tại không trước khi thêm vào DB
+            $product = $productModel->find($productId);
+
+            if ($product) {
+                // Chỉ thêm nếu sản phẩm còn tồn tại
+                $quantity = $item['quantity'] ?? 1;
+                $this->addItem($userId, $productId, $quantity);
+            }
+            // Nếu sản phẩm không tồn tại, bỏ qua (không thêm vào DB)
         }
     }
 }

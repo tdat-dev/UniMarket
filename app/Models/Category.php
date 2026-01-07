@@ -16,13 +16,13 @@ class Category extends BaseModel
         if ($redis->isAvailable()) {
             $categories = $redis->get($cacheKey);
             if ($categories === null) {
-                $categories = $this->db->query("SELECT * FROM " . $this->table)->fetchAll();
+                $categories = $this->db->query("SELECT * FROM " . $this->table . " ORDER BY sort_order ASC, id ASC")->fetchAll();
                 $redis->set($cacheKey, $categories, $cacheTTL);
             }
             return $categories;
         }
 
-        return $this->db->query("SELECT * FROM " . $this->table)->fetchAll();
+        return $this->db->query("SELECT * FROM " . $this->table . " ORDER BY sort_order ASC, id ASC")->fetchAll();
     }
 
     public function getTree()
@@ -50,12 +50,30 @@ class Category extends BaseModel
     }
 
     /**
-     * Lấy chỉ danh mục cha (không có parent_id), sắp xếp theo id
+     * Lấy chỉ danh mục cha (không có parent_id), sắp xếp theo thứ tự hiển thị
      */
     public function getParents(int $limit = 20): array
     {
-        $sql = "SELECT * FROM {$this->table} WHERE parent_id IS NULL ORDER BY id ASC LIMIT :limit";
+        // Lấy các danh mục cha (parent_id IS NULL) và sắp xếp theo thứ tự hiển thị
+        $sql = "SELECT * FROM {$this->table} WHERE parent_id IS NULL ORDER BY sort_order ASC, id DESC LIMIT :limit";
         return $this->db->fetchAll($sql, ['limit' => $limit]);
+    }
+
+    /**
+     * Lấy danh sách ID của danh mục và các danh mục con (để filter sản phẩm)
+     */
+    public function getChildrenIds(int $parentId): array
+    {
+        $all = $this->getAll();
+        $ids = [$parentId]; // Bao gồm cả chính nó
+
+        foreach ($all as $cat) {
+            // Kiểm tra parent_id (cần cast về int hoặc so sánh lỏng lẻo vì DB trả về string)
+            if (isset($cat['parent_id']) && $cat['parent_id'] == $parentId) {
+                $ids[] = $cat['id'];
+            }
+        }
+        return array_unique($ids);
     }
 
     // ===================== ADMIN METHODS =====================

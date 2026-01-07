@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductImage;
 use App\Models\User;
 use App\Models\Category;
 use App\Middleware\VerificationMiddleware;
@@ -70,12 +71,30 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
         $userModel = new User();
         $seller = $userModel->find($product['user_id']);
 
+        // Lấy tất cả ảnh của sản phẩm (có try-catch phòng trường hợp bảng chưa tồn tại)
+        $productImages = [];
+        try {
+            $productImageModel = new ProductImage();
+            $productImages = $productImageModel->getByProductId($id);
+        } catch (\Exception $e) {
+            // Bảng product_images chưa tồn tại, bỏ qua
+            $productImages = [];
+        }
+
+        // Nếu chưa có ảnh trong bảng mới, dùng ảnh từ cột image
+        if (empty($productImages) && !empty($product['image'])) {
+            $productImages = [
+                ['image_path' => $product['image'], 'is_primary' => 1]
+            ];
+        }
+
         // Lấy sản phẩm liên quan (cùng danh mục, trừ sản phẩm hiện tại)
         $relatedProducts = $productModel->getByCategory($product['category_id'], 4, $product['id']);
 
         $this->view('products/detail', [
             'product' => $product,
             'seller' => $seller,
+            'productImages' => $productImages,
             'relatedProducts' => $relatedProducts
         ]);
     }
@@ -137,24 +156,36 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
             return;
         }
 
-        // 2. Handle Image Upload
-        // Lấy ảnh đầu tiên làm ảnh đại diện (Do bảng products hiện tại chỉ lưu 1 ảnh)
-        $mainImage = 'default_product.png'; // Fallback
+        // 2. Handle Image Upload - Upload TẤT CẢ ảnh
+        $uploadedImages = []; // Mảng chứa đường dẫn các ảnh đã upload
+        $mainImage = 'default_product.png'; // Fallback cho cột image (backwards compatible)
 
         if (isset($_FILES['images']) && !empty($_FILES['images']['name'][0])) {
-            $fileTmp = $_FILES['images']['tmp_name'][0];
-            $fileName = time() . '_' . $_FILES['images']['name'][0];
-            $uploadDir = 'uploads/products/'; // Relative to public
-
-            // Đảm bảo thư mục tồn tại (cần check absolute path)
             $rootDir = __DIR__ . '/../../public/';
+            $uploadDir = 'uploads/products/';
+
+            // Đảm bảo thư mục tồn tại
             if (!is_dir($rootDir . $uploadDir)) {
                 mkdir($rootDir . $uploadDir, 0777, true);
             }
 
-            if (move_uploaded_file($fileTmp, $rootDir . $uploadDir . $fileName)) {
-                // View prepends '/uploads/', so we save 'products/filename.ext'
-                $mainImage = 'products/' . $fileName;
+            // Loop qua TẤT CẢ ảnh được upload
+            $fileCount = count($_FILES['images']['name']);
+            for ($i = 0; $i < $fileCount; $i++) {
+                if ($_FILES['images']['error'][$i] === UPLOAD_ERR_OK) {
+                    $fileTmp = $_FILES['images']['tmp_name'][$i];
+                    $fileName = time() . '_' . $i . '_' . $_FILES['images']['name'][$i];
+
+                    if (move_uploaded_file($fileTmp, $rootDir . $uploadDir . $fileName)) {
+                        $imagePath = 'products/' . $fileName;
+                        $uploadedImages[] = $imagePath;
+
+                        // Ảnh đầu tiên làm main image
+                        if ($i === 0) {
+                            $mainImage = $imagePath;
+                        }
+                    }
+                }
             }
         }
 
@@ -167,10 +198,10 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
             'user_id' => $_SESSION['user']['id'],
             'category_id' => (int) $data['category_id'],
             'quantity' => (int) $data['quantity'],
-            'image' => $mainImage
+            'image' => $mainImage // Vẫn lưu ảnh chính vào cột image (backwards compatible)
         ];
 
-        // Nếu có trường condition từ form và model chưa hỗ trợ, ta có thể nối vào description hoặc bỏ qua
+        // Nếu có trường condition từ form
         if (!empty($data['condition'])) {
             $productData['description'] .= "\n\nTình trạng: " . ($data['condition'] == 'new' ? 'Mới 100%' : $data['condition']);
         }
@@ -178,6 +209,34 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
         try {
             $newId = $productModel->create($productData);
             if ($newId) {
+                // Lưu TẤT CẢ ảnh vào bảng product_images (nếu bảng tồn tại)
+                if (!empty($uploadedImages)) {
+                    try {
+                        $productImageModel = new ProductImage();
+                        $productImageModel->addMultiple($newId, $uploadedImages);
+                    } catch (\Exception $e) {
+                        // Bảng product_images chưa tồn tại, bỏ qua
+                        // Ảnh chính đã được lưu vào cột image của products
+                    }
+                }
+
+                // Notify followers
+                try {
+                    $followModel = new \App\Models\Follow();
+                    $notifModel = new \App\Models\Notification();
+                    
+                    $followers = $followModel->getFollowers($_SESSION['user']['id']);
+                    $senderName = $_SESSION['user']['full_name'];
+                    $productName = $productData['name'];
+                    
+                    foreach ($followers as $follower) {
+                        $content = "Shop $senderName vừa đăng bán sản phẩm mới: $productName";
+                        $notifModel->create($follower['id'], $content);
+                    }
+                } catch (\Exception $e) {
+                    // Ignore notification errors
+                }
+
                 // Success -> Redirect to product detail or shop
                 header('Location: /shop?id=' . $_SESSION['user']['id']);
                 exit;
@@ -188,6 +247,60 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
         } catch (\Exception $e) {
             $errors['db'] = 'Lỗi: ' . $e->getMessage();
             $this->view('products/create', ['errors' => $errors, 'old' => $data]);
+        }
+    }
+
+    public function cancelSale()
+    {
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        header('Content-Type: application/json');
+
+        if (!isset($_SESSION['user'])) {
+            echo json_encode(['success' => false, 'message' => 'Bạn chưa đăng nhập']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $productId = $input['product_id'] ?? null;
+
+        if (!$productId) {
+            echo json_encode(['success' => false, 'message' => 'Sản phẩm không hợp lệ']);
+            return;
+        }
+
+        $productModel = new Product();
+        $product = $productModel->find($productId);
+
+        if (!$product) {
+            echo json_encode(['success' => false, 'message' => 'Sản phẩm không tồn tại']);
+            return;
+        }
+
+        if ($product['user_id'] != $_SESSION['user']['id']) {
+            echo json_encode(['success' => false, 'message' => 'Bạn không có quyền xoá sản phẩm này']);
+            return;
+        }
+
+        // Kiểm tra xem sản phẩm đã từng có đơn hàng nào chưa
+        // Nếu đã có đơn hàng (dù đã giao, huỷ hay đang giao) thì KHÔNG được xoá khỏi DB để giữ lịch sử
+        if ($productModel->hasAnyOrder($productId)) {
+             echo json_encode([
+                 'success' => false, 
+                 'message' => 'Sản phẩm này đã từng phát sinh đơn hàng nên không thể xoá vĩnh viễn khỏi hệ thống (để lưu lịch sử cho khách). Bạn chỉ có thể Huỷ bán (ẩn đi) thôi nhé!'
+             ]);
+             return;
+        }
+
+        // Nếu chưa có đơn nào -> Xoá vĩnh viễn
+        $success = $productModel->delete($productId);
+
+        if ($success) {
+            echo json_encode(['success' => true, 'message' => 'Đã xoá sản phẩm thành công']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Lỗi hệ thống, không thể xoá']);
         }
     }
 }

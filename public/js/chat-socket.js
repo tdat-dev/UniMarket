@@ -25,10 +25,25 @@ class ChatSocket {
 
         this.currentUserId = userId;
 
-        // URL của Socket.IO server
-        // Development: localhost:3001
-        // Production: https://zoldify.com:3001 hoặc subdomain
-        const socketUrl = window.SOCKET_URL || 'http://localhost:3001';
+        // URL của Socket.IO server - Tự động detect môi trường
+        let socketUrl;
+        if (window.SOCKET_URL) {
+            // Ưu tiên config thủ công nếu có
+            socketUrl = window.SOCKET_URL;
+        } else {
+            // Tự động detect dựa trên hostname
+            const hostname = window.location.hostname;
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                socketUrl = 'http://localhost:3001';
+            } else if (hostname.includes('staging')) {
+                // Staging - dùng http vì port 3001 chưa có SSL
+                socketUrl = 'http://staging.zoldify.com:3001';
+            } else {
+                // Production
+                socketUrl = 'https://' + hostname + ':3001';
+            }
+        }
+        console.log('[ChatSocket] Connecting to:', socketUrl);
 
         // Khởi tạo kết nối
         this.socket = io(socketUrl, {

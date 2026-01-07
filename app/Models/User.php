@@ -116,7 +116,7 @@ class User extends BaseModel
 	}
 
 	/**
-	 * Cập nhật thông tin user (Admin)
+	 * Cập nhật thông tin user (Admin) - Yêu cầu đầy đủ các trường
 	 */
 	public function update($id, $data)
 	{
@@ -132,10 +132,37 @@ class User extends BaseModel
 			'id' => $id,
 			'full_name' => $data['full_name'],
 			'email' => $data['email'],
-			'phone_number' => $data['phone_number'],
+			'phone_number' => $data['phone_number'] ?? null,
 			'role' => $data['role'],
 			'email_verified' => $data['email_verified']
 		]);
+	}
+
+	/**
+	 * Cập nhật profile của user (User tự cập nhật)
+	 * Chỉ cho phép cập nhật các trường an toàn
+	 */
+	public function updateProfile($id, $data)
+	{
+		$fields = [];
+		$params = ['id' => $id];
+
+		// Chỉ cập nhật các trường được phép
+		$allowedFields = ['full_name', 'phone_number', 'address', 'avatar'];
+
+		foreach ($allowedFields as $field) {
+			if (array_key_exists($field, $data)) {
+				$fields[] = "$field = :$field";
+				$params[$field] = $data[$field];
+			}
+		}
+
+		if (empty($fields)) {
+			return false; // Không có gì để cập nhật
+		}
+
+		$sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = :id";
+		return $this->db->execute($sql, $params);
 	}
 
 	/**
