@@ -91,6 +91,11 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                                     <i class="fa-regular fa-user w-5 text-center"></i>
                                     Hồ sơ của tôi
                                 </a>
+                                <a href="/profile/change-password"
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
+                                    <i class="fa-solid fa-key w-5 text-center"></i>
+                                    Đổi mật khẩu
+                                </a>
                                 <a href="/chat"
                                     class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
                                     <i class="fa-regular fa-comment-dots w-5 text-center"></i>
