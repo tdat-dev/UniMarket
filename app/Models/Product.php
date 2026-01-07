@@ -518,4 +518,15 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
         $result = $this->db->fetchOne($sql, $params);
         return $result['total'] ?? 0;
     }
+
+    protected $table = 'products';
+
+    public function hideProduct($id)
+    {
+        $sql = "UPDATE products SET status = 'hidden' WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$id]);
+    }
+
+
 }
