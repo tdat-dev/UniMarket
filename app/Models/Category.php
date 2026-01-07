@@ -50,7 +50,7 @@ class Category extends BaseModel
     }
 
     /**
-     * Lấy chỉ danh mục cha (không có parent_id), sắp xếp theo sort_order
+     * Lấy chỉ danh mục cha (không có parent_id), sắp xếp theo thứ tự hiển thị
      */
     public function getParents(int $limit = 20): array
     {

@@ -5,6 +5,8 @@ use App\Controllers\Admin\ProductController;
 use App\Controllers\Admin\CategoryController;
 use App\Controllers\Admin\OrderController;
 use App\Controllers\Admin\SettingController;
+use App\Controllers\Admin\ReportController;
+
 
 /** @var \App\Core\Router $router */
 
@@ -43,3 +45,8 @@ $router->get('admin/settings', [SettingController::class, 'index']);
 $router->post('admin/settings/update', [SettingController::class, 'update']);
 $router->post('admin/settings/upload-image', [SettingController::class, 'uploadImage']);
 $router->post('admin/settings/toggle-maintenance', [SettingController::class, 'toggleMaintenance']);
+
+// Reports Management
+$router->get('admin/reports', [ReportController::class, 'index']);
+$router->get('admin/reports/show', [ReportController::class, 'show']);
+$router->post('admin/reports/hide-product', [ReportController::class, 'hideProduct']);

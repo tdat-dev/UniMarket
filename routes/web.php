@@ -8,6 +8,7 @@ use App\Controllers\GoogleAuthController;
 use App\Controllers\VerificationController;
 
 
+
 /** @var \App\Core\Router $router */
 
 // Trang chủ (cần check login trong controller)
@@ -85,4 +86,5 @@ $router->post('verify-email/resend', [VerificationController::class, 'resendVeri
 
 // Đăng xuất
 $router->post('logout', [AuthController::class, 'logout']);
+
 
