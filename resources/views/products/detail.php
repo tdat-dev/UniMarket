@@ -258,7 +258,7 @@ include __DIR__ . '/../partials/header.php';
                                             <?= number_format($item['price'], 0, ',', '.') ?><span
                                                 class="text-xs align-top">₫</span>
                                         </div>
-                                        <div class="text-[10px] text-gray-400">Đã bán 0</div>
+                                        <div class="text-[10px] text-gray-400">Đã bán <?= number_format($item['sold_count'] ?? 0) ?></div>
                                     </div>
 
                                     <!-- Location -->
