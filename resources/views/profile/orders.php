@@ -27,6 +27,10 @@ if (!isset($_SESSION['user'])) {
                     class="px-6 py-4 text-sm font-medium whitespace-nowrap <?= $currentStatus == 'pending' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50' : 'text-gray-500 hover:text-blue-600' ?>">
                     Chờ xác nhận (<?= $counts['pending'] ?? 0 ?>)
                 </a>
+                <a href="/profile/orders?status=pending_payment"
+                    class="px-6 py-4 text-sm font-medium whitespace-nowrap <?= $currentStatus == 'pending_payment' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50' : 'text-gray-500 hover:text-blue-600' ?>">
+                    Chờ thanh toán (<?= $counts['pending_payment'] ?? 0 ?>)
+                </a>
                 <a href="/profile/orders?status=shipping"
                     class="px-6 py-4 text-sm font-medium whitespace-nowrap <?= $currentStatus == 'shipping' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50' : 'text-gray-500 hover:text-blue-600' ?>">
                     Đang giao (<?= $counts['shipping'] ?? 0 ?>)
@@ -70,14 +74,17 @@ if (!isset($_SESSION['user'])) {
                                         class="text-xs text-gray-500"><?= date('d/m/Y H:i', strtotime($order['created_at'])) ?></span>
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-medium 
                                         <?= $order['status'] == 'pending' ? 'bg-yellow-100 text-yellow-800' : '' ?>
+                                        <?= $order['status'] == 'pending_payment' ? 'bg-orange-100 text-orange-800' : '' ?>
+                                        <?= $order['status'] == 'paid' ? 'bg-green-100 text-green-800' : '' ?>
                                         <?= $order['status'] == 'shipping' ? 'bg-blue-100 text-blue-800' : '' ?>
                                         <?= $order['status'] == 'completed' ? 'bg-green-100 text-green-800' : '' ?>
                                         <?= $order['status'] == 'cancelled' ? 'bg-red-100 text-red-800' : '' ?>
                                      ">
                                         <?php
-                                        // Translate status if needed, or use mapping
                                         $statusMap = [
                                             'pending' => 'Chờ xác nhận',
+                                            'pending_payment' => 'Chờ thanh toán',
+                                            'paid' => 'Đã thanh toán',
                                             'shipping' => 'Đang giao',
                                             'completed' => 'Đã giao',
                                             'cancelled' => 'Đã hủy'
@@ -87,7 +94,8 @@ if (!isset($_SESSION['user'])) {
                                     </span>
                                 </div>
                                 <div class="text-sm font-bold text-red-600">
-                                    <?= number_format($order['total_amount'] ?? 0, 0, ',', '.') ?>đ</div>
+                                    <?= number_format($order['total_amount'] ?? 0, 0, ',', '.') ?>đ
+                                </div>
                             </div>
 
                             <div class="flex flex-col gap-3">
@@ -100,28 +108,34 @@ if (!isset($_SESSION['user'])) {
                                         </div>
                                         <div>
                                             <h4 class="text-sm font-medium text-gray-900">
-                                                <?= htmlspecialchars($item['product_name']) ?></h4>
+                                                <?= htmlspecialchars($item['product_name']) ?>
+                                            </h4>
                                             <p class="text-xs text-gray-500">x <?= $item['quantity'] ?></p>
                                             <p class="text-xs font-medium text-gray-700 mt-1">
-                                                <?= number_format($item['price_at_purchase'] ?? 0, 0, ',', '.') ?>đ</p>
+                                                <?= number_format($item['price_at_purchase'] ?? 0, 0, ',', '.') ?>đ
+                                            </p>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
 
-                            <div class="mt-4 flex justify-end gap-3 border-t pt-4 border-gray-50">
-                                <?php if ($order['status'] == 'pending'): ?>
+                            <div class="mt-4 flex flex-wrap justify-end items-center gap-2 border-t pt-4 border-gray-50">
+                                <?php if ($order['status'] == 'pending' || $order['status'] == 'pending_payment'): ?>
                                     <button type="button" onclick="initiateCancel(<?= $order['id'] ?>)"
-                                        class="px-4 py-2 border border-red-500 text-red-600 text-sm font-medium rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Hủy
+                                        class="px-4 py-2 border border-red-500 text-red-600 text-sm font-medium rounded-md hover:bg-red-50 whitespace-nowrap">Hủy
                                         đơn hàng</button>
-
+                                <?php endif; ?>
+                                <?php if ($order['status'] == 'pending_payment' && !empty($order['payment_link_id'])): ?>
+                                    <a href="https://pay.payos.vn/web/<?= $order['payment_link_id'] ?>"
+                                        class="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-md hover:bg-orange-600 whitespace-nowrap"><i
+                                            class="fas fa-qrcode mr-1"></i>Thanh toán ngay</a>
                                 <?php endif; ?>
                                 <button type="button" onclick="initiateRebuy(<?= $order['id'] ?>)"
-                                    class="px-4 py-2 border border-blue-600 text-blue-600 text-sm font-medium rounded-md hover:bg-blue-50">Mua
+                                    class="px-4 py-2 border border-blue-600 text-blue-600 text-sm font-medium rounded-md hover:bg-blue-50 whitespace-nowrap">Mua
                                     lại</button>
                                 <a href="/profile/orders/detail?id=<?= $order['id'] ?>"
-                                    class="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">Chi
-                                    tiết đơn hàng</a>
+                                    class="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 whitespace-nowrap">Chi
+                                    tiết</a>
                             </div>
                         </div>
                     <?php endforeach; ?>

@@ -20,8 +20,8 @@ class ShopController extends BaseController
                 $userId = $_SESSION['user']['id'];
                 // Optional: flag to show 'edit' controls in view
             } else {
-                 header('Location: /login');
-                 exit;
+                header('Location: /login');
+                exit;
             }
         }
 
@@ -45,7 +45,7 @@ class ShopController extends BaseController
 
     public function orders()
     {
-         if (session_status() == PHP_SESSION_NONE) {
+        if (session_status() == PHP_SESSION_NONE) {
             session_start();
         }
         if (!isset($_SESSION['user'])) {
@@ -57,15 +57,17 @@ class ShopController extends BaseController
         $status = $_GET['status'] ?? 'all';
 
         $orderModel = new \App\Models\Order();
-        
+
         // Quick filter implementation (Better to have filter method in Model, but fetching all & filtering array is fine for MVP)
         // Or adding param to getBySellerId($userId, $status)
         $allOrders = $orderModel->getBySellerId($userId);
-        
+
         $orders = [];
         $counts = [
             'all' => count($allOrders),
             'pending' => 0,
+            'pending_payment' => 0,
+            'paid' => 0,
             'shipping' => 0,
             'completed' => 0,
             'cancelled' => 0
@@ -75,12 +77,12 @@ class ShopController extends BaseController
             if (isset($counts[$o['status']])) {
                 $counts[$o['status']]++;
             }
-            
+
             if ($status == 'all' || $o['status'] == $status) {
                 $orders[] = $o;
             }
         }
-        
+
         // Enrich orders with item details
         $orderItemModel = new \App\Models\OrderItem();
         foreach ($orders as &$order) {
@@ -97,20 +99,21 @@ class ShopController extends BaseController
 
     public function updateOrderStatus()
     {
-        if (session_status() == PHP_SESSION_NONE) session_start();
+        if (session_status() == PHP_SESSION_NONE)
+            session_start();
         $userId = $_SESSION['user']['id'];
-        
+
         $orderId = $_POST['order_id'] ?? null;
         $status = $_POST['status'] ?? null;
-        
+
         if ($orderId && $status) {
-             $orderModel = new \App\Models\Order();
-             // Security check: Ensure order belongs to seller
-             // Fetch order, check seller_id == userId. skipped for brevity but necessary in prod.
-             
-             $orderModel->updateStatus($orderId, $status);
+            $orderModel = new \App\Models\Order();
+            // Security check: Ensure order belongs to seller
+            // Fetch order, check seller_id == userId. skipped for brevity but necessary in prod.
+
+            $orderModel->updateStatus($orderId, $status);
         }
-        
+
         header('Location: /shop/orders');
         exit;
     }

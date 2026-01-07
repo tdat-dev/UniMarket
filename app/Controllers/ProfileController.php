@@ -240,6 +240,8 @@ class ProfileController extends BaseController
         $counts = [
             'all' => count($allOrders),
             'pending' => 0,
+            'pending_payment' => 0,
+            'paid' => 0,
             'shipping' => 0,
             'completed' => 0,
             'cancelled' => 0
@@ -321,7 +323,8 @@ class ProfileController extends BaseController
             exit;
         }
 
-        if ($order['status'] !== 'pending') {
+        // Chỉ cho phép hủy đơn ở trạng thái pending hoặc pending_payment
+        if (!in_array($order['status'], ['pending', 'pending_payment'])) {
             header('Location: /profile/orders?error=cannot_cancel');
             exit;
         }
@@ -472,5 +475,56 @@ class ProfileController extends BaseController
             'order' => $order,
             'buyer' => $buyer
         ]);
+    }
+
+    /**
+     * Xác nhận đã nhận hàng
+     * Buyer bấm "Đã nhận hàng" → Bắt đầu countdown trial period
+     */
+    public function confirmReceived()
+    {
+        if (session_status() == PHP_SESSION_NONE)
+            session_start();
+        if (!isset($_SESSION['user'])) {
+            header('Location: /login');
+            exit;
+        }
+
+        $userId = $_SESSION['user']['id'];
+        $orderId = $_POST['order_id'] ?? null;
+
+        if (!$orderId) {
+            header('Location: /profile/orders?error=invalid_order');
+            exit;
+        }
+
+        $orderModel = new \App\Models\Order();
+        $order = $orderModel->find($orderId);
+
+        // Validate order
+        if (!$order || $order['buyer_id'] != $userId) {
+            header('Location: /profile/orders?error=unauthorized');
+            exit;
+        }
+
+        // Chỉ cho phép confirm khi status là 'shipping' hoặc 'paid'
+        if (!in_array($order['status'], ['shipping', 'paid'])) {
+            header('Location: /profile/orders/detail?id=' . $orderId . '&error=invalid_status');
+            exit;
+        }
+
+        // Lấy trial days từ order
+        $trialDays = $order['trial_days'] ?? 7;
+
+        // Cập nhật order: status = received, received_at = now, escrow_release_at = now + trial days
+        $orderModel->confirmReceived($orderId, $trialDays);
+
+        // Schedule escrow release
+        $escrowService = new \App\Services\EscrowService();
+        $escrowService->scheduleRelease($orderId, $trialDays);
+
+        $_SESSION['success'] = "Cảm ơn bạn đã xác nhận! Bạn có {$trialDays} ngày để kiểm tra hàng.";
+        header('Location: /profile/orders/detail?id=' . $orderId);
+        exit;
     }
 }

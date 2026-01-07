@@ -258,6 +258,19 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
         ]);
     }
 
+    // Tăng số lượng tồn kho (khi hủy đơn hàng)
+    public function increaseQuantity($id, $amount)
+    {
+        $sql = "UPDATE products 
+                SET quantity = quantity + :amount 
+                WHERE id = :id";
+
+        return $this->db->execute($sql, [
+            'id' => (int) $id,
+            'amount' => (int) $amount
+        ]);
+    }
+
     // Đếm tổng số products
     public function count(): int
     {
