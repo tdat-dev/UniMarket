@@ -58,6 +58,7 @@ $router->get('products/create', [ProductController::class, 'create']);
 $router->post('products/store', [ProductController::class, 'store']); // For form submission
 
 // User Profile
+$router->post('products/cancel-sale', [ProductController::class, 'cancelSale']);
 $router->get('profile', [\App\Controllers\ProfileController::class, 'index']);
 $router->post('profile/update', [\App\Controllers\ProfileController::class, 'update']);
 $router->get('wallet', [\App\Controllers\ProfileController::class, 'wallet']);

@@ -12,7 +12,7 @@
             <div class="text-[#ee4d2d] text-base font-medium"> <!-- Shopee/Lazada style red -->
                 <span class="text-xs underline">đ</span><?= number_format((float) $item['price'], 0, ',', '.') ?>
             </div>
-            <div class="text-xs text-gray-500">Đã bán <?= rand(10, 999) ?></div> <!-- Mock sold count for vibrancy -->
+            <div class="text-xs text-gray-500">Đã bán <?= number_format($item['sold_count'] ?? 0) ?></div> <!-- Real sold count -->
         </div>
     </div>
 </a>

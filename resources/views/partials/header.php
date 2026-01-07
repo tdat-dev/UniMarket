@@ -122,11 +122,7 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                                     <i class="fa-solid fa-plus w-5 text-center"></i>
                                     Thêm sản phẩm
                                 </a>
-                                <a href="/shop"
-                                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
-                                    <i class="fa-solid fa-box-open w-5 text-center"></i>
-                                    Tất cả sản phẩm
-                                </a>
+
                                 <a href="/shop/orders"
                                     class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
                                     <i class="fa-solid fa-clipboard-list w-5 text-center"></i>

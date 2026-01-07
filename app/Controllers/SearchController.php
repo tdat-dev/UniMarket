@@ -25,10 +25,18 @@ class SearchController extends BaseController
             $searchModel->trackKeyword($keyword);
         }
 
+        // Resolve category children if category is selected
+        $filterCategoryId = $categoryId;
+        if ($categoryId) {
+            $categoryModel = new \App\Models\Category();
+            // Get all children IDs + parent ID
+            $filterCategoryId = $categoryModel->getChildrenIds((int)$categoryId);
+        }
+
         // Tạo mảng filter
         $filters = [
             'keyword' => $keyword,
-            'category_id' => $categoryId
+            'category_id' => $filterCategoryId
         ];
 
         // Sử dụng getFiltered để tìm kiếm tổng quát hơn (hỗ trợ cả keyword và category)
