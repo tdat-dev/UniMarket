@@ -50,11 +50,11 @@ class Category extends BaseModel
     }
 
     /**
-     * Lấy chỉ danh mục cha (không có parent_id), sắp xếp theo sort_order
+     * Lấy chỉ danh mục cha (không có parent_id), sắp xếp theo id
      */
     public function getParents(int $limit = 20): array
     {
-        $sql = "SELECT * FROM {$this->table} WHERE parent_id IS NULL ORDER BY sort_order ASC LIMIT :limit";
+        $sql = "SELECT * FROM {$this->table} WHERE parent_id IS NULL ORDER BY id ASC LIMIT :limit";
         return $this->db->fetchAll($sql, ['limit' => $limit]);
     }
 
