@@ -5,7 +5,7 @@ include __DIR__ . '/../partials/header.php';
 
 <!-- Main Layout with Modern Gradient Background -->
 <main
-    class="bg-gradient-to-br from-slate-50 to-gray-100 min-h-screen pb-32 font-sans selection:bg-indigo-100 selection:text-indigo-700">
+    class="bg-gradient-to-br from-slate-50 to-gray-100 min-h-screen pb-32 md:pb-32 font-sans selection:bg-indigo-100 selection:text-indigo-700">
     <div class="max-w-5xl mx-auto pt-10 px-4 sm:px-6">
 
         <!-- Page Header -->

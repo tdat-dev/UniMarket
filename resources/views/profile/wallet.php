@@ -1,7 +1,7 @@
 <?php include __DIR__ . '/../partials/head.php'; ?>
 <?php include __DIR__ . '/../partials/header.php'; ?>
 
-<main class="bg-gray-50 min-h-screen pb-12">
+<main class="bg-gray-50 min-h-screen pb-20 md:pb-12">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <!-- User Info Card (Simplified for sub-pages) -->
         <!-- User Info Card -->
@@ -23,7 +23,8 @@
                                 style="color: #9ca3af;">Số dư khả dụng</p>
                             <h3 class="text-4xl font-extrabold mt-2 tracking-tight text-white">
                                 <?= number_format($balance, 0, ',', '.') ?> <span class="text-lg font-normal"
-                                    style="color: rgba(255,255,255,0.7);">VNĐ</span></h3>
+                                    style="color: rgba(255,255,255,0.7);">VNĐ</span>
+                            </h3>
                         </div>
 
                         <div class="flex gap-3 mt-6">
@@ -72,12 +73,14 @@
                                                     <?= $t['type'] == 'deposit' ? 'Nạp tiền vào ví' : ($t['type'] == 'withdraw' ? 'Rút tiền' : 'Giao dịch khác') ?>
                                                 </p>
                                                 <p class="text-xs text-gray-500">
-                                                    <?= date('d/m/Y H:i', strtotime($t['created_at'])) ?></p>
+                                                    <?= date('d/m/Y H:i', strtotime($t['created_at'])) ?>
+                                                </p>
                                             </div>
                                         </div>
                                         <span
                                             class="font-bold text-sm <?= $t['type'] == 'deposit' || $t['type'] == 'refund' ? 'text-green-600' : 'text-gray-900' ?>">
-                                            <?= $t['type'] == 'deposit' || $t['type'] == 'refund' ? '+' : '-' ?>        <?= number_format($t['amount'], 0, ',', '.') ?>đ
+                                            <?= $t['type'] == 'deposit' || $t['type'] == 'refund' ? '+' : '-' ?>
+                                            <?= number_format($t['amount'], 0, ',', '.') ?>đ
                                         </span>
                                     </li>
                                 <?php endforeach; ?>

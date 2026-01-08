@@ -42,7 +42,7 @@ if (!empty($priceMax))
 $sortBaseUrl = '/products?' . http_build_query($sortBaseParams);
 ?>
 
-<main class="bg-gray-100 min-h-screen pb-10">
+<main class="bg-gray-100 min-h-screen pb-20 md:pb-10">
     <div class="max-w-[1200px] mx-auto px-4 pt-6">
 
         <!-- Layout 2 cột: Sidebar + Content -->

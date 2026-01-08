@@ -3,15 +3,16 @@ include __DIR__ . '/../partials/head.php';
 include __DIR__ . '/../partials/header.php';
 ?>
 
-<main class="bg-gray-100 min-h-screen pb-10 flex flex-col">
+<main class="bg-gray-100 min-h-screen pb-20 md:pb-10 flex flex-col">
     <div class="max-w-[1000px] w-full mx-auto px-4 flex-1 flex flex-col pt-6">
 
         <div id="chat-container"
-            class="bg-white rounded-sm shadow-sm flex overflow-hidden h-[600px] border border-gray-200"
+            class="bg-white rounded-sm shadow-sm flex overflow-hidden h-[calc(100vh-180px)] md:h-[600px] border border-gray-200"
             data-user-id="<?= $currentUserId ?>" data-partner-id="<?= $activePartner['id'] ?? '' ?>"
             data-partner-name="<?= htmlspecialchars($activePartner['full_name'] ?? '') ?>">
-            <!-- Sidebar -->
-            <div class="w-1/3 border-r border-gray-200 flex flex-col">
+            <!-- Sidebar - Full width on mobile, 1/3 on desktop -->
+            <div id="chat-sidebar"
+                class="w-full md:w-1/3 border-r border-gray-200 flex flex-col <?= $activePartner ? 'hidden md:flex' : 'flex' ?>">
                 <div class="p-4 border-b border-gray-200 bg-gray-50">
                     <div class="relative">
                         <input type="text" placeholder="Tìm kiếm tin nhắn..."
@@ -29,7 +30,7 @@ include __DIR__ . '/../partials/header.php';
                             $lastMsg = $conv['last_message'];
                             $isActive = ($activePartner && $activePartner['id'] == $partner['id']);
                             ?>
-                            <a href="/chat?user_id=<?= $partner['id'] ?>" class="block">
+                            <a href="/chat?user_id=<?= $partner['id'] ?>" class="block chat-conversation-link">
                                 <div
                                     class="p-3 border-b border-gray-100 flex gap-3 hover:bg-gray-50 cursor-pointer <?= $isActive ? 'bg-blue-50/50 border-l-4 border-l-[#2C67C8]' : '' ?>">
                                     <div class="relative">
@@ -59,13 +60,19 @@ include __DIR__ . '/../partials/header.php';
                 </div>
             </div>
 
-            <!-- Chat Area -->
-            <div class="w-2/3 flex flex-col bg-slate-50 relative">
+            <!-- Chat Area - Full width on mobile, 2/3 on desktop -->
+            <div id="chat-main"
+                class="w-full md:w-2/3 <?= $activePartner ? 'flex' : 'hidden md:flex' ?> flex-col bg-slate-50 relative">
                 <?php if ($activePartner): ?>
                     <!-- Header -->
-                    <div class="px-6 py-4 bg-white border-b border-gray-100 flex items-center justify-between shadow-[0_2px_4px_rgba(0,0,0,0.02)] z-10"
+                    <div class="px-3 md:px-6 py-3 md:py-4 bg-white border-b border-gray-100 flex items-center justify-between shadow-[0_2px_4px_rgba(0,0,0,0.02)] z-10"
                         data-partner-last-seen="<?= htmlspecialchars($activePartner['last_seen'] ?? '') ?>">
-                        <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2 md:gap-4">
+                            <!-- Back button - Chỉ hiện trên mobile -->
+                            <a href="/chat"
+                                class="md:hidden w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600 transition-colors">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </a>
                             <div class="relative">
                                 <img src="https://ui-avatars.com/api/?name=<?= urlencode($activePartner['full_name']) ?>&background=0D8ABC&color=fff&size=128"
                                     class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm">

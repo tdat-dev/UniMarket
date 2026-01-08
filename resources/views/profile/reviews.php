@@ -8,7 +8,7 @@ if (!isset($_SESSION['user'])) {
 ?>
 <?php include __DIR__ . '/../partials/header.php'; ?>
 
-<main class="bg-gray-50 min-h-screen pb-12">
+<main class="bg-gray-50 min-h-screen pb-20 md:pb-12">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <!-- User Info Card -->
         <!-- User Info Card -->
@@ -46,7 +46,8 @@ if (!isset($_SESSION['user'])) {
                                     <div class="flex-1">
                                         <h4 class="font-bold text-gray-900"><?= htmlspecialchars($item['product_name']) ?></h4>
                                         <p class="text-sm text-gray-500 mb-3">Ngày mua:
-                                            <?= date('d/m/Y', strtotime($item['order_date'])) ?></p>
+                                            <?= date('d/m/Y', strtotime($item['order_date'])) ?>
+                                        </p>
 
                                         <!-- Review Form -->
                                         <form action="/reviews/store" method="POST"
