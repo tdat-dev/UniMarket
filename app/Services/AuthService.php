@@ -80,4 +80,15 @@ class AuthService
         }
         return ['success' => false, 'reason' => 'invalid_credentials'];
     }
+
+    public function changePassword($userId, $currentPassword, $newPassword)
+    {
+        $userModel = new User();
+        if (!$userModel->verifyIdPassword($userId, $currentPassword)) {
+            return ['success' => false, 'message' => 'Mật khẩu hiện tại không đúng.'];
+        }
+
+        $result = $userModel->updatePassword($userId, $newPassword);
+        return ['success' => $result];
+    }
 }

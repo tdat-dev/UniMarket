@@ -13,6 +13,38 @@ const mysql = require('mysql2/promise');
 const PORT = process.env.SOCKET_PORT || 3001;
 const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:8000';
 const REDIS_URL = process.env.REDIS_URL || null;
+const NODE_ENV = process.env.NODE_ENV || 'development';
+
+// ============ LOGGER UTILITY ============
+const logger = {
+    isProduction: () => NODE_ENV === 'production',
+    isStaging: () => NODE_ENV === 'staging',
+    isDevelopment: () => ['development', 'local'].includes(NODE_ENV),
+    
+    // Debug: chỉ log ở development
+    debug: (...args) => {
+        if (logger.isDevelopment()) {
+            console.log('[DEBUG]', ...args);
+        }
+    },
+    
+    // Info: log ở development và staging
+    info: (...args) => {
+        if (!logger.isProduction()) {
+            console.log('[INFO]', ...args);
+        }
+    },
+    
+    // Warning: log tất cả môi trường
+    warn: (...args) => {
+        console.warn('[WARN]', ...args);
+    },
+    
+    // Error: log tất cả môi trường
+    error: (...args) => {
+        console.error('[ERROR]', ...args);
+    }
+};
 
 // Tạo HTTP server
 const httpServer = createServer();
@@ -69,9 +101,9 @@ async function updateLastSeen(userId) {
             'UPDATE users SET last_seen = NOW() WHERE id = ?',
             [userId]
         );
-        console.log(`[LAST_SEEN] Updated for user ${userId}`);
+        logger.debug(`[LAST_SEEN] Updated for user ${userId}`);
     } catch (error) {
-        console.error('[ERROR] Failed to update last_seen:', error.message);
+        logger.error('[ERROR] Failed to update last_seen:', error.message);
     }
 }
 
@@ -80,7 +112,7 @@ const onlineUsers = new Map(); // userId -> socketId
 
 // ============ SOCKET.IO EVENTS ============
 io.on('connection', (socket) => {
-    console.log(`[CONNECT] Socket connected: ${socket.id}`);
+    logger.debug(`[CONNECT] Socket connected: ${socket.id}`);
 
     /**
      * Event: user_online
@@ -96,7 +128,7 @@ io.on('connection', (socket) => {
         // Join room cá nhân (để nhận tin nhắn riêng)
         socket.join(`user_${userId}`);
         
-        console.log(`[ONLINE] User ${userId} is online. Total online: ${onlineUsers.size}`);
+        logger.info(`[ONLINE] User ${userId} is online. Total online: ${onlineUsers.size}`);
         
         // Broadcast danh sách user online cho tất cả
         io.emit('online_users', Array.from(onlineUsers.keys()));
@@ -155,10 +187,10 @@ io.on('connection', (socket) => {
             socket.emit('message_sent', messageData);
 
             const logContent = content ? content.substring(0, 30) : '[Attachment]';
-            console.log(`[MESSAGE] ${sender_id} -> ${receiver_id}: ${logContent}...`);
+            logger.info(`[MESSAGE] ${sender_id} -> ${receiver_id}: ${logContent}...`);
 
         } catch (error) {
-            console.error('[ERROR] Failed to save message:', error);
+            logger.error('[ERROR] Failed to save message:', error);
             socket.emit('error', { message: 'Failed to send message' });
         }
     });
@@ -180,10 +212,10 @@ io.on('connection', (socket) => {
                 [...message_ids, reader_id]
             );
 
-            console.log(`[READ] User ${reader_id} marked ${message_ids.length} messages as read`);
+            logger.debug(`[READ] User ${reader_id} marked ${message_ids.length} messages as read`);
 
         } catch (error) {
-            console.error('[ERROR] Failed to mark messages as read:', error);
+            logger.error('[ERROR] Failed to mark messages as read:', error);
         }
     });
 
@@ -210,7 +242,7 @@ io.on('connection', (socket) => {
             // Cập nhật last_seen vào database
             await updateLastSeen(socket.userId);
             
-            console.log(`[OFFLINE] User ${socket.userId} disconnected. Total online: ${onlineUsers.size}`);
+            logger.info(`[OFFLINE] User ${socket.userId} disconnected. Total online: ${onlineUsers.size}`);
             
             // Broadcast cập nhật danh sách online kèm last_seen của user vừa offline
             io.emit('online_users', Array.from(onlineUsers.keys()));
@@ -233,6 +265,7 @@ async function startServer() {
     httpServer.listen(PORT, () => {
         console.log('========================================');
         console.log(`🚀 Zoldify Chat Server is running!`);
+        console.log(`🔧 Environment: ${NODE_ENV}`);
         console.log(`📡 Port: ${PORT}`);
         console.log(`🌐 CORS: ${CORS_ORIGIN}`);
         console.log(`📦 Redis: ${REDIS_URL ? 'Enabled' : 'Disabled (standalone)'}`);
