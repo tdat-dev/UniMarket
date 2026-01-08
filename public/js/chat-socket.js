@@ -11,6 +11,7 @@ class ChatSocket {
         this.isConnected = false;
         this.messageCallbacks = [];
         this.typingTimeout = null;
+        this.onlineUserIds = []; // Danh sách user online
     }
 
     /**
@@ -96,7 +97,24 @@ class ChatSocket {
         // Danh sách user online
         this.socket.on('online_users', (userIds) => {
             console.log('[ChatSocket] Online users:', userIds);
+            this.onlineUserIds = userIds.map(id => id.toString());
             this._updateOnlineStatus(userIds);
+        });
+
+        // User mới online
+        this.socket.on('user_online', (data) => {
+             if (data.user_id && !this.onlineUserIds.includes(data.user_id.toString())) {
+                this.onlineUserIds.push(data.user_id.toString());
+                this._updateOnlineStatus(this.onlineUserIds);
+             }
+        });
+
+        // User offline
+        this.socket.on('user_offline', (data) => {
+             if (data.user_id) {
+                this.onlineUserIds = this.onlineUserIds.filter(id => id !== data.user_id.toString());
+                this._updateOnlineStatus(this.onlineUserIds);
+             }
         });
 
         // User đang nhập
@@ -107,8 +125,15 @@ class ChatSocket {
         // Lỗi từ server
         this.socket.on('error', (error) => {
             console.error('[ChatSocket] Server error:', error);
-            alert('Lỗi: ' + error.message);
+            // alert('Lỗi: ' + error.message);
         });
+    }
+
+    /**
+     * Lấy danh sách user online hiện tại
+     */
+    getOnlineUsers() {
+        return this.onlineUserIds;
     }
 
     /**
