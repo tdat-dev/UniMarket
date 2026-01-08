@@ -105,8 +105,7 @@ jobs:
             --exclude='.user.ini' \
             --exclude='.well-known' \
             -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no" \
-            ./ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:./ || true
-
+            ./ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:./
       - name: 🔔 Notify Success
         if: success()
         run: |

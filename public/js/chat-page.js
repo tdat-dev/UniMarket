@@ -292,42 +292,52 @@
     }
     
 // ============ ONLINE STATUS ============
-function setupOnlineStatus() {
-    // Fallback: Hiển thị từ last_seen ngay lập tức (không chờ socket)
-    updatePartnerOnlineStatus();
-    
-    // Nếu có socket, lắng nghe realtime updates
-    if (window.chatSocket && window.chatSocket.socket) {
-        const socket = window.chatSocket.socket;
-        
-        // Lắng nghe danh sách user online
-        socket.on('online_users', (userIds) => {
-            console.log('[OnlineStatus] Online users:', userIds);
-            onlineUsersList = userIds.map(id => id.toString());
-            updatePartnerOnlineStatus();
-        });
-        
-        // Lắng nghe khi user online
-        socket.on('user_online', (data) => {
-            console.log('[OnlineStatus] User online:', data);
-            if (data.user_id && !onlineUsersList.includes(data.user_id.toString())) {
-                onlineUsersList.push(data.user_id.toString());
-            }
-            if (data.user_id == activePartnerId) {
+    // ============ ONLINE STATUS ============
+    function setupOnlineStatus() {
+        // Init ngay nếu socket đã có data
+        if (window.chatSocket && typeof window.chatSocket.getOnlineUsers === 'function') {
+            const currentOnlineParams = window.chatSocket.getOnlineUsers();
+            if (currentOnlineParams && currentOnlineParams.length > 0) {
+                onlineUsersList = currentOnlineParams;
                 updatePartnerOnlineStatus();
             }
-        });
+        }
+
+        // Fallback: Hiển thị từ last_seen ngay lập tức (không chờ socket)
+        updatePartnerOnlineStatus();
         
-        // Lắng nghe khi user offline
-        socket.on('user_offline', (data) => {
-            console.log('[OnlineStatus] User offline:', data);
-            onlineUsersList = onlineUsersList.filter(id => id != data.user_id?.toString());
-            if (data.user_id == activePartnerId) {
-                updatePartnerOnlineStatus(data.last_seen);
-            }
-        });
+        // Nếu có socket, lắng nghe realtime updates
+        if (window.chatSocket && window.chatSocket.socket) {
+            const socket = window.chatSocket.socket;
+            
+            // Lắng nghe danh sách user online
+            socket.on('online_users', (userIds) => {
+                console.log('[OnlineStatus] Online users:', userIds);
+                onlineUsersList = userIds.map(id => id.toString());
+                updatePartnerOnlineStatus();
+            });
+            
+            // Lắng nghe khi user online
+            socket.on('user_online', (data) => {
+                console.log('[OnlineStatus] User online:', data);
+                if (data.user_id && !onlineUsersList.includes(data.user_id.toString())) {
+                    onlineUsersList.push(data.user_id.toString());
+                }
+                if (data.user_id == activePartnerId) {
+                    updatePartnerOnlineStatus();
+                }
+            });
+            
+            // Lắng nghe khi user offline
+            socket.on('user_offline', (data) => {
+                console.log('[OnlineStatus] User offline:', data);
+                onlineUsersList = onlineUsersList.filter(id => id != data.user_id?.toString());
+                if (data.user_id == activePartnerId) {
+                    updatePartnerOnlineStatus(data.last_seen);
+                }
+            });
+        }
     }
-}
 
 /**
  * Cập nhật UI hiển thị trạng thái online của partner
