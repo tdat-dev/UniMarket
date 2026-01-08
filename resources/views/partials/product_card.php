@@ -1,18 +1,32 @@
 <a href="/product-detail?id=<?= $item['id'] ?>"
-    class="block bg-white rounded-sm shadow-sm hover:shadow-md transition-shadow group">
-    <div class="aspect-square relative overflow-hidden">
+    class="block bg-white rounded-sm shadow-sm hover:shadow-md transition-all group border border-transparent hover:border-[#2C67C8]/30 overflow-hidden">
+    <!-- Image với aspect ratio 1:1 -->
+    <div class="aspect-square relative overflow-hidden bg-gray-100">
         <img src="/uploads/<?= !empty($item['image']) ? $item['image'] : 'default.png' ?>"
-            class="w-full h-full object-cover transition-transform group-hover:scale-105">
+            class="w-full h-full object-cover transition-transform group-hover:scale-105" loading="lazy">
+        <!-- Freeship badge -->
+        <div
+            class="absolute top-0 left-0 bg-[#00bfa5] text-white text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded-br">
+            Freeship
+        </div>
     </div>
-    <div class="p-3">
-        <div class="text-xs text-gray-800 line-clamp-2 mb-2 min-h-[32px] group-hover:text-[#2C67C8] transition-colors">
+
+    <!-- Product info -->
+    <div class="p-2 md:p-3">
+        <!-- Title - 2 lines max -->
+        <div
+            class="text-[11px] md:text-xs text-gray-800 line-clamp-2 mb-1.5 min-h-[30px] md:min-h-[32px] leading-tight group-hover:text-[#2C67C8] transition-colors">
             <?= htmlspecialchars($item['name']) ?>
         </div>
-        <div class="flex justify-between items-end">
-            <div class="text-[#ee4d2d] text-base font-medium"> <!-- Shopee/Lazada style red -->
-                <span class="text-xs underline">đ</span><?= number_format((float) $item['price'], 0, ',', '.') ?>
+
+        <!-- Price & Sold -->
+        <div class="flex items-center justify-between gap-1">
+            <div class="text-[#ee4d2d] text-sm md:text-base font-semibold truncate">
+                <span
+                    class="text-[10px] md:text-xs underline">₫</span><?= number_format((float) $item['price'], 0, ',', '.') ?>
             </div>
-            <div class="text-xs text-gray-500">Đã bán <?= number_format($item['sold_count'] ?? 0) ?></div> <!-- Real sold count -->
+            <div class="text-[10px] text-gray-400 flex-shrink-0">Đã bán <?= number_format($item['sold_count'] ?? 0) ?>
+            </div>
         </div>
     </div>
 </a>

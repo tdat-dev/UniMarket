@@ -3,33 +3,54 @@ include __DIR__ . '/../partials/head.php';
 include __DIR__ . '/../partials/header.php';
 ?>
 
-<main class="bg-gray-100 min-h-screen pb-10">
+<main class="bg-gray-100 min-h-screen pb-20 md:pb-10">
     <div class="max-w-[1200px] mx-auto px-4 pt-8 space-y-6">
 
         <!-- DANH MỤC -->
         <div class="bg-white rounded-sm shadow-sm">
-            <div class="h-[60px] px-5 flex items-center border-b border-gray-100">
+            <!-- Header - Ẩn trên mobile để compact hơn -->
+            <div class="hidden md:flex h-[60px] px-5 items-center border-b border-gray-100">
                 <h2 class="text-gray-500 font-medium uppercase text-base">DANH MỤC</h2>
             </div>
-            <div class="p-0 relative group">
-                <!-- Navigation Arrows (Hidden by default, show on hover if needed, but for now static grid) -->
 
-                <div class="grid grid-cols-10 gap-0">
+            <!-- Mobile: Horizontal Scroll Carousel (như Shopee) -->
+            <div class="md:hidden overflow-x-auto scrollbar-none py-3 px-2">
+                <div class="flex gap-1" style="min-width: max-content;">
+                    <?php foreach ($categories as $cat): ?>
+                        <a href="/search?category=<?= $cat['id'] ?>"
+                            class="flex flex-col items-center w-[70px] flex-shrink-0 py-2">
+                            <div
+                                class="w-12 h-12 rounded-full overflow-hidden mb-1.5 bg-indigo-50 flex items-center justify-center">
+                                <?php if (!empty($cat['image'])): ?>
+                                    <img src="<?= $cat['image'] ?>" alt="<?= $cat['name'] ?>"
+                                        class="w-full h-full object-cover">
+                                <?php elseif (!empty($cat['icon']) && strpos($cat['icon'], 'fa-') === 0): ?>
+                                    <i class="fa-solid <?= $cat['icon'] ?> text-xl text-indigo-400"></i>
+                                <?php else: ?>
+                                    <span class="text-xl">📦</span>
+                                <?php endif; ?>
+                            </div>
+                            <span
+                                class="text-[11px] text-gray-700 text-center leading-tight line-clamp-2 px-0.5"><?= $cat['name'] ?></span>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
+            <!-- Desktop: Grid layout -->
+            <div class="hidden md:block p-0 relative group">
+                <div class="grid grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-0">
                     <?php foreach ($categories as $cat): ?>
                         <a href="/search?category=<?= $cat['id'] ?>"
                             class="flex flex-col items-center justify-center h-[150px] border-r border-b border-gray-50 hover:shadow-md transition-shadow group/item">
                             <div
                                 class="w-[70%] aspect-square rounded-full overflow-hidden mb-2 transition-transform group-hover/item:-translate-y-1">
-                                <?php
-                                // Ưu tiên cột 'image' nếu có
-                                if (!empty($cat['image'])): ?>
+                                <?php if (!empty($cat['image'])): ?>
                                     <img src="<?= $cat['image'] ?>" alt="<?= $cat['name'] ?>"
                                         class="w-full h-full object-contain p-2 bg-indigo-50">
                                 <?php elseif (!empty($cat['icon'])):
-                                    // Kiểm tra nếu icon là class FontAwesome (bắt đầu bằng fa-)
                                     $isFontAwesome = (strpos($cat['icon'], 'fa-') === 0);
                                     $isImagePath = (strpos($cat['icon'], '/') === 0 || strpos($cat['icon'], 'http') === 0);
-
                                     if ($isFontAwesome): ?>
                                         <div class="w-full h-full flex items-center justify-center bg-indigo-50">
                                             <i class="fa-solid <?= $cat['icon'] ?> text-3xl text-indigo-400"></i>
@@ -39,13 +60,10 @@ include __DIR__ . '/../partials/header.php';
                                             class="w-full h-full object-contain p-2 bg-indigo-50">
                                     <?php else: ?>
                                         <div class="w-full h-full flex items-center justify-center bg-blue-50 text-3xl">
-                                            <?= $cat['icon'] ?>
-                                        </div>
+                                            <?= $cat['icon'] ?></div>
                                     <?php endif; ?>
                                 <?php else: ?>
-                                    <div class="w-full h-full flex items-center justify-center bg-slate-100 text-3xl">
-                                        📦
-                                    </div>
+                                    <div class="w-full h-full flex items-center justify-center bg-slate-100 text-3xl">📦</div>
                                 <?php endif; ?>
                             </div>
                             <span class="text-[13px] text-gray-800 text-center px-2 leading-4"><?= $cat['name'] ?></span>
@@ -64,7 +82,7 @@ include __DIR__ . '/../partials/header.php';
                 </a>
             </div>
 
-            <div class="grid grid-cols-6 gap-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
                 <?php foreach ($topProducts as $prod): ?>
                     <a href="/product-detail?id=<?= $prod['id'] ?>" class="block relative group">
                         <div class="relative aspect-square bg-gray-100 mb-3 overflow-hidden">
@@ -100,7 +118,7 @@ include __DIR__ . '/../partials/header.php';
                 <h2 class="text-[#2C67C8] font-medium uppercase text-base">SẢN PHẨM MỚI NHẤT</h2>
             </div>
             <?php $products = $products ?? []; ?>
-            <div class="grid grid-cols-6 gap-3 mt-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-4">
                 <?php foreach ($latestProducts as $item): ?>
                     <a href="/product-detail?id=<?= $item['id'] ?>" class="...">
                         <div class="aspect-square relative">

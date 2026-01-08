@@ -1,7 +1,7 @@
 <?php include __DIR__ . '/../partials/head.php'; ?>
 <?php include __DIR__ . '/../partials/header.php'; ?>
 
-<main class="bg-gray-50 min-h-screen py-8">
+<main class="bg-gray-50 min-h-screen pb-20 md:py-8">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Breadcrumb -->
         <nav class="flex mb-6 text-sm text-gray-500">
@@ -49,7 +49,8 @@
                                 <div class="flex-1">
                                     <div class="flex justify-between items-start">
                                         <h4 class="font-medium text-gray-900 line-clamp-2">
-                                            <?= htmlspecialchars($item['product_name']) ?></h4>
+                                            <?= htmlspecialchars($item['product_name']) ?>
+                                        </h4>
                                         <span
                                             class="font-bold text-gray-900 ml-4"><?= number_format($item['price_at_purchase'] * $item['quantity'], 0, ',', '.') ?>đ</span>
                                     </div>

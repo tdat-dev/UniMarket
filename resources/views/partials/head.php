@@ -3,9 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title><?= htmlspecialchars($siteSettings['general']['site_name'] ?? 'Zoldify') ?> -
-        <?= htmlspecialchars($siteSettings['general']['site_description'] ?? '') ?></title>
+        <?= htmlspecialchars($siteSettings['general']['site_description'] ?? '') ?>
+    </title>
 
     <?php if (!empty($siteSettings['general']['site_favicon'])): ?>
         <link rel="icon" href="<?= $siteSettings['general']['site_favicon'] ?>">
@@ -25,6 +26,24 @@
     <style>
         body {
             font-family: 'Quicksand', sans-serif;
+        }
+
+        /* Mobile UX Utilities */
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+
+        .safe-area-top {
+            padding-top: env(safe-area-inset-top);
+        }
+
+        .safe-area-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
         }
     </style>
 </head>

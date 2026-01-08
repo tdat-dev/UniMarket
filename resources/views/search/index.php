@@ -3,7 +3,7 @@ include __DIR__ . '/../partials/head.php';
 include __DIR__ . '/../partials/header.php';
 ?>
 
-<main class="bg-gray-100 min-h-screen pb-10">
+<main class="bg-gray-100 min-h-screen pb-20 md:pb-10">
     <div class="max-w-[1200px] mx-auto px-4 pt-8 space-y-6">
 
         <div class="bg-white rounded-sm shadow-sm p-5">
