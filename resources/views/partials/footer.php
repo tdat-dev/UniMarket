@@ -91,22 +91,11 @@
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
 <!-- Chat Socket Client -->
-<script src="/js/chat-socket.js"></script>
+<script src="/js/chat-socket.js?v=<?= time() ?>"></script>
 
 <!-- Khởi tạo kết nối nếu user đã đăng nhập -->
 <?php if (isset($_SESSION['user']['id'])): ?>
     <script>
-            // URL Socket server
-            <?php
-            // Xác định môi trường
-            $isProduction = ($_ENV['APP_ENV'] ?? 'local') === 'production';
-            $socketUrl = $isProduction
-                ? 'https://zoldify.com:3001'  // Production
-                : 'http://localhost:3001';    // Development
-            ?>
-            window.SOCKET_URL = '<?= $socketUrl ?>';
-        // window.SOCKET_URL = 'https://chat.zoldify.com'; // Production
-
         // Kết nối Socket
         document.addEventListener('DOMContentLoaded', function () {
             window.chatSocket.connect(<?= $_SESSION['user']['id'] ?>);

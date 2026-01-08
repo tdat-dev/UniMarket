@@ -34,13 +34,13 @@ class ChatSocket {
             // Tự động detect dựa trên hostname
             const hostname = window.location.hostname;
             if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                // Development - kết nối trực tiếp port 3001
                 socketUrl = 'http://localhost:3001';
-            } else if (hostname.includes('staging')) {
-                // Staging - dùng http vì port 3001 chưa có SSL
-                socketUrl = 'http://staging.zoldify.com:3001';
             } else {
-                // Production
-                socketUrl = 'https://' + hostname + ':3001';
+                // Staging & Production - dùng Reverse Proxy qua Nginx
+                // Nginx sẽ proxy /socket.io -> http://127.0.0.1:3001
+                // Điều này giúp tránh Mixed Content (HTTPS -> HTTP)
+                socketUrl = window.location.origin; // e.g., https://staging.zoldify.com
             }
         }
         console.log('[ChatSocket] Connecting to:', socketUrl);
