@@ -527,31 +527,43 @@ class ProfileController extends BaseController
         header('Location: /profile/orders/detail?id=' . $orderId);
         exit;
     }
+    public function cancelSale()
+    {
+        // ... previous code ...
+        // Wait, I should not overwrite existing methods if not viewing them.
+        // I will just append to the end.
+    }
+
+    // I need to see the last closing brace.
+    // Line 530 is likely the closing brace of confirmReceived or the class.
+    // Let me check the outline again. EndLine is 530.
+    // Outline item 14 ends at 529.
+    // So 530 might be valid or the class end.
+    // I'll assume 530 is close brace of class.
+
+    // Actually, I can just use Insert logic by replacing the last closing brace }
+    // But I don't know if 530 is the last line of file or last line of class.
+    // View_file showed Total Lines 531.
+    // Outline shows confirmReceived ends 529.
+    // So 530 probably contains "}" for class.
+
+    // I'll replace the last closing brace with my new methods and the closing brace.
 
     public function changePassword()
     {
-        if (session_status() == PHP_SESSION_NONE) {
+        if (session_status() == PHP_SESSION_NONE)
             session_start();
-        }
         if (!isset($_SESSION['user'])) {
             header('Location: /login');
             exit;
         }
-
-        $userModel = new \App\Models\User();
-        $user = $userModel->find($_SESSION['user']['id']);
-
-        $this->view('profile/change_password', [
-            'user' => $user,
-            'pageTitle' => 'Đổi mật khẩu'
-        ]);
+        $this->view('profile/change_password', ['pageTitle' => 'Đổi mật khẩu']);
     }
 
     public function updatePassword()
     {
-        if (session_status() == PHP_SESSION_NONE) {
+        if (session_status() == PHP_SESSION_NONE)
             session_start();
-        }
         if (!isset($_SESSION['user'])) {
             header('Location: /login');
             exit;
@@ -561,28 +573,34 @@ class ProfileController extends BaseController
         $newPassword = $_POST['new_password'] ?? '';
         $confirmPassword = $_POST['confirm_password'] ?? '';
 
-        $userModel = new \App\Models\User();
-        // Cần lấy user đầy đủ để check password cũ
-        $user = $userModel->findByEmailFull($_SESSION['user']['email']);
-
-        if (!$user || !password_verify($currentPassword, $user['password'])) {
-            header('Location: /profile/change-password?error=wrong_password');
-            exit;
+        $errors = [];
+        if (empty($currentPassword)) {
+            $errors[] = 'Vui lòng nhập mật khẩu hiện tại';
         }
-
+        if (empty($newPassword)) {
+            $errors[] = 'Vui lòng nhập mật khẩu mới';
+        }
         if (strlen($newPassword) < 6) {
-             header('Location: /profile/change-password?error=password_short');
-             exit;
+            $errors[] = 'Mật khẩu mới phải có ít nhất 6 ký tự';
         }
-
         if ($newPassword !== $confirmPassword) {
-            header('Location: /profile/change-password?error=password_mismatch');
-            exit;
+            $errors[] = 'Mật khẩu xác nhận không khớp';
         }
 
-        $userModel->updatePassword($user['id'], $newPassword);
-        
-        header('Location: /profile/change-password?success=1');
-        exit;
+        if (!empty($errors)) {
+            $this->view('profile/change_password', ['errors' => $errors, 'pageTitle' => 'Đổi mật khẩu']);
+            return;
+        }
+
+        $authService = new \App\Services\AuthService();
+        $result = $authService->changePassword($_SESSION['user']['id'], $currentPassword, $newPassword);
+
+        if ($result['success']) {
+            $_SESSION['success'] = 'Đổi mật khẩu thành công';
+            header('Location: /profile/change-password');
+            exit;
+        } else {
+            $this->view('profile/change_password', ['errors' => [$result['message']], 'pageTitle' => 'Đổi mật khẩu']);
+        }
     }
 }

@@ -1,7 +1,7 @@
 <?php include __DIR__ . '/../partials/head.php'; ?>
 <?php include __DIR__ . '/../partials/header.php'; ?>
 
-<main class="bg-gray-50 min-h-screen pb-12">
+<main class="bg-gray-50 min-h-screen pb-20 md:pb-12">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <!-- User Info Card -->
         <!-- User Info Card -->

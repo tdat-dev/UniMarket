@@ -266,7 +266,7 @@ $timeLeft = $timeLeft ?? 900; // 15 phút mặc định
     }
 </style>
 
-<main class="bg-gray-100 min-h-screen py-8">
+<main class="bg-gray-100 min-h-screen pb-20 md:py-8">
     <div class="payment-container">
         <div class="payment-card" id="paymentCard">
             <div class="payment-card__header">

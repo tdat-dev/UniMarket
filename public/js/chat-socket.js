@@ -11,6 +11,7 @@ class ChatSocket {
         this.isConnected = false;
         this.messageCallbacks = [];
         this.typingTimeout = null;
+        this.onlineUserIds = []; // Danh sách user online
     }
 
     /**
@@ -34,13 +35,13 @@ class ChatSocket {
             // Tự động detect dựa trên hostname
             const hostname = window.location.hostname;
             if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                // Development - kết nối trực tiếp port 3001
                 socketUrl = 'http://localhost:3001';
-            } else if (hostname.includes('staging')) {
-                // Staging - dùng http vì port 3001 chưa có SSL
-                socketUrl = 'http://staging.zoldify.com:3001';
             } else {
-                // Production
-                socketUrl = 'https://' + hostname + ':3001';
+                // Staging & Production - dùng Reverse Proxy qua Nginx
+                // Nginx sẽ proxy /socket.io -> http://127.0.0.1:3001
+                // Điều này giúp tránh Mixed Content (HTTPS -> HTTP)
+                socketUrl = window.location.origin; // e.g., https://staging.zoldify.com
             }
         }
         console.log('[ChatSocket] Connecting to:', socketUrl);
@@ -96,7 +97,24 @@ class ChatSocket {
         // Danh sách user online
         this.socket.on('online_users', (userIds) => {
             console.log('[ChatSocket] Online users:', userIds);
+            this.onlineUserIds = userIds.map(id => id.toString());
             this._updateOnlineStatus(userIds);
+        });
+
+        // User mới online
+        this.socket.on('user_online', (data) => {
+             if (data.user_id && !this.onlineUserIds.includes(data.user_id.toString())) {
+                this.onlineUserIds.push(data.user_id.toString());
+                this._updateOnlineStatus(this.onlineUserIds);
+             }
+        });
+
+        // User offline
+        this.socket.on('user_offline', (data) => {
+             if (data.user_id) {
+                this.onlineUserIds = this.onlineUserIds.filter(id => id !== data.user_id.toString());
+                this._updateOnlineStatus(this.onlineUserIds);
+             }
         });
 
         // User đang nhập
@@ -107,8 +125,15 @@ class ChatSocket {
         // Lỗi từ server
         this.socket.on('error', (error) => {
             console.error('[ChatSocket] Server error:', error);
-            alert('Lỗi: ' + error.message);
+            // alert('Lỗi: ' + error.message);
         });
+    }
+
+    /**
+     * Lấy danh sách user online hiện tại
+     */
+    getOnlineUsers() {
+        return this.onlineUserIds;
     }
 
     /**

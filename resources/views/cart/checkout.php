@@ -16,7 +16,7 @@ if (!empty($products)) {
 }
 ?>
 
-<main class="bg-gray-100 min-h-screen pb-10">
+<main class="bg-gray-100 min-h-screen pb-20 md:pb-10">
     <div class="max-w-[1200px] mx-auto px-4 pt-4">
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-6">
             <a href="/" class="hover:text-[#2C67C8]">Trang chủ</a>

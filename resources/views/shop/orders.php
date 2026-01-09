@@ -8,7 +8,7 @@ if (!isset($_SESSION['user'])) {
 ?>
 <?php include __DIR__ . '/../partials/header.php'; ?>
 
-<main class="bg-gray-50 min-h-screen pb-12">
+<main class="bg-gray-50 min-h-screen pb-20 md:pb-12">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <!-- User Info Card -->
         <?php $activeTab = 'shop_orders';
@@ -84,7 +84,8 @@ if (!isset($_SESSION['user'])) {
                                     </span>
                                 </div>
                                 <div class="text-sm font-bold text-red-600">
-                                    <?= number_format($order['total_amount'], 0, ',', '.') ?>đ</div>
+                                    <?= number_format($order['total_amount'], 0, ',', '.') ?>đ
+                                </div>
                             </div>
 
                             <div class="flex flex-col gap-3">
@@ -96,7 +97,8 @@ if (!isset($_SESSION['user'])) {
                                         </div>
                                         <div>
                                             <h4 class="text-sm font-medium text-gray-900">
-                                                <?= htmlspecialchars($item['product_name']) ?></h4>
+                                                <?= htmlspecialchars($item['product_name']) ?>
+                                            </h4>
                                             <p class="text-xs text-gray-500">x <?= $item['quantity'] ?></p>
                                         </div>
                                     </div>

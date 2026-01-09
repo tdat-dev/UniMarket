@@ -7,7 +7,7 @@ if (!isset($_SESSION['user'])) {
 ?>
 <?php include __DIR__ . '/../partials/header.php'; ?>
 
-<main class="bg-gray-50 min-h-screen pb-12">
+<main class="bg-gray-50 min-h-screen pb-20 md:pb-12">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <!-- User Info Card -->
         <!-- User Info Card -->
@@ -125,14 +125,16 @@ if (!isset($_SESSION['user'])) {
                                         class="px-4 py-2 border border-red-500 text-red-600 text-sm font-medium rounded-md hover:bg-red-50 whitespace-nowrap">Hủy
                                         đơn hàng</button>
                                 <?php endif; ?>
-                                <?php
-                                $isExpired = (strtotime($order['created_at']) + (15 * 60)) < time();
-                                if ($order['status'] == 'pending_payment' && !empty($order['payment_link_id']) && !$isExpired):
-                                    ?>
-                                    <a href="https://pay.payos.vn/web/<?= $order['payment_link_id'] ?>"
-                                        class="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-md hover:bg-orange-600 whitespace-nowrap"
-                                        style="background-color: #f97316 !important; color: white !important;"><i
-                                            class="fas fa-qrcode mr-1"></i>Thanh toán ngay</a>
+                                <?php if ($order['status'] == 'pending_payment'): ?>
+                                    <!-- Luôn tạo payment link MỚI để tránh link hết hạn -->
+                                    <form action="/payment/create" method="POST" class="inline">
+                                        <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
+                                        <button type="submit"
+                                            class="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-md hover:bg-orange-600 whitespace-nowrap"
+                                            style="background-color: #f97316 !important; color: white !important;">
+                                            <i class="fas fa-qrcode mr-1"></i>Thanh toán ngay
+                                        </button>
+                                    </form>
                                 <?php endif; ?>
                                 <button type="button" onclick="initiateRebuy(<?= $order['id'] ?>)"
                                     class="px-4 py-2 border border-blue-600 text-blue-600 text-sm font-medium rounded-md hover:bg-blue-50 whitespace-nowrap">Mua

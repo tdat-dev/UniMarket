@@ -11,7 +11,7 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
 <div class="w-full bg-gray-100 border-b border-gray-200 hidden md:block relative" style="z-index: 9999;">
     <div class="max-w-[1200px] mx-auto px-4">
         <div class="h-[34px] flex items-center justify-end gap-6 text-[13px] text-gray-600">
-<?php
+            <?php
             $unreadNotifs = [];
             $unreadCount = 0;
             if (isset($_SESSION['user']['id'])) {
@@ -30,7 +30,8 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                     <div class="relative">
                         <i class="fa-regular fa-bell text-lg"></i>
                         <?php if ($unreadCount > 0): ?>
-                            <span class="absolute -top-2 -right-2 bg-[#EE4D2D] text-white text-[10px] font-bold px-1 rounded-full h-4 min-w-[16px] flex items-center justify-center">
+                            <span
+                                class="absolute -top-2 -right-2 bg-[#EE4D2D] text-white text-[10px] font-bold px-1 rounded-full h-4 min-w-[16px] flex items-center justify-center">
                                 <?= $unreadCount > 99 ? '99+' : $unreadCount ?>
                             </span>
                         <?php endif; ?>
@@ -39,7 +40,8 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                 </a>
 
                 <!-- Notification Dropdown -->
-                <div class="absolute right-0 top-full mt-0 w-80 bg-white rounded-sm shadow-xl border border-gray-100 hidden group-hover:block z-[100] origin-top-right">
+                <div
+                    class="absolute right-0 top-full mt-0 w-80 bg-white rounded-sm shadow-xl border border-gray-100 hidden group-hover:block z-[100] origin-top-right">
                     <div class="p-3 border-b border-gray-100 text-gray-500 text-sm">Thông báo mới nhận</div>
                     <div class="max-h-[350px] overflow-y-auto">
                         <?php if (empty($unreadNotifs)): ?>
@@ -49,17 +51,20 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                             </div>
                         <?php else: ?>
                             <?php foreach ($unreadNotifs as $notif): ?>
-                                <a href="/shop?id=<?= $notif['user_id'] // Just a guess link, better to parse content or have link column ?>" 
-                                   class="block p-3 hover:bg-gray-50 border-b border-gray-50 bg-red-50/10 transition-colors">
+                                <a href="/shop?id=<?= $notif['user_id'] // Just a guess link, better to parse content or have link column ?>"
+                                    class="block p-3 hover:bg-gray-50 border-b border-gray-50 bg-red-50/10 transition-colors">
                                     <div class="flex gap-3">
                                         <div class="flex-shrink-0 mt-1">
-                                            <div class="w-8 h-8 rounded-full bg-[#2C67C8]/10 flex items-center justify-center text-[#2C67C8]">
+                                            <div
+                                                class="w-8 h-8 rounded-full bg-[#2C67C8]/10 flex items-center justify-center text-[#2C67C8]">
                                                 <i class="fa-solid fa-bag-shopping text-xs"></i>
                                             </div>
                                         </div>
                                         <div>
-                                            <p class="text-sm text-gray-800 line-clamp-2"><?= htmlspecialchars($notif['content']) ?></p>
-                                            <span class="text-xs text-gray-400 mt-1 block"><?= date('H:i d/m', strtotime($notif['created_at'])) ?></span>
+                                            <p class="text-sm text-gray-800 line-clamp-2">
+                                                <?= htmlspecialchars($notif['content']) ?></p>
+                                            <span
+                                                class="text-xs text-gray-400 mt-1 block"><?= date('H:i d/m', strtotime($notif['created_at'])) ?></span>
                                         </div>
                                     </div>
                                 </a>
@@ -182,11 +187,46 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
     </div>
 </div>
 
-<!-- Thẻ Header này sẽ dính vào đỉnh màn hình khi cuộn xuống -->
-<header class="w-full z-[1100] bg-white font-sans shadow-sm <?= !$is_auth_page ? 'sticky top-0' : '' ?>">
+<!-- MOBILE HEADER - Shopee/Lazada Style -->
+<header
+    class="md:hidden w-full z-[1100] bg-gradient-to-r from-[#2C67C8] to-[#1990AA] font-sans sticky top-0 safe-area-top">
+    <div class="px-3 py-2">
+        <div class="flex items-center gap-2">
+            <!-- Search Bar - Pill shaped, full width -->
+            <form action="/search" method="GET" class="flex-1">
+                <div class="flex items-center bg-white rounded-full h-9 px-3 shadow-sm">
+                    <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
+                    <input type="text" name="q" placeholder="Tìm sản phẩm..."
+                        value="<?= htmlspecialchars($_GET['q'] ?? '') ?>" autocomplete="off"
+                        class="flex-1 ml-2 text-sm text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent">
+                </div>
+            </form>
+
+            <!-- Cart Icon với Badge -->
+            <a href="/cart" class="relative p-2">
+                <i class="fa-solid fa-cart-shopping text-white text-xl"></i>
+                <?php if (($cartCount ?? 0) > 0): ?>
+                    <span
+                        class="absolute -top-0.5 -right-0.5 bg-[#EE4D2D] text-white text-[10px] font-bold min-w-[16px] h-4 flex items-center justify-center rounded-full px-1">
+                        <?= $cartCount > 99 ? '99+' : $cartCount ?>
+                    </span>
+                <?php endif; ?>
+            </a>
+
+            <!-- Chat Icon -->
+            <a href="/chat" class="relative p-2">
+                <i class="fa-regular fa-comment-dots text-white text-xl"></i>
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- DESKTOP HEADER - Giữ nguyên -->
+<header
+    class="hidden md:block w-full z-[1100] bg-white font-sans shadow-sm <?= !$is_auth_page ? 'sticky top-0' : '' ?>">
     <div class="bg-white pb-3">
         <div class="max-w-[1200px] mx-auto px-4 pt-4">
-            <div class="flex flex-col md:flex-row items-center gap-4 md:gap-8">
+            <div class="flex flex-row items-center gap-8">
 
                 <a href="/" class="flex items-center gap-2 flex-shrink-0 group no-underline">
                     <img src="/images/logouni.png" alt="Zoldify" class="h-16 w-auto object-contain">
@@ -211,11 +251,10 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                         class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden z-50 max-h-[300px] overflow-y-auto">
                     </div>
 
-                    <div class="flex flex-wrap gap-x-4 mt-2 text-xs text-gray-500 pl-1 justify-center md:justify-start">
+                    <div class="flex flex-wrap gap-x-4 mt-2 text-xs text-gray-500 pl-1 justify-start">
                         <?php if (!empty($topKeywords)): ?>
                             <?php foreach ($topKeywords as $index => $kw): ?>
-                                <a href="/search?q=<?= urlencode($kw['keyword']) ?>"
-                                    class="<?= $index >= 2 ? 'hidden sm:inline' : '' ?> hover:text-[#2C67C8]">
+                                <a href="/search?q=<?= urlencode($kw['keyword']) ?>" class="hover:text-[#2C67C8]">
                                     <?= htmlspecialchars(ucfirst($kw['keyword'])) ?>
                                 </a>
                             <?php endforeach; ?>
@@ -223,10 +262,9 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                     </div>
                 </div>
 
-                <div
-                    class="flex items-center gap-4 md:gap-8 flex-shrink-0 w-full md:w-auto justify-center md:justify-end">
+                <div class="flex items-center gap-8 flex-shrink-0">
 
-                    <a href="/cart" class="relative group p-1 hidden md:block">
+                    <a href="/cart" class="relative group p-1">
                         <i
                             class="fa-solid fa-cart-shopping text-gray-600 text-2xl group-hover:text-[#2C67C8] transition-colors"></i>
                         <?php if (($cartCount ?? 0) > 0): ?>
@@ -238,7 +276,7 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                     </a>
 
                     <a href="/products/create"
-                        class="w-full md:w-auto justify-center px-6 py-2.5 bg-gradient-to-r from-[#2C67C8] to-[#1990AA] text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all transform flex items-center gap-2 no-underline">
+                        class="px-6 py-2.5 bg-gradient-to-r from-[#2C67C8] to-[#1990AA] text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all transform flex items-center gap-2 no-underline">
                         <i class="fa-solid fa-plus text-sm"></i>
                         <span>Đăng Bán</span>
                     </a>
@@ -248,4 +286,3 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
         </div>
     </div>
 </header>
-

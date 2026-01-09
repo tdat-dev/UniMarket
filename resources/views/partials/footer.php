@@ -1,7 +1,7 @@
-﻿<!-- Footer -->
-<footer class="bg-gray-100 py-[30px]">
+﻿<!-- Footer - Ẩn trên mobile, chỉ hiện bottom nav -->
+<footer class="hidden md:block bg-gray-100 py-[30px]">
     <div class="container mx-auto px-4 max-w-6xl">
-        <div class="flex flex-wrap justify-center items-start gap-20 md:gap-32 lg:gap-40 py-[30px]">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-16 py-4 md:py-[30px]">
             <!-- Service -->
             <div>
                 <h3 class="font-bold text-sm text-gray-800 mb-4 uppercase tracking-wide">DỊCH VỤ KHÁCH HÀNG</h3>
@@ -91,25 +91,57 @@
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
 <!-- Chat Socket Client -->
-<script src="/js/chat-socket.js"></script>
+<script src="/js/chat-socket.js?v=<?= time() ?>"></script>
 
 <!-- Khởi tạo kết nối nếu user đã đăng nhập -->
 <?php if (isset($_SESSION['user']['id'])): ?>
     <script>
-            // URL Socket server
-            <?php
-            // Xác định môi trường
-            $isProduction = ($_ENV['APP_ENV'] ?? 'local') === 'production';
-            $socketUrl = $isProduction
-                ? 'https://zoldify.com:3001'  // Production
-                : 'http://localhost:3001';    // Development
-            ?>
-            window.SOCKET_URL = '<?= $socketUrl ?>';
-        // window.SOCKET_URL = 'https://chat.zoldify.com'; // Production
-
         // Kết nối Socket
         document.addEventListener('DOMContentLoaded', function () {
             window.chatSocket.connect(<?= $_SESSION['user']['id'] ?>);
         });
     </script>
 <?php endif; ?>
+
+<!-- Mobile Bottom Navigation - Like Shopee/Lazada -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden z-[1000]"
+    style="padding-bottom: env(safe-area-inset-bottom);">
+    <div class="flex h-14">
+        <!-- Trang chủ -->
+        <a href="/" style="width: 20%;"
+            class="flex flex-col items-center justify-center <?= ($_SERVER['REQUEST_URI'] === '/' || $_SERVER['REQUEST_URI'] === '/home') ? 'text-[#2C67C8]' : 'text-gray-500' ?>">
+            <i class="fa-solid fa-house text-lg"></i>
+            <span class="text-[9px] mt-0.5 font-medium">Trang chủ</span>
+        </a>
+
+        <!-- Tìm kiếm -->
+        <a href="/search" style="width: 20%;"
+            class="flex flex-col items-center justify-center <?= (strpos($_SERVER['REQUEST_URI'], '/search') === 0) ? 'text-[#2C67C8]' : 'text-gray-500' ?>">
+            <i class="fa-solid fa-magnifying-glass text-lg"></i>
+            <span class="text-[9px] mt-0.5 font-medium">Tìm kiếm</span>
+        </a>
+
+        <!-- Đăng bán - Nút nổi bật -->
+        <a href="/products/create" style="width: 20%;" class="flex flex-col items-center justify-center -mt-2">
+            <div
+                class="w-10 h-10 bg-gradient-to-r from-[#2C67C8] to-[#1990AA] rounded-full flex items-center justify-center shadow-md border-2 border-white">
+                <i class="fa-solid fa-plus text-white text-sm"></i>
+            </div>
+            <span class="text-[9px] mt-0.5 font-bold text-[#2C67C8]">Đăng bán</span>
+        </a>
+
+        <!-- Chat -->
+        <a href="/chat" style="width: 20%;"
+            class="flex flex-col items-center justify-center <?= (strpos($_SERVER['REQUEST_URI'], '/chat') === 0) ? 'text-[#2C67C8]' : 'text-gray-500' ?>">
+            <i class="fa-regular fa-comment-dots text-lg"></i>
+            <span class="text-[9px] mt-0.5 font-medium">Chat</span>
+        </a>
+
+        <!-- Tài khoản -->
+        <a href="/profile" style="width: 20%;"
+            class="flex flex-col items-center justify-center <?= (strpos($_SERVER['REQUEST_URI'], '/profile') === 0) ? 'text-[#2C67C8]' : 'text-gray-500' ?>">
+            <i class="fa-regular fa-user text-lg"></i>
+            <span class="text-[9px] mt-0.5 font-medium">Tài khoản</span>
+        </a>
+    </div>
+</nav>

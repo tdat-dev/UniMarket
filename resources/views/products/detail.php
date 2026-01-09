@@ -3,7 +3,7 @@ include __DIR__ . '/../partials/head.php';
 include __DIR__ . '/../partials/header.php';
 ?>
 
-<main class="bg-gray-100 min-h-screen pb-10">
+<main class="bg-gray-100 min-h-screen pb-20 md:pb-10">
     <div class="max-w-[1200px] mx-auto px-4 pt-4 space-y-6">
 
         <!-- Breadcrumb -->
@@ -182,7 +182,7 @@ include __DIR__ . '/../partials/header.php';
 
         <!-- Seller Info -->
         <div class="bg-white rounded-sm shadow-sm p-4">
-            <div class="flex items-center gap-4">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <div class="relative">
                     <img src="https://ui-avatars.com/api/?name=<?= urlencode($seller['full_name']) ?>&background=random&size=128"
                         alt="<?= htmlspecialchars($seller['full_name']) ?>"
@@ -203,7 +203,7 @@ include __DIR__ . '/../partials/header.php';
                         </span>
                     </div>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex gap-2 w-full sm:w-auto mt-3 sm:mt-0">
                     <?php if (($currentUserId ?? ($_SESSION['user']['id'] ?? null)) != $seller['id']): ?>
                     <a href="/chat?user_id=<?= $seller['id'] ?>"
                         class="px-4 py-2 border border-[#2C67C8] text-[#2C67C8] rounded-sm hover:bg-blue-50 font-medium text-sm flex items-center gap-1">
