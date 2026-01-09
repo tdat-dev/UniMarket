@@ -179,6 +179,15 @@ class CheckoutController extends BaseController
         }
         $buyerId = $_SESSION['user']['id'];
 
+        // Check if user has address
+        $userModel = new User();
+        $user = $userModel->find($buyerId);
+        if (empty($user['address'])) {
+            $_SESSION['error'] = 'Vui lòng cập nhật địa chỉ nhận hàng trước khi đặt hàng.';
+            header('Location: /profile');
+            exit;
+        }
+
         // Lấy payment method từ form
         $paymentMethod = $_POST['payment_method'] ?? 'cod';
         error_log('[Checkout] payment_method: ' . $paymentMethod . ', POST: ' . json_encode($_POST));

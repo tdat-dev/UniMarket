@@ -3,6 +3,8 @@
 namespace App\Controllers;
 
 use App\Middleware\VerificationMiddleware;
+use App\Models\User;
+use App\Models\Message;
 
 class ChatController extends BaseController
 {
@@ -18,13 +20,11 @@ class ChatController extends BaseController
             // Redirect to login handled by middleware ideally, but basic check here
             header('Location: /login');
             exit;
-            header('Location: /login');
-            exit;
         }
 
         $currentUserId = $_SESSION['user']['id'];
-        $messageModel = new \App\Models\Message();
-        $userModel = new \App\Models\User();
+        $messageModel = new Message();
+        $userModel = new User();
 
         // 1. Get List of Conversations
         $conversations = $messageModel->getRecentConversations($currentUserId);
@@ -85,7 +85,7 @@ class ChatController extends BaseController
             exit;
         }
 
-        $messageModel = new \App\Models\Message();
+        $messageModel = new Message();
         $id = $messageModel->create([
             'sender_id' => $_SESSION['user']['id'],
             'receiver_id' => $receiverId,
