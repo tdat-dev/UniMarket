@@ -23,7 +23,7 @@ include __DIR__ . '/../partials/header.php';
                     <?php endif; ?>
                 </h1>
                 <div class="flex gap-6 mt-2 text-sm text-gray-500">
-                    <span class="flex items-center gap-1"><i class="fa-solid fa-box"></i> <?= count($products) ?> Sản phẩm</span>
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-box"></i> <?= $productCount ?? count($products) ?> Sản phẩm</span>
                     <span class="flex items-center gap-1"><i class="fa-solid fa-user-plus"></i> Đang theo dõi: <span id="follower-count"><?= $followerCount ?? 0 ?></span></span>
                     <span class="flex items-center gap-1" title="Dựa trên <?= $stats['review_count'] ?? 0 ?> đánh giá">
                         <i class="fa-solid fa-star text-yellow-500"></i> 

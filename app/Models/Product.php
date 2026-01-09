@@ -307,6 +307,16 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
         return $result['total'] ?? 0;
     }
 
+    /**
+     * Đếm số sản phẩm ACTIVE của một user (để hiển thị trên shop profile)
+     */
+    public function countActiveByUserId($userId): int
+    {
+        $sql = "SELECT COUNT(*) as total FROM products WHERE user_id = :user_id AND status = 'active'";
+        $result = $this->db->fetchOne($sql, ['user_id' => (int) $userId]);
+        return $result['total'] ?? 0;
+    }
+
     // ===================== ADMIN METHODS =====================
 
     /**
