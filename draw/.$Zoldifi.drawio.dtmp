@@ -992,11 +992,6 @@
             <mxPoint x="458" y="1230" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="generated-end-edge-8-3" edge="1" parent="1" source="c9qq0TS36t_HvgEa1PVP-10">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="1020.8451589790266" y="1542.7244219820227" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
         <mxCell id="HJzgqKEqVIz-tDzsiHoc-1" parent="1" style="ellipse;html=1;shape=startState;fillColor=#000000;strokeColor=#ff0000;" value="" vertex="1">
           <mxGeometry height="30" width="30" x="295" y="240" as="geometry" />
         </mxCell>

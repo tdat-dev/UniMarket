@@ -120,13 +120,15 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
         // Nếu có keyword, thử tìm sản phẩm
         if (!empty($topKeywords)) {
             $allWords = [];
+            
             // Tách từng keyword thành các từ riêng lẻ
             foreach ($topKeywords as $kw) {
                 $keyword = $kw['keyword'];
+                
                 // Tách theo khoảng trắng
                 $words = explode(' ', trim($keyword));
                 foreach ($words as $word) {
-                    $word = trim($word);
+                    $word = trim(strtolower($word));
                     // Chỉ lấy từ có độ dài >= 3 ký tự (tránh từ như "c", "a"...)
                     if (mb_strlen($word) >= 3) {
                         $allWords[] = $word;
@@ -153,36 +155,21 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
                 $whereClause = implode(' OR ', $conditions);
                 $params['limit'] = (int) $limit;
 
-                $sql = "SELECT * FROM products 
-                        WHERE status = 'active' 
+                // Query lấy sản phẩm với sold_count thực tế từ order_details
+                $sql = "SELECT p.*, 
+                        (SELECT COALESCE(SUM(od.quantity), 0) 
+                         FROM order_details od 
+                         JOIN orders o ON od.order_id = o.id 
+                         WHERE od.product_id = p.id 
+                         AND o.status != 'cancelled') as sold_count
+                        FROM products p
+                        WHERE p.status = 'active' 
                         AND ($whereClause) 
                         LIMIT :limit";
 
                 $products = $this->db->fetchAll($sql, $params);
             }
         }
-
-        // Nếu số lượng sản phẩm tìm được < limit -> Lấy thêm ngẫu nhiên bù vào
-        // $count = count($products);
-        // if ($count < $limit) {
-        //     $needed = $limit - $count;
-
-        //     // Lấy ID các sản phẩm đã có để loại trừ (tránh trùng)
-        //     $existingIds = array_column($products, 'id');
-        //     $excludeSql = "";
-        //     if (!empty($existingIds)) {
-        //         $ids = implode(',', $existingIds);
-        //         $excludeSql = "AND id NOT IN ($ids)";
-        //     }
-
-        //     // Query lấy thêm
-        //     $moreProducts = $this->db->fetchAll(
-        //         "SELECT * FROM products WHERE status = 'active' $excludeSql ORDER BY RAND() LIMIT $needed"
-        //     );
-
-        //     // Gộp lại
-        //     $products = array_merge($products, $moreProducts);
-        // }
 
         return $products;
     }
@@ -303,6 +290,16 @@ class Product extends BaseModel  // Kế thừa BaseModel → tự động có $
     public function countByUserId($userId): int
     {
         $sql = "SELECT COUNT(*) as total FROM products WHERE user_id = :user_id";
+        $result = $this->db->fetchOne($sql, ['user_id' => (int) $userId]);
+        return $result['total'] ?? 0;
+    }
+
+    /**
+     * Đếm số sản phẩm ACTIVE của một user (để hiển thị trên shop profile)
+     */
+    public function countActiveByUserId($userId): int
+    {
+        $sql = "SELECT COUNT(*) as total FROM products WHERE user_id = :user_id AND status = 'active'";
         $result = $this->db->fetchOne($sql, ['user_id' => (int) $userId]);
         return $result['total'] ?? 0;
     }

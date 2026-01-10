@@ -51,8 +51,8 @@ try {
     }
 
     echo "\n=== Done! Total parent categories: ===\n";
-    $count = $db->fetchOne("SELECT COUNT(*) as total FROM categories WHERE parent_id IS NULL");
-    echo "Total: " . $count['total'] . " parent categories\n";
+    $totalCategories = $db->fetchOne("SELECT COUNT(*) as total FROM categories WHERE parent_id IS NULL");
+    echo "Total: " . $totalCategories['total'] . " parent categories\n";
 
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage();

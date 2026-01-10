@@ -37,9 +37,27 @@ class CheckoutController extends BaseController
         $userId = $_SESSION['user']['id'] ?? null;
         $allCart = $this->getCartItems($userId);
 
-        $selectedIds = $_POST['selected_products'] ?? [];
+        // PRG Pattern: Handle POST -> Session -> GET
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $selectedIds = $_POST['selected_products'] ?? [];
+            $postQuantities = $_POST['quantities'] ?? [];
 
-        // If no products selected, redirect back to cart
+            if (!empty($selectedIds)) {
+                $_SESSION['checkout_data'] = [
+                    'selected_products' => $selectedIds,
+                    'quantities' => $postQuantities
+                ];
+                header('Location: /checkout');
+                exit;
+            }
+        }
+
+        // Handle GET: Retrieve from session
+        $checkoutData = $_SESSION['checkout_data'] ?? [];
+        $selectedIds = $checkoutData['selected_products'] ?? [];
+        $postQuantities = $checkoutData['quantities'] ?? [];
+
+        // If no products selected (neither in POST nor Session), redirect back to cart
         if (empty($selectedIds)) {
             header('Location: /cart');
             exit;
@@ -58,9 +76,9 @@ class CheckoutController extends BaseController
                 $cartItem = $allCart[$id];
                 $qty = is_array($cartItem) ? ($cartItem['quantity'] ?? $cartItem['cart_quantity'] ?? 1) : $cartItem;
             }
-            // 2. Check in POST data (Buy Now flow)
-            elseif (isset($_POST['quantities'][$id])) {
-                $qty = (int) $_POST['quantities'][$id];
+            // 2. Check in POST/Session data (Buy Now flow)
+            elseif (isset($postQuantities[$id])) {
+                $qty = (int) $postQuantities[$id];
             }
 
             // If we have a valid quantity, fetch product details
