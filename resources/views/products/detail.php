@@ -233,7 +233,7 @@ include __DIR__ . '/../partials/header.php';
                     <?php foreach ($relatedProducts as $item): ?>
                         <div
                             class="group bg-white border border-transparent hover:border-[#2C67C8] hover:shadow-md transition-all duration-200 rounded-sm overflow-hidden relative">
-                            <a href="/product-detail?id=<?= $item['id'] ?>" class="block">
+                            <a href="/products/<?= $item['id'] ?>" class="block">
                                 <!-- Image -->
                                 <div class="relative pt-[100%] overflow-hidden bg-gray-100">
                                     <img src="/public/uploads/<?= htmlspecialchars($item['image'] ?? '') ?>"
@@ -258,7 +258,7 @@ include __DIR__ . '/../partials/header.php';
                                             <?= number_format($item['price'], 0, ',', '.') ?><span
                                                 class="text-xs align-top">₫</span>
                                         </div>
-                                        <div class="text-[10px] text-gray-400">Đã bán <?= number_format($item['sold_count'] ?? 0) ?></div>
+                                        <div class="text-[10px] text-gray-400">Còn <?= $item['quantity'] ?? 0 ?></div>
                                     </div>
 
                                     <!-- Location -->

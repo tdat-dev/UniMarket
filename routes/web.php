@@ -45,13 +45,13 @@ $router->get('verify-email/token', [VerificationController::class, 'verifyByToke
 $router->post('verify-email/resend', [VerificationController::class, 'resendVerification']);
 
 // ======================= PRODUCTS & SEARCH =======================
-$router->get('products', [ProductController::class, 'index']);
-$router->get('product-detail', [ProductController::class, 'show']);
+$router->get('products', [ProductController::class, 'index']);         // List danh sách
+$router->get('products/create', [ProductController::class, 'create']); // Form tạo mới (TRƯỚC {id})
+$router->get('products/{id}', [ProductController::class, 'show']);     // Chi tiết
 
 // Product Management (User đăng sản phẩm)
-$router->get('products/create', [ProductController::class, 'create']);
-$router->post('products/store', [ProductController::class, 'store']);
-$router->post('products/cancel-sale', [ProductController::class, 'cancelSale']);
+$router->post('products', [ProductController::class, 'store']);
+$router->post('products/{id}/cancel-sale', [ProductController::class, 'cancelSale']);
 
 // Search (Public)
 $router->get('search', [SearchController::class, 'index']);

@@ -8,6 +8,7 @@ use App\Models\Cart;
 use App\Models\User;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\UserAddress;
 use App\Controllers\PaymentController;
 
 class CheckoutController extends BaseController
@@ -79,15 +80,22 @@ class CheckoutController extends BaseController
             }
         }
 
-        // Fetch User Info for Address
+        // Fetch User Info
         $userModel = new User();
         $user = $userModel->find($userId);
+
+        // Fetch User Addresses (from new table)
+        $addressModel = new UserAddress();
+        $addresses = $addressModel->getByUserId($userId);
+        $defaultAddress = $addressModel->getDefaultAddress($userId);
 
         // Render checkout view
         $this->view('cart/checkout', [
             'products' => $products,
             'selected_ids' => $selectedIds,
-            'user' => $user
+            'user' => $user,
+            'addresses' => $addresses,
+            'defaultAddress' => $defaultAddress
         ]);
 
     }
@@ -179,12 +187,20 @@ class CheckoutController extends BaseController
         }
         $buyerId = $_SESSION['user']['id'];
 
-        // Check if user has address
-        $userModel = new User();
-        $user = $userModel->find($buyerId);
-        if (empty($user['address'])) {
-            $_SESSION['error'] = 'Vui lòng cập nhật địa chỉ nhận hàng trước khi đặt hàng.';
-            header('Location: /profile');
+        // Check if user has selected a shipping address
+        $shippingAddressId = $_POST['shipping_address_id'] ?? null;
+        $addressModel = new UserAddress();
+
+        if ($shippingAddressId) {
+            $shippingAddress = $addressModel->findById((int) $shippingAddressId, $buyerId);
+        } else {
+            // Try to get default address
+            $shippingAddress = $addressModel->getDefaultAddress($buyerId);
+        }
+
+        if (!$shippingAddress) {
+            $_SESSION['error'] = 'Vui lòng chọn địa chỉ nhận hàng trước khi đặt hàng.';
+            header('Location: /addresses/create?redirect_to=' . urlencode('/checkout'));
             exit;
         }
 

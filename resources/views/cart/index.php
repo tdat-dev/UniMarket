@@ -62,7 +62,7 @@ include __DIR__ . '/../partials/header.php';
                                             class="w-full h-full object-cover">
                                     </div>
                                     <div class="flex flex-col justify-center">
-                                        <a href="/product-detail?id=<?= $item['id'] ?>"
+                                        <a href="/products/<?= $item['id'] ?>"
                                             class="text-sm font-medium text-gray-800 line-clamp-2 hover:text-[#2C67C8]">
                                             <?= htmlspecialchars($item['name'] ?? '') ?>
                                         </a>

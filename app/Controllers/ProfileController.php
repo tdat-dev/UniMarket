@@ -51,14 +51,12 @@ class ProfileController extends BaseController
         if (isset($_POST['phone'])) {
             $data['phone_number'] = htmlspecialchars(trim($_POST['phone']));
         }
-        if (isset($_POST['address'])) {
-            $data['address'] = htmlspecialchars(trim($_POST['address']));
+        // Gender - now stored in users table
+        if (isset($_POST['gender']) && in_array($_POST['gender'], ['male', 'female', 'other'])) {
+            $data['gender'] = $_POST['gender'];
         }
-        // Gender is not in users table based on steps 29/47, maybe store in address or add column.
-        // Skipping gender for now as it's not in DB schema provided.
 
-        // Email update often requires verification, let's allow it for now but check duplicates?
-        // skipping email update complexity for this turn to avoid errors.
+        // Email update often requires verification, skipping for now
 
         $userModel = new \App\Models\User();
         if (!empty($data)) {

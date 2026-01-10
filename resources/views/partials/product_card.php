@@ -1,4 +1,4 @@
-<a href="/product-detail?id=<?= $item['id'] ?>"
+<a href="/products/<?= $item['id'] ?>"
     class="block bg-white rounded-sm shadow-sm hover:shadow-md transition-all group border border-transparent hover:border-[#2C67C8]/30 overflow-hidden">
     <!-- Image với aspect ratio 1:1 -->
     <div class="aspect-square relative overflow-hidden bg-gray-100">
@@ -25,7 +25,8 @@
                 <span
                     class="text-[10px] md:text-xs underline">₫</span><?= number_format((float) $item['price'], 0, ',', '.') ?>
             </div>
-            <div class="text-[10px] text-gray-400 flex-shrink-0">Đã bán <?= number_format($item['sold_count'] ?? 0) ?>
+            <div class="text-[10px] text-gray-400 flex-shrink-0">Còn
+                <?= $item['quantity'] ?? 0 ?>
             </div>
         </div>
     </div>
