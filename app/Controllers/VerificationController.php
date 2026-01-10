@@ -96,7 +96,7 @@ class VerificationController extends BaseController
                 exit;
             }
 
-            // Nếu chưa đăng nhập (trường hợp đăng ký mới), về trang login
+            // Nếu chưa đăng nhập (trường hợp đăng ký mvcới), về trang login
             $_SESSION['success'] = 'Email đã được xác minh thành công! Vui lòng đăng nhập.';
             header('Location: /login');
             exit;
