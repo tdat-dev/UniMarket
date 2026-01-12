@@ -213,7 +213,7 @@ class Product extends BaseModel
                 }
 
                 $whereClause = '(' . implode(' OR ', $conditions) . ')';
-                $params[] = $limit;
+                $params['limit'] = $limit;
 
                 $sql = "SELECT * FROM products 
                         WHERE status = 'active' 
