@@ -32,6 +32,17 @@ class PayOSService
         $this->returnUrl = $_ENV['PAYOS_RETURN_URL'] ?? '';
         $this->cancelUrl = $_ENV['PAYOS_CANCEL_URL'] ?? '';
 
+        // Tự động detect domain hiện tại nếu trong .env cấu hình sai port (ví dụ 8000)
+        // Fix lỗi ERR_CONNECTION_REFUSED khi chạy trên Laragon (port 80/443) nhưng config là 8000
+        if (isset($_SERVER['HTTP_HOST'])) {
+            $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https" : "http";
+            $domain = $protocol . "://" . $_SERVER['HTTP_HOST'];
+            
+            // Luôn ưu tiên dynamic URL để đảm bảo redirect về đúng nơi user đang đứng
+            $this->returnUrl = $domain . '/payment/return';
+            $this->cancelUrl = $domain . '/payment/cancel';
+        }
+
         if (empty($this->clientId) || empty($this->apiKey) || empty($this->checksumKey)) {
             throw new \Exception('PayOS credentials chưa được cấu hình trong .env');
         }

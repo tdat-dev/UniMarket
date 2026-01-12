@@ -101,10 +101,10 @@ include __DIR__ . '/../partials/header.php';
                                 alt="<?= htmlspecialchars($prod['name'] ?? $prod['title']) ?>"
                                 class="w-full h-full object-cover">
 
-                            <!-- Overlay hiển thị lượt tìm kiếm -->
+                            <!-- Overlay hiển thị số lượng đã bán -->
                             <div class="absolute bottom-0 left-0 w-full bg-gray-400/80 py-1">
                                 <p class="text-white text-center text-xs font-medium">
-                                    <?= number_format($prod['search_count'] ?? 0) ?> lượt tìm
+                                    Đã bán <?= number_format($prod['sold_count'] ?? 0) ?>
                                 </p>
                             </div>
                         </div>

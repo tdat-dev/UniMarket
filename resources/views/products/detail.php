@@ -198,8 +198,11 @@ include __DIR__ . '/../partials/header.php';
                         <i class="fa-solid fa-circle-check text-blue-500 text-sm" title="Đã xác minh"></i>
                     </h3>
                     <div class="text-sm text-gray-500 flex items-center gap-4 mt-1">
-                        <span><i class="fa-solid fa-box mr-1"></i> 26 sản phẩm</span>
-                        <span><i class="fa-solid fa-star mr-1 text-yellow-500"></i> 4.8 (15 đánh giá)</span>
+                        <span><i class="fa-solid fa-box mr-1"></i> <?= $activeProductCount ?? 0 ?> sản phẩm</span>
+                        <span>
+                            <i class="fa-solid fa-star mr-1 text-yellow-500"></i> 
+                            <?= ($stats['review_count'] ?? 0) > 0 ? number_format($stats['avg_rating'], 1) . ' (' . $stats['review_count'] . ' đánh giá)' : 'Chưa có đánh giá' ?>
+                        </span>
                     </div>
                 </div>
                 <div class="flex gap-2 w-full sm:w-auto mt-3 sm:mt-0">

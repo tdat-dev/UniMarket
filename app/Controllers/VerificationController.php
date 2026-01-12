@@ -70,6 +70,26 @@ class VerificationController extends BaseController
 
         if ($result['success']) {
             $this->handleVerificationSuccess();
+            // Xóa session pending
+            unset($_SESSION['pending_verification_email']);
+
+            // CẬP NHẬT: Nếu user đã đăng nhập, cập nhật trạng thái verified trong session
+            if (isset($_SESSION['user'])) {
+                $_SESSION['user']['email_verified'] = true;
+
+                // Redirect về trang user muốn truy cập trước đó
+                $redirectUrl = $_SESSION['redirect_after_verification'] ?? '/';
+                unset($_SESSION['redirect_after_verification']);
+
+                $_SESSION['success'] = 'Email đã được xác minh thành công!';
+                header("Location: $redirectUrl");
+                exit;
+            }
+
+            // Nếu chưa đăng nhập (trường hợp đăng ký mvcới), về trang login
+            $_SESSION['success'] = 'Email đã được xác minh thành công! Vui lòng đăng nhập.';
+            header('Location: /login');
+            exit;
         }
     }
 

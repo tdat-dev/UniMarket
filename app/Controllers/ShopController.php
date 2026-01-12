@@ -56,6 +56,8 @@ class ShopController extends BaseController
             $isFollowing = $followModel->isFollowing($currentUserId, $userId);
         }
 
+        $productCount = $productModel->countActiveByUserId($userId);
+
         $this->view('shop/index', [
             'seller' => $seller,
             'products' => $productModel->getByUserId($userId),
@@ -63,6 +65,12 @@ class ShopController extends BaseController
             'isOwner' => ($currentUserId === $userId),
             'followerCount' => $followModel->getFollowerCount($userId),
             'isFollowing' => $isFollowing,
+            'products' => $products,
+            'productCount' => $productCount,
+            'stats' => $stats,
+            'isOwner' => ($currentUser == $userId),
+            'followerCount' => $followerCount,
+            'isFollowing' => $isFollowing
         ]);
     }
 

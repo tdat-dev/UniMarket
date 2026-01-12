@@ -124,11 +124,19 @@ class ProductController extends BaseController
         $productImages = $this->getProductImages((int) $id, $product['image'] ?? null);
         $relatedProducts = $productModel->getByCategory($product['category_id'], 4, $product['id']);
 
+        // Stats
+        $activeProductCount = $productModel->countActiveByUserId($product['user_id']);
+        
+        $reviewModel = new \App\Models\Review();
+        $stats = $reviewModel->getSellerStats($product['user_id']);
+
         $this->view('products/detail', [
             'product' => $product,
             'seller' => $seller,
             'productImages' => $productImages,
-            'relatedProducts' => $relatedProducts
+            'relatedProducts' => $relatedProducts,
+            'activeProductCount' => $activeProductCount,
+            'stats' => $stats
         ]);
     }
 
