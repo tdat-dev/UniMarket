@@ -52,9 +52,6 @@
             <mxPoint x="1340" y="1500" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="user-box" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;u&gt;C : User (Buyer)&lt;/u&gt;" vertex="1">
-          <mxGeometry height="50" width="110" x="55" y="30" as="geometry" />
-        </mxCell>
         <mxCell id="view-box" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;u&gt;A : View&lt;/u&gt;" vertex="1">
           <mxGeometry height="50" width="100" x="210" y="30" as="geometry" />
         </mxCell>
@@ -267,6 +264,9 @@
         </mxCell>
         <mxCell id="Bekr0cM-YlQn5jcja_Dc-2" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
           <mxGeometry height="60" width="10" x="1160" y="1080" as="geometry" />
+        </mxCell>
+        <mxCell id="XdpW9SWebqpPNgFZM-Jh-3" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" value="User" vertex="1">
+          <mxGeometry height="60" width="30" x="90" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
