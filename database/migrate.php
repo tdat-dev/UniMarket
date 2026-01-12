@@ -48,17 +48,26 @@ foreach ($files as $file) {
             $pdo->exec($sql);
         } elseif ($extension === 'php') {
             // Chạy file PHP
-            // File PHP phải có hàm run($pdo) hoặc tên hàm dựa trên tên file
-            require_once $file;
-
-            // Lấy tên hàm từ tên file (vd: 014_seed_admin.php -> run_014_seed_admin)
-            $functionName = 'run_' . pathinfo($filename, PATHINFO_FILENAME);
+            // Hỗ trợ 3 cách:
+            // 1. Anonymous class với up() method (return new class { public function up() {} })
+            // 2. Hàm run_XXX($pdo) theo tên file
+            // 3. Hàm run($pdo)
             
-            // Thử gọi hàm theo tên file trước, nếu không có thì gọi run()
-            if (function_exists($functionName)) {
-                $functionName($pdo);
-            } elseif (function_exists('run')) {
-                run($pdo);
+            $result = require $file;
+            
+            // Kiểm tra nếu file return anonymous class với method up()
+            if (is_object($result) && method_exists($result, 'up')) {
+                $result->up();
+            } else {
+                // Lấy tên hàm từ tên file (vd: 014_seed_admin.php -> run_014_seed_admin)
+                $functionName = 'run_' . pathinfo($filename, PATHINFO_FILENAME);
+                
+                // Thử gọi hàm theo tên file trước, nếu không có thì gọi run()
+                if (function_exists($functionName)) {
+                    $functionName($pdo);
+                } elseif (function_exists('run')) {
+                    run($pdo);
+                }
             }
         }
 
