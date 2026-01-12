@@ -72,8 +72,9 @@ $router->get('cart', [CartController::class, 'index']);
 $router->post('cart/add', [CartController::class, 'add']);
 $router->post('cart/update', [CartController::class, 'update']);
 
-$router->post('checkout', [CheckoutController::class, 'process']);
-$router->post('checkout/confirm', [CheckoutController::class, 'confirm']);
+$router->get('checkout', [CheckoutController::class, 'process']);  // GET: Hiển thị trang checkout (sau redirect)
+$router->post('checkout', [CheckoutController::class, 'process']); // POST: Nhận data từ cart/buy-now
+$router->post('checkout/confirm', [CheckoutController::class, 'confirm']); // Xử lý đặt hàng thực sự
 
 // ======================= PAYMENT =======================
 $router->post('payment/create', [PaymentController::class, 'create']);

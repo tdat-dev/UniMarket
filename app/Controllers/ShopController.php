@@ -58,19 +58,18 @@ class ShopController extends BaseController
 
         $productCount = $productModel->countActiveByUserId($userId);
 
+        $products = $productModel->getByUserId($userId);
+        $stats = $reviewModel->getSellerStats($userId);
+        $followerCount = $followModel->getFollowerCount($userId);
+
         $this->view('shop/index', [
             'seller' => $seller,
-            'products' => $productModel->getByUserId($userId),
-            'stats' => $reviewModel->getSellerStats($userId),
-            'isOwner' => ($currentUserId === $userId),
-            'followerCount' => $followModel->getFollowerCount($userId),
-            'isFollowing' => $isFollowing,
             'products' => $products,
             'productCount' => $productCount,
             'stats' => $stats,
-            'isOwner' => ($currentUser == $userId),
+            'isOwner' => ($currentUserId === $userId),
             'followerCount' => $followerCount,
-            'isFollowing' => $isFollowing
+            'isFollowing' => $isFollowing,
         ]);
     }
 
