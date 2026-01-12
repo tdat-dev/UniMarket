@@ -1,48 +1,135 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
+/**
+ * Notification Model
+ * 
+ * Quản lý thông báo cho users.
+ * 
+ * @package App\Models
+ */
 class Notification extends BaseModel
 {
+    /** @var string */
     protected $table = 'notifications';
 
-    public function create($userId, $content)
+    /** @var array<string> */
+    protected array $fillable = [
+        'user_id',
+        'content',
+        'type',
+        'is_read',
+    ];
+
+    // =========================================================================
+    // CREATE NOTIFICATIONS
+    // =========================================================================
+
+    /**
+     * Tạo thông báo mới
+     * 
+     * @param int $userId
+     * @param string $content
+     * @param string $type Loại thông báo (order, message, system, etc.)
+     * @return int ID của notification
+     */
+    public function createNotification(int $userId, string $content, string $type = 'system'): int
     {
-        return $this->db->execute(
-            "INSERT INTO {$this->table} (user_id, content) VALUES (?, ?)", 
-            [$userId, $content]
-        );
+        $sql = "INSERT INTO {$this->table} (user_id, content, type) VALUES (?, ?, ?)";
+        return $this->db->insert($sql, [$userId, $content, $type]);
     }
 
-    public function getUnread($userId)
+    // =========================================================================
+    // QUERY METHODS
+    // =========================================================================
+
+    /**
+     * Lấy thông báo chưa đọc
+     * 
+     * @param int $userId
+     * @return array<int, array<string, mixed>>
+     */
+    public function getUnread(int $userId): array
     {
-        return $this->db->fetchAll(
-            "SELECT * FROM {$this->table} WHERE user_id = ? AND is_read = 0 ORDER BY created_at DESC", 
-            [$userId]
-        );
+        $sql = "SELECT * FROM {$this->table} 
+                WHERE user_id = ? AND is_read = 0 
+                ORDER BY created_at DESC";
+
+        return $this->db->fetchAll($sql, [$userId]);
     }
 
-    public function getAll($userId, $limit = 20)
+    /**
+     * Lấy tất cả thông báo của user
+     * 
+     * @param int $userId
+     * @param int $limit
+     * @return array<int, array<string, mixed>>
+     */
+    public function getByUserId(int $userId, int $limit = 20): array
     {
-        return $this->db->fetchAll(
-            "SELECT * FROM {$this->table} WHERE user_id = ? ORDER BY created_at DESC LIMIT " . (int)$limit, 
-            [$userId]
-        );
+        $sql = "SELECT * FROM {$this->table} 
+                WHERE user_id = ? 
+                ORDER BY created_at DESC 
+                LIMIT ?";
+
+        return $this->db->fetchAll($sql, [$userId, $limit]);
     }
 
-    public function markAsRead($id, $userId)
+    /**
+     * Đếm số thông báo chưa đọc
+     * 
+     * @param int $userId
+     * @return int
+     */
+    public function countUnread(int $userId): int
     {
-        return $this->db->execute(
-            "UPDATE {$this->table} SET is_read = 1 WHERE id = ? AND user_id = ?", 
-            [$id, $userId]
-        );
+        $sql = "SELECT COUNT(*) as total FROM {$this->table} WHERE user_id = ? AND is_read = 0";
+        $result = $this->db->fetchOne($sql, [$userId]);
+
+        return (int) ($result['total'] ?? 0);
     }
 
-    public function markAllAsRead($userId)
+    // =========================================================================
+    // UPDATE METHODS
+    // =========================================================================
+
+    /**
+     * Đánh dấu đã đọc 1 notification
+     * 
+     * @param int $id Notification ID
+     * @param int $userId User ID (để đảm bảo ownership)
+     * @return bool
+     */
+    public function markAsRead(int $id, int $userId): bool
     {
-        return $this->db->execute(
-            "UPDATE {$this->table} SET is_read = 1 WHERE user_id = ?", 
-            [$userId]
-        );
+        $sql = "UPDATE {$this->table} SET is_read = 1 WHERE id = ? AND user_id = ?";
+        return $this->db->execute($sql, [$id, $userId]) !== false;
+    }
+
+    /**
+     * Đánh dấu tất cả đã đọc
+     * 
+     * @param int $userId
+     * @return bool
+     */
+    public function markAllAsRead(int $userId): bool
+    {
+        $sql = "UPDATE {$this->table} SET is_read = 1 WHERE user_id = ? AND is_read = 0";
+        return $this->db->execute($sql, [$userId]) !== false;
+    }
+
+    /**
+     * Xóa notification cũ (cleanup job)
+     * 
+     * @param int $daysOld Xóa notifications cũ hơn X ngày
+     * @return int Số records đã xóa
+     */
+    public function deleteOld(int $daysOld = 30): int
+    {
+        $sql = "DELETE FROM {$this->table} WHERE created_at < DATE_SUB(NOW(), INTERVAL ? DAY)";
+        return $this->db->execute($sql, [$daysOld]);
     }
 }

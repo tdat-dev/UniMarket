@@ -1,172 +1,280 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 /**
  * EscrowHold Model
  * 
- * Quản lý tiền đang được giữ (escrow).
- * 1 order = 1 escrow hold.
+ * Quản lý tiền đang được giữ (escrow) trong giao dịch.
+ * Mỗi order tương ứng với 1 escrow hold.
+ * 
+ * Lifecycle: holding → released | refunded | disputed
+ * 
+ * @package App\Models
  */
 class EscrowHold extends BaseModel
 {
+    /** @var string */
     protected $table = 'escrow_holds';
 
-    /**
-     * Tạo escrow hold mới
-     */
-    public function create(array $data): int
-    {
-        $sql = "INSERT INTO {$this->table} 
-                (order_id, seller_id, amount, platform_fee, seller_amount, status)
-                VALUES 
-                (:order_id, :seller_id, :amount, :platform_fee, :seller_amount, :status)";
+    /** @var array<string> */
+    protected array $fillable = [
+        'order_id',
+        'seller_id',
+        'amount',
+        'platform_fee',
+        'seller_amount',
+        'status',
+        'release_scheduled_at',
+    ];
 
-        return $this->db->insert($sql, [
-            'order_id' => $data['order_id'],
-            'seller_id' => $data['seller_id'],
-            'amount' => $data['amount'],
-            'platform_fee' => $data['platform_fee'] ?? 0,
-            'seller_amount' => $data['seller_amount'],
-            'status' => $data['status'] ?? 'holding',
-        ]);
-    }
+    /** @var array<string> Escrow statuses */
+    public const STATUS_HOLDING = 'holding';
+    public const STATUS_RELEASED = 'released';
+    public const STATUS_REFUNDED = 'refunded';
+    public const STATUS_DISPUTED = 'disputed';
 
-    /**
-     * Tìm theo ID
-     */
-    public function find(int $id): ?array
-    {
-        $sql = "SELECT * FROM {$this->table} WHERE id = :id";
-        return $this->db->fetchOne($sql, ['id' => $id]) ?: null;
-    }
+    // =========================================================================
+    // QUERY METHODS
+    // =========================================================================
 
     /**
      * Tìm theo order ID
+     * 
+     * @param int $orderId
+     * @return array<string, mixed>|null
      */
     public function findByOrderId(int $orderId): ?array
     {
-        $sql = "SELECT * FROM {$this->table} WHERE order_id = :order_id";
-        return $this->db->fetchOne($sql, ['order_id' => $orderId]) ?: null;
+        $sql = "SELECT * FROM {$this->table} WHERE order_id = ?";
+        return $this->db->fetchOne($sql, [$orderId]) ?: null;
     }
 
     /**
-     * Cập nhật escrow
-     */
-    public function update(int $id, array $data): bool
-    {
-        $setClauses = [];
-        $params = ['id' => $id];
-
-        foreach ($data as $key => $value) {
-            $setClauses[] = "{$key} = :{$key}";
-            $params[$key] = $value;
-        }
-
-        $sql = "UPDATE {$this->table} SET " . implode(', ', $setClauses) . " WHERE id = :id";
-        return $this->db->execute($sql, $params);
-    }
-
-    /**
-     * Lấy danh sách escrow đã đến hạn giải ngân
+     * Lấy escrow đã đến hạn giải ngân
      * 
      * Điều kiện:
      * - status = 'holding'
      * - release_scheduled_at <= NOW()
+     * 
+     * @return array<int, array<string, mixed>>
      */
     public function getReleasable(): array
     {
-        $sql = "SELECT eh.*, o.total_amount as order_total, u.full_name as seller_name
+        $sql = "SELECT eh.*, 
+                    o.total_amount AS order_total, 
+                    u.full_name AS seller_name,
+                    u.email AS seller_email
                 FROM {$this->table} eh
                 JOIN orders o ON eh.order_id = o.id
                 JOIN users u ON eh.seller_id = u.id
-                WHERE eh.status = 'holding' 
+                WHERE eh.status = ?
                 AND eh.release_scheduled_at IS NOT NULL
                 AND eh.release_scheduled_at <= NOW()
                 ORDER BY eh.release_scheduled_at ASC";
-        return $this->db->fetchAll($sql);
+
+        return $this->db->fetchAll($sql, [self::STATUS_HOLDING]);
     }
 
     /**
      * Lấy escrow theo seller ID
+     * 
+     * @param int $sellerId
+     * @param int $limit
+     * @param int $offset
+     * @return array<int, array<string, mixed>>
      */
     public function getBySellerId(int $sellerId, int $limit = 20, int $offset = 0): array
     {
-        $sql = "SELECT eh.*, o.total_amount as order_total
+        $sql = "SELECT eh.*, o.total_amount AS order_total
                 FROM {$this->table} eh
                 JOIN orders o ON eh.order_id = o.id
-                WHERE eh.seller_id = :seller_id
+                WHERE eh.seller_id = ?
                 ORDER BY eh.held_at DESC
-                LIMIT :limit OFFSET :offset";
-        return $this->db->fetchAll($sql, [
-            'seller_id' => $sellerId,
-            'limit' => $limit,
-            'offset' => $offset,
-        ]);
+                LIMIT ? OFFSET ?";
+
+        return $this->db->fetchAll($sql, [$sellerId, $limit, $offset]);
     }
 
     /**
      * Lấy tất cả escrow (cho admin)
+     * 
+     * @param int $limit
+     * @param int $offset
+     * @param string|null $status Filter theo status
+     * @return array<int, array<string, mixed>>
      */
-    public function getAll(int $limit = 50, int $offset = 0, ?string $status = null): array
+    public function getAllWithDetails(int $limit = 50, int $offset = 0, ?string $status = null): array
     {
-        $sql = "SELECT eh.*, o.total_amount as order_total, 
-                       u.full_name as seller_name, u.email as seller_email
+        $sql = "SELECT eh.*, 
+                    o.total_amount AS order_total, 
+                    u.full_name AS seller_name, 
+                    u.email AS seller_email
                 FROM {$this->table} eh
                 JOIN orders o ON eh.order_id = o.id
                 JOIN users u ON eh.seller_id = u.id";
 
-        $params = ['limit' => $limit, 'offset' => $offset];
+        $params = [];
 
-        if ($status) {
-            $sql .= " WHERE eh.status = :status";
-            $params['status'] = $status;
+        if ($status !== null) {
+            $sql .= " WHERE eh.status = ?";
+            $params[] = $status;
         }
 
-        $sql .= " ORDER BY eh.held_at DESC LIMIT :limit OFFSET :offset";
+        $sql .= " ORDER BY eh.held_at DESC LIMIT ? OFFSET ?";
+        $params[] = $limit;
+        $params[] = $offset;
+
         return $this->db->fetchAll($sql, $params);
     }
 
     /**
-     * Thống kê escrow
+     * Lấy escrow đang tranh chấp
+     * 
+     * @return array<int, array<string, mixed>>
+     */
+    public function getDisputed(): array
+    {
+        $sql = "SELECT eh.*, 
+                    o.total_amount AS order_total,
+                    seller.full_name AS seller_name,
+                    seller.email AS seller_email,
+                    buyer.full_name AS buyer_name,
+                    buyer.email AS buyer_email
+                FROM {$this->table} eh
+                JOIN orders o ON eh.order_id = o.id
+                JOIN users seller ON eh.seller_id = seller.id
+                JOIN users buyer ON o.buyer_id = buyer.id
+                WHERE eh.status = ?
+                ORDER BY eh.held_at ASC";
+
+        return $this->db->fetchAll($sql, [self::STATUS_DISPUTED]);
+    }
+
+    // =========================================================================
+    // STATUS UPDATES
+    // =========================================================================
+
+    /**
+     * Đánh dấu đã giải ngân
+     * 
+     * @param int $id
+     * @return bool
+     */
+    public function markReleased(int $id): bool
+    {
+        return $this->updateStatus($id, self::STATUS_RELEASED);
+    }
+
+    /**
+     * Đánh dấu đã hoàn tiền
+     * 
+     * @param int $id
+     * @return bool
+     */
+    public function markRefunded(int $id): bool
+    {
+        return $this->updateStatus($id, self::STATUS_REFUNDED);
+    }
+
+    /**
+     * Đánh dấu tranh chấp
+     * 
+     * @param int $id
+     * @return bool
+     */
+    public function markDisputed(int $id): bool
+    {
+        return $this->updateStatus($id, self::STATUS_DISPUTED);
+    }
+
+    /**
+     * Cập nhật status
+     * 
+     * @param int $id
+     * @param string $status
+     * @return bool
+     */
+    private function updateStatus(int $id, string $status): bool
+    {
+        $field = match ($status) {
+            self::STATUS_RELEASED => 'released_at',
+            self::STATUS_REFUNDED => 'refunded_at',
+            default => null,
+        };
+
+        if ($field !== null) {
+            $sql = "UPDATE {$this->table} SET status = ?, {$field} = NOW() WHERE id = ?";
+        } else {
+            $sql = "UPDATE {$this->table} SET status = ? WHERE id = ?";
+        }
+
+        return $this->db->execute($sql, [$status, $id]) !== false;
+    }
+
+    // =========================================================================
+    // STATISTICS
+    // =========================================================================
+
+    /**
+     * Thống kê escrow theo status
+     * 
+     * @return array<string, array{count: int, total_amount: float, total_seller_amount: float, total_platform_fee: float}>
      */
     public function getStats(): array
     {
         $sql = "SELECT 
                     status,
-                    COUNT(*) as count,
-                    SUM(amount) as total_amount,
-                    SUM(seller_amount) as total_seller_amount,
-                    SUM(platform_fee) as total_platform_fee
+                    COUNT(*) AS count,
+                    COALESCE(SUM(amount), 0) AS total_amount,
+                    COALESCE(SUM(seller_amount), 0) AS total_seller_amount,
+                    COALESCE(SUM(platform_fee), 0) AS total_platform_fee
                 FROM {$this->table}
                 GROUP BY status";
-        return $this->db->fetchAll($sql);
+
+        $results = $this->db->fetchAll($sql);
+
+        $stats = [];
+        foreach ($results as $row) {
+            $stats[$row['status']] = [
+                'count' => (int) $row['count'],
+                'total_amount' => (float) $row['total_amount'],
+                'total_seller_amount' => (float) $row['total_seller_amount'],
+                'total_platform_fee' => (float) $row['total_platform_fee'],
+            ];
+        }
+
+        return $stats;
     }
 
     /**
      * Tổng tiền đang holding
+     * 
+     * @return float
      */
     public function getTotalHolding(): float
     {
-        $sql = "SELECT COALESCE(SUM(amount), 0) as total FROM {$this->table} WHERE status = 'holding'";
-        $result = $this->db->fetchOne($sql);
+        $sql = "SELECT COALESCE(SUM(amount), 0) AS total FROM {$this->table} WHERE status = ?";
+        $result = $this->db->fetchOne($sql, [self::STATUS_HOLDING]);
+
         return (float) ($result['total'] ?? 0);
     }
 
     /**
-     * Lấy escrow đang tranh chấp
+     * Tổng tiền của seller đang pending
+     * 
+     * @param int $sellerId
+     * @return float
      */
-    public function getDisputed(): array
+    public function getSellerPendingAmount(int $sellerId): float
     {
-        $sql = "SELECT eh.*, o.total_amount as order_total,
-                       u.full_name as seller_name,
-                       b.full_name as buyer_name
-                FROM {$this->table} eh
-                JOIN orders o ON eh.order_id = o.id
-                JOIN users u ON eh.seller_id = u.id
-                JOIN users b ON o.buyer_id = b.id
-                WHERE eh.status = 'disputed'
-                ORDER BY eh.held_at ASC";
-        return $this->db->fetchAll($sql);
+        $sql = "SELECT COALESCE(SUM(seller_amount), 0) AS total 
+                FROM {$this->table} 
+                WHERE seller_id = ? AND status = ?";
+
+        $result = $this->db->fetchOne($sql, [$sellerId, self::STATUS_HOLDING]);
+        return (float) ($result['total'] ?? 0);
     }
 }

@@ -1,30 +1,41 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controllers;
+
 use App\Models\Product;
 use App\Models\Category;
 
+/**
+ * Home Controller
+ * 
+ * Xử lý trang chủ và các trang static.
+ * 
+ * @package App\Controllers
+ */
 class HomeController extends BaseController
 {
-    public function index()
+    /**
+     * Trang chủ
+     */
+    public function index(): void
     {
         $productModel = new Product();
         $categoryModel = new Category();
 
-        $latestProducts = $productModel->getLatest(8);
-        $suggestedProducts = $productModel->getRandom(12);
-        $topProducts = $productModel->getByTopKeywords(6);
-        $categories = $categoryModel->getParents(20);
-
         $this->view('home/index', [
-            'latestProducts' => $latestProducts,
-            'suggestedProducts' => $suggestedProducts,
-            'topProducts' => $topProducts,
-            'categories' => $categories,
+            'latestProducts' => $productModel->getLatest(8),
+            'suggestedProducts' => $productModel->getRandom(12),
+            'topProducts' => $productModel->getByTopKeywords(6),
+            'categories' => $categoryModel->getParents(20),
         ]);
     }
 
-    public function support()
+    /**
+     * Trang hỗ trợ
+     */
+    public function support(): void
     {
         $this->view('support/index');
     }

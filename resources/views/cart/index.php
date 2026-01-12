@@ -1,4 +1,6 @@
 <?php
+use App\Helpers\SlugHelper;
+
 include __DIR__ . '/../partials/head.php';
 include __DIR__ . '/../partials/header.php';
 ?>
@@ -62,7 +64,7 @@ include __DIR__ . '/../partials/header.php';
                                             class="w-full h-full object-cover">
                                     </div>
                                     <div class="flex flex-col justify-center">
-                                        <a href="/products/<?= $item['id'] ?>"
+                                        <a href="<?= SlugHelper::productUrl($item['name'], (int) ($item['user_id'] ?? 0), (int) $item['id']) ?>"
                                             class="text-sm font-medium text-gray-800 line-clamp-2 hover:text-[#2C67C8]">
                                             <?= htmlspecialchars($item['name'] ?? '') ?>
                                         </a>

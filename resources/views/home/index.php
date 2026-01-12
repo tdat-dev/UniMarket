@@ -1,4 +1,6 @@
 <?php
+use App\Helpers\SlugHelper;
+
 include __DIR__ . '/../partials/head.php';
 include __DIR__ . '/../partials/header.php';
 ?>
@@ -17,7 +19,7 @@ include __DIR__ . '/../partials/header.php';
             <div class="md:hidden overflow-x-auto scrollbar-none py-3 px-2">
                 <div class="flex gap-1" style="min-width: max-content;">
                     <?php foreach ($categories as $cat): ?>
-                        <a href="/search?category=<?= $cat['id'] ?>"
+                        <a href="<?= SlugHelper::categoryUrl($cat['name'], $cat['id']) ?>"
                             class="flex flex-col items-center w-[70px] flex-shrink-0 py-2">
                             <div
                                 class="w-12 h-12 rounded-full overflow-hidden mb-1.5 bg-indigo-50 flex items-center justify-center">
@@ -41,13 +43,13 @@ include __DIR__ . '/../partials/header.php';
             <div class="hidden md:block p-0 relative group">
                 <div class="grid grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-0">
                     <?php foreach ($categories as $cat): ?>
-                        <a href="/search?category=<?= $cat['id'] ?>"
+                        <a href="<?= SlugHelper::categoryUrl($cat['name'], $cat['id']) ?>"
                             class="flex flex-col items-center justify-center h-[150px] border-r border-b border-gray-50 hover:shadow-md transition-shadow group/item">
                             <div
                                 class="w-[70%] aspect-square rounded-full overflow-hidden mb-2 transition-transform group-hover/item:-translate-y-1">
                                 <?php if (!empty($cat['image'])): ?>
                                     <img src="<?= $cat['image'] ?>" alt="<?= $cat['name'] ?>"
-                                        class="w-full h-full object-contain p-2 bg-indigo-50">
+                                        class="w-full h-full object-cover scale-110 bg-gray-50">
                                 <?php elseif (!empty($cat['icon'])):
                                     $isFontAwesome = (strpos($cat['icon'], 'fa-') === 0);
                                     $isImagePath = (strpos($cat['icon'], '/') === 0 || strpos($cat['icon'], 'http') === 0);
@@ -57,7 +59,7 @@ include __DIR__ . '/../partials/header.php';
                                         </div>
                                     <?php elseif ($isImagePath): ?>
                                         <img src="<?= $cat['icon'] ?>" alt="<?= $cat['name'] ?>"
-                                            class="w-full h-full object-contain p-2 bg-indigo-50">
+                                            class="w-full h-full object-cover scale-110 bg-gray-50">
                                     <?php else: ?>
                                         <div class="w-full h-full flex items-center justify-center bg-blue-50 text-3xl">
                                             <?= $cat['icon'] ?>
@@ -85,7 +87,8 @@ include __DIR__ . '/../partials/header.php';
 
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
                 <?php foreach ($topProducts as $prod): ?>
-                    <a href="/products/<?= $prod['id'] ?>" class="block relative group">
+                    <a href="<?= SlugHelper::productUrl($prod['name'], (int) ($prod['user_id'] ?? 0), (int) $prod['id']) ?>"
+                        class="block relative group">
                         <div class="relative aspect-square bg-gray-100 mb-3 overflow-hidden">
                             <!-- HOT Badge -->
                             <div class="absolute top-0 left-0 z-10 w-8 h-10 bg-gradient-to-b from-yellow-400 to-red-600 flex flex-col items-center justify-start pt-1"
@@ -121,7 +124,7 @@ include __DIR__ . '/../partials/header.php';
             <?php $products = $products ?? []; ?>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-4">
                 <?php foreach ($latestProducts as $item): ?>
-                    <a href="/products/<?= $item['id'] ?>"
+                    <a href="<?= SlugHelper::productUrl($item['name'], (int) ($item['user_id'] ?? 0), (int) $item['id']) ?>"
                         class="block bg-white rounded-sm shadow-sm hover:shadow-md transition-all group border border-transparent hover:border-[#2C67C8]/30 overflow-hidden">
                         <div class="aspect-square relative">
                             <img src="/uploads/<?= !empty($item['image']) ? $item['image'] : 'default.png' ?>"

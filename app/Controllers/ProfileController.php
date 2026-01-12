@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controllers;
 
 class ProfileController extends BaseController
@@ -306,7 +308,7 @@ class ProfileController extends BaseController
         }
 
         $userId = $_SESSION['user']['id'];
-        $orderId = $_POST['order_id'] ?? null;
+        $orderId = isset($_POST['order_id']) ? (int) $_POST['order_id'] : 0;
 
         if (!$orderId) {
             header('Location: /profile/orders?error=invalid_order');
@@ -337,7 +339,7 @@ class ProfileController extends BaseController
         $productModel = new \App\Models\Product();
 
         foreach ($items as $item) {
-            $productModel->increaseQuantity($item['product_id'], $item['quantity']);
+            $productModel->increaseQuantity((int) $item['product_id'], (int) $item['quantity']);
         }
 
         header('Location: /profile/orders?status=all&success=cancelled');
@@ -354,7 +356,7 @@ class ProfileController extends BaseController
         }
 
         $userId = $_SESSION['user']['id'];
-        $orderId = $_POST['order_id'] ?? null;
+        $orderId = isset($_POST['order_id']) ? (int) $_POST['order_id'] : 0;
 
         if (!$orderId) {
             header('Location: /profile/orders?error=invalid_order');
@@ -444,7 +446,7 @@ class ProfileController extends BaseController
         }
 
         $userId = $_SESSION['user']['id'];
-        $orderId = $_GET['id'] ?? null;
+        $orderId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
         if (!$orderId) {
             header('Location: /profile/orders');
@@ -489,7 +491,7 @@ class ProfileController extends BaseController
         }
 
         $userId = $_SESSION['user']['id'];
-        $orderId = $_POST['order_id'] ?? null;
+        $orderId = isset($_POST['order_id']) ? (int) $_POST['order_id'] : 0;
 
         if (!$orderId) {
             header('Location: /profile/orders?error=invalid_order');
@@ -512,7 +514,7 @@ class ProfileController extends BaseController
         }
 
         // Lấy trial days từ order
-        $trialDays = $order['trial_days'] ?? 7;
+        $trialDays = (int) ($order['trial_days'] ?? 7);
 
         // Cập nhật order: status = received, received_at = now, escrow_release_at = now + trial days
         $orderModel->confirmReceived($orderId, $trialDays);

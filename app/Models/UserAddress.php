@@ -1,25 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use App\Core\Database;
-
 /**
- * Model UserAddress
+ * UserAddress Model
  * 
- * Quản lý địa chỉ giao hàng của users với tích hợp HERE Maps.
+ * Quản lý địa chỉ giao hàng của users.
  * Mỗi user có thể có nhiều địa chỉ và 1 địa chỉ mặc định.
  * 
- * @author UniMarket Team
- * @version 1.0.0
+ * @package App\Models
  */
 class UserAddress extends BaseModel
 {
+    /** @var string */
     protected $table = 'user_addresses';
 
-    /**
-     * Các trường được phép mass assignment
-     */
+    /** @var array<string> */
     protected array $fillable = [
         'user_id',
         'label',
@@ -33,77 +31,98 @@ class UserAddress extends BaseModel
         'latitude',
         'longitude',
         'here_place_id',
-        'is_default'
+        'is_default',
     ];
+
+    // =========================================================================
+    // QUERY METHODS
+    // =========================================================================
 
     /**
      * Lấy tất cả địa chỉ của user
      * 
-     * @param int $userId User ID
-     * @return array Danh sách địa chỉ, mặc định lên đầu
+     * @param int $userId
+     * @return array<int, array<string, mixed>>
      */
     public function getByUserId(int $userId): array
     {
         $sql = "SELECT * FROM {$this->table} 
-                WHERE user_id = :user_id 
+                WHERE user_id = ? 
                 ORDER BY is_default DESC, created_at DESC";
 
-        return $this->db->fetchAll($sql, ['user_id' => $userId]);
+        return $this->db->fetchAll($sql, [$userId]);
     }
 
     /**
      * Lấy địa chỉ mặc định của user
      * 
-     * @param int $userId User ID
-     * @return array|null Địa chỉ mặc định hoặc null
+     * @param int $userId
+     * @return array<string, mixed>|null
      */
     public function getDefaultAddress(int $userId): ?array
     {
         $sql = "SELECT * FROM {$this->table} 
-                WHERE user_id = :user_id AND is_default = 1 
+                WHERE user_id = ? AND is_default = 1 
                 LIMIT 1";
 
-        $result = $this->db->fetchOne($sql, ['user_id' => $userId]);
-        return $result ?: null;
+        return $this->db->fetchOne($sql, [$userId]) ?: null;
     }
 
     /**
-     * Lấy địa chỉ theo ID (kèm kiểm tra ownership)
+     * Lấy địa chỉ theo ID với kiểm tra ownership
      * 
-     * @param int $id Address ID
-     * @param int|null $userId Optional: kiểm tra ownership
-     * @return array|null
+     * @param int $id
+     * @param int|null $userId Nếu có, kiểm tra địa chỉ thuộc về user này
+     * @return array<string, mixed>|null
      */
     public function findById(int $id, ?int $userId = null): ?array
     {
-        $sql = "SELECT * FROM {$this->table} WHERE id = :id";
-        $params = ['id' => $id];
+        $sql = "SELECT * FROM {$this->table} WHERE id = ?";
+        $params = [$id];
 
         if ($userId !== null) {
-            $sql .= " AND user_id = :user_id";
-            $params['user_id'] = $userId;
+            $sql .= " AND user_id = ?";
+            $params[] = $userId;
         }
 
-        $result = $this->db->fetchOne($sql, $params);
-        return $result ?: null;
+        return $this->db->fetchOne($sql, $params) ?: null;
     }
+
+    /**
+     * Đếm số địa chỉ của user
+     * 
+     * @param int $userId
+     * @return int
+     */
+    public function countByUserId(int $userId): int
+    {
+        $sql = "SELECT COUNT(*) AS total FROM {$this->table} WHERE user_id = ?";
+        $result = $this->db->fetchOne($sql, [$userId]);
+
+        return (int) ($result['total'] ?? 0);
+    }
+
+    // =========================================================================
+    // CREATE/UPDATE METHODS
+    // =========================================================================
 
     /**
      * Tạo địa chỉ mới
      * 
-     * @param array $data Dữ liệu địa chỉ
-     * @return int ID của địa chỉ mới
+     * @param array<string, mixed> $data
+     * @return int Address ID
      */
-    public function create(array $data): int
+    public function createAddress(array $data): int
     {
+        $userId = (int) $data['user_id'];
+
         // Nếu đây là địa chỉ đầu tiên hoặc được đặt mặc định
         if (!empty($data['is_default'])) {
-            $this->clearDefaultAddress($data['user_id']);
+            $this->clearDefaultAddress($userId);
         }
 
         // Nếu chưa có địa chỉ nào, tự động đặt mặc định
-        $existingCount = $this->countByUserId($data['user_id']);
-        if ($existingCount === 0) {
+        if ($this->countByUserId($userId) === 0) {
             $data['is_default'] = 1;
         }
 
@@ -112,126 +131,87 @@ class UserAddress extends BaseModel
             $data['full_address'] = $this->buildFullAddress($data);
         }
 
-        $columns = [];
-        $placeholders = [];
-        $params = [];
-
-        foreach ($this->fillable as $field) {
-            if (array_key_exists($field, $data)) {
-                $columns[] = $field;
-                $placeholders[] = ":$field";
-                $params[$field] = $data[$field];
-            }
-        }
-
-        $sql = "INSERT INTO {$this->table} (" . implode(', ', $columns) . ") 
-                VALUES (" . implode(', ', $placeholders) . ")";
-
-        return $this->db->insert($sql, $params);
+        return parent::create($data);
     }
 
     /**
-     * Cập nhật địa chỉ
+     * Cập nhật địa chỉ với kiểm tra ownership
      * 
-     * @param int $id Address ID
-     * @param array $data Dữ liệu cập nhật
-     * @param int|null $userId Optional: kiểm tra ownership
+     * @param int $id
+     * @param array<string, mixed> $data
+     * @param int|null $userId
      * @return bool
      */
-    public function update(int $id, array $data, ?int $userId = null): bool
+    public function updateAddress(int $id, array $data, ?int $userId = null): bool
     {
         // Kiểm tra ownership nếu cần
         if ($userId !== null) {
             $address = $this->findById($id, $userId);
-            if (!$address) {
+            if ($address === null) {
                 return false;
             }
         }
 
         // Xử lý is_default
-        if (!empty($data['is_default']) && $userId) {
+        if (!empty($data['is_default']) && $userId !== null) {
             $this->clearDefaultAddress($userId);
         }
 
         // Cập nhật full_address nếu có thay đổi địa chỉ
-        if (
-            isset($data['street_address']) || isset($data['ward']) ||
-            isset($data['district']) || isset($data['province'])
-        ) {
-
+        if ($this->hasAddressFieldChanged($data)) {
             $current = $this->findById($id);
-            $merged = array_merge($current, $data);
-            $data['full_address'] = $this->buildFullAddress($merged);
-        }
-
-        $sets = [];
-        $params = ['id' => $id];
-
-        foreach ($this->fillable as $field) {
-            if (array_key_exists($field, $data)) {
-                $sets[] = "$field = :$field";
-                $params[$field] = $data[$field];
+            if ($current !== null) {
+                $merged = array_merge($current, $data);
+                $data['full_address'] = $this->buildFullAddress($merged);
             }
         }
 
-        if (empty($sets)) {
-            return false;
-        }
-
-        $sql = "UPDATE {$this->table} SET " . implode(', ', $sets) . " WHERE id = :id";
-
-        if ($userId !== null) {
-            $sql .= " AND user_id = :user_id";
-            $params['user_id'] = $userId;
-        }
-
-        return $this->db->execute($sql, $params);
+        return parent::update($id, $data);
     }
 
     /**
-     * Xóa địa chỉ
+     * Xóa địa chỉ với kiểm tra ownership
      * 
-     * @param int $id Address ID
-     * @param int|null $userId Optional: kiểm tra ownership
+     * @param int $id
+     * @param int|null $userId
      * @return bool
      */
-    public function delete(int $id, ?int $userId = null): bool
+    public function deleteAddress(int $id, ?int $userId = null): bool
     {
         $address = $this->findById($id, $userId);
-        if (!$address) {
+        if ($address === null) {
             return false;
         }
 
-        $sql = "DELETE FROM {$this->table} WHERE id = :id";
-        $params = ['id' => $id];
+        $wasDefault = (bool) $address['is_default'];
+        $addressUserId = (int) $address['user_id'];
 
-        if ($userId !== null) {
-            $sql .= " AND user_id = :user_id";
-            $params['user_id'] = $userId;
-        }
-
-        $result = $this->db->execute($sql, $params);
+        $result = parent::delete($id);
 
         // Nếu xóa địa chỉ mặc định, đặt địa chỉ khác làm mặc định
-        if ($result && $address['is_default'] && $userId) {
-            $this->setFirstAsDefault($userId);
+        if ($result && $wasDefault) {
+            $this->setFirstAsDefault($addressUserId);
         }
 
         return $result;
     }
 
+    // =========================================================================
+    // DEFAULT ADDRESS MANAGEMENT
+    // =========================================================================
+
     /**
      * Đặt địa chỉ làm mặc định
      * 
-     * @param int $id Address ID
-     * @param int $userId User ID (bắt buộc để clear các default khác)
+     * @param int $id
+     * @param int $userId
      * @return bool
      */
     public function setAsDefault(int $id, int $userId): bool
     {
         // Kiểm tra địa chỉ thuộc về user
         $address = $this->findById($id, $userId);
-        if (!$address) {
+        if ($address === null) {
             return false;
         }
 
@@ -239,27 +219,21 @@ class UserAddress extends BaseModel
         $this->clearDefaultAddress($userId);
 
         // Đặt địa chỉ này làm default
-        $sql = "UPDATE {$this->table} SET is_default = 1 WHERE id = :id AND user_id = :user_id";
-        return $this->db->execute($sql, ['id' => $id, 'user_id' => $userId]);
+        $sql = "UPDATE {$this->table} SET is_default = 1 WHERE id = ? AND user_id = ?";
+        return $this->db->execute($sql, [$id, $userId]) !== false;
     }
 
-    /**
-     * Đếm số địa chỉ của user
-     */
-    public function countByUserId(int $userId): int
-    {
-        $sql = "SELECT COUNT(*) as total FROM {$this->table} WHERE user_id = :user_id";
-        $result = $this->db->fetchOne($sql, ['user_id' => $userId]);
-        return (int) ($result['total'] ?? 0);
-    }
+    // =========================================================================
+    // PRIVATE HELPERS
+    // =========================================================================
 
     /**
      * Bỏ flag default của tất cả địa chỉ user
      */
     private function clearDefaultAddress(int $userId): void
     {
-        $sql = "UPDATE {$this->table} SET is_default = 0 WHERE user_id = :user_id";
-        $this->db->execute($sql, ['user_id' => $userId]);
+        $sql = "UPDATE {$this->table} SET is_default = 0 WHERE user_id = ?";
+        $this->db->execute($sql, [$userId]);
     }
 
     /**
@@ -269,10 +243,24 @@ class UserAddress extends BaseModel
     {
         $sql = "UPDATE {$this->table} 
                 SET is_default = 1 
-                WHERE user_id = :user_id 
+                WHERE user_id = ? 
                 ORDER BY created_at ASC 
                 LIMIT 1";
-        $this->db->execute($sql, ['user_id' => $userId]);
+        $this->db->execute($sql, [$userId]);
+    }
+
+    /**
+     * Kiểm tra có thay đổi trường địa chỉ không
+     */
+    private function hasAddressFieldChanged(array $data): bool
+    {
+        $addressFields = ['street_address', 'ward', 'district', 'province'];
+        foreach ($addressFields as $field) {
+            if (isset($data[$field])) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -284,7 +272,7 @@ class UserAddress extends BaseModel
             $data['street_address'] ?? '',
             $data['ward'] ?? '',
             $data['district'] ?? '',
-            $data['province'] ?? ''
+            $data['province'] ?? '',
         ]);
 
         return implode(', ', $parts);

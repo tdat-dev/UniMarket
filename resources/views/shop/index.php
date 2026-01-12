@@ -1,4 +1,6 @@
 <?php
+use App\Helpers\SlugHelper;
+
 include __DIR__ . '/../partials/head.php';
 include __DIR__ . '/../partials/header.php';
 ?>
@@ -74,7 +76,8 @@ include __DIR__ . '/../partials/header.php';
                             <?php endif; ?>
                         </div>
                     <?php endif; ?>
-                    <a href="/products/<?= $item['id'] ?>" class="block">
+                    <a href="<?= SlugHelper::productUrl($item['name'], (int) ($item['user_id'] ?? $seller['id']), (int) $item['id']) ?>"
+                        class="block">
                         <!-- Image -->
                         <div class="relative pt-[100%] overflow-hidden bg-gray-100">
                             <img src="/uploads/<?= htmlspecialchars($item['image']) ?>"

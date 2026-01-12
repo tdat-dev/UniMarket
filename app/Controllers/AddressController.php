@@ -1,17 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controllers;
 
 use App\Models\UserAddress;
 use App\Middleware\VerificationMiddleware;
 
 /**
- * Controller quản lý địa chỉ giao hàng
+ * Address Controller
  * 
- * CRUD địa chỉ với tích hợp HERE Maps Autocomplete.
+ * CRUD địa chỉ giao hàng với tích hợp HERE Maps.
  * 
- * @author UniMarket Team
- * @version 1.0.0
+ * @package App\Controllers
  */
 class AddressController extends BaseController
 {
@@ -19,187 +20,112 @@ class AddressController extends BaseController
 
     public function __construct()
     {
+        parent::__construct();
         $this->addressModel = new UserAddress();
     }
 
     /**
-     * Hiển thị danh sách địa chỉ
-     * 
-     * GET /addresses
+     * Danh sách địa chỉ
      */
     public function index(): void
     {
         VerificationMiddleware::requireVerified();
-
-        $userId = $this->getUserId();
-        if (!$userId) {
-            $this->redirectToLogin();
-            return;
-        }
-
-        $addresses = $this->addressModel->getByUserId($userId);
+        $user = $this->requireAuth();
 
         $this->view('addresses/index', [
-            'addresses' => $addresses,
-            'pageTitle' => 'Địa chỉ giao hàng'
+            'addresses' => $this->addressModel->getByUserId((int) $user['id']),
+            'pageTitle' => 'Địa chỉ giao hàng',
         ]);
     }
 
     /**
      * Form thêm địa chỉ mới
-     * 
-     * GET /addresses/create
      */
     public function create(): void
     {
         VerificationMiddleware::requireVerified();
-
-        $userId = $this->getUserId();
-        if (!$userId) {
-            $this->redirectToLogin();
-            return;
-        }
+        $this->requireAuth();
 
         $this->view('addresses/create', [
-            'pageTitle' => 'Thêm địa chỉ mới'
+            'pageTitle' => 'Thêm địa chỉ mới',
         ]);
     }
 
     /**
      * Lưu địa chỉ mới
-     * 
-     * POST /addresses/store
      */
     public function store(): void
     {
         VerificationMiddleware::requireVerified();
+        $user = $this->requireAuth();
+        $userId = (int) $user['id'];
 
-        $userId = $this->getUserId();
-        if (!$userId) {
-            $this->jsonError('Vui lòng đăng nhập', 401);
-            return;
-        }
-
-        // Validate input
         $errors = $this->validateAddressInput($_POST);
         if (!empty($errors)) {
             $_SESSION['errors'] = $errors;
             $_SESSION['old'] = $_POST;
-            header('Location: /addresses/create');
-            exit;
+            $this->redirect('/addresses/create');
         }
 
-        // Chuẩn bị dữ liệu
-        $data = [
-            'user_id' => $userId,
-            'label' => trim($_POST['label'] ?? 'Địa chỉ mới'),
-            'recipient_name' => trim($_POST['recipient_name']),
-            'phone_number' => trim($_POST['phone_number']),
-            'province' => trim($_POST['province']),
-            'district' => trim($_POST['district']),
-            'ward' => trim($_POST['ward'] ?? ''),
-            'street_address' => trim($_POST['street_address']),
-            'full_address' => trim($_POST['full_address'] ?? ''),
-            'latitude' => !empty($_POST['latitude']) ? (float) $_POST['latitude'] : null,
-            'longitude' => !empty($_POST['longitude']) ? (float) $_POST['longitude'] : null,
-            'here_place_id' => $_POST['here_place_id'] ?? null,
-            'is_default' => !empty($_POST['is_default']) ? 1 : 0
-        ];
+        $data = $this->prepareAddressData($_POST, $userId);
 
         try {
-            $addressId = $this->addressModel->create($data);
-
+            $this->addressModel->createAddress($data);
             $_SESSION['success'] = 'Đã thêm địa chỉ mới thành công!';
 
-            // Nếu từ checkout, redirect về checkout
-            if (!empty($_POST['redirect_to'])) {
-                header('Location: ' . $_POST['redirect_to']);
-            } else {
-                header('Location: /addresses');
-            }
-            exit;
+            $redirectTo = $this->input('redirect_to');
+            $this->redirect($redirectTo ?? '/addresses');
         } catch (\Exception $e) {
             $_SESSION['error'] = 'Có lỗi xảy ra, vui lòng thử lại';
             $_SESSION['old'] = $_POST;
-            header('Location: /addresses/create');
-            exit;
+            $this->redirect('/addresses/create');
         }
     }
 
     /**
      * Form sửa địa chỉ
-     * 
-     * GET /addresses/edit?id=X
      */
     public function edit(): void
     {
         VerificationMiddleware::requireVerified();
+        $user = $this->requireAuth();
 
-        $userId = $this->getUserId();
-        if (!$userId) {
-            $this->redirectToLogin();
-            return;
-        }
+        $addressId = (int) $this->query('id', 0);
+        $address = $this->addressModel->findById($addressId, (int) $user['id']);
 
-        $addressId = (int) ($_GET['id'] ?? 0);
-        $address = $this->addressModel->findById($addressId, $userId);
-
-        if (!$address) {
+        if ($address === null) {
             $_SESSION['error'] = 'Không tìm thấy địa chỉ';
-            header('Location: /addresses');
-            exit;
+            $this->redirect('/addresses');
         }
 
         $this->view('addresses/edit', [
             'address' => $address,
-            'pageTitle' => 'Sửa địa chỉ'
+            'pageTitle' => 'Sửa địa chỉ',
         ]);
     }
 
     /**
      * Cập nhật địa chỉ
-     * 
-     * POST /addresses/update
      */
     public function update(): void
     {
         VerificationMiddleware::requireVerified();
+        $user = $this->requireAuth();
+        $userId = (int) $user['id'];
 
-        $userId = $this->getUserId();
-        if (!$userId) {
-            $this->jsonError('Vui lòng đăng nhập', 401);
-            return;
-        }
+        $addressId = (int) $this->input('id', 0);
 
-        $addressId = (int) ($_POST['id'] ?? 0);
-
-        // Validate input
         $errors = $this->validateAddressInput($_POST);
         if (!empty($errors)) {
             $_SESSION['errors'] = $errors;
             $_SESSION['old'] = $_POST;
-            header("Location: /addresses/edit?id=$addressId");
-            exit;
+            $this->redirect("/addresses/edit?id={$addressId}");
         }
 
-        // Chuẩn bị dữ liệu
-        $data = [
-            'label' => trim($_POST['label'] ?? 'Địa chỉ'),
-            'recipient_name' => trim($_POST['recipient_name']),
-            'phone_number' => trim($_POST['phone_number']),
-            'province' => trim($_POST['province']),
-            'district' => trim($_POST['district']),
-            'ward' => trim($_POST['ward'] ?? ''),
-            'street_address' => trim($_POST['street_address']),
-            'full_address' => trim($_POST['full_address'] ?? ''),
-            'latitude' => !empty($_POST['latitude']) ? (float) $_POST['latitude'] : null,
-            'longitude' => !empty($_POST['longitude']) ? (float) $_POST['longitude'] : null,
-            'here_place_id' => $_POST['here_place_id'] ?? null,
-            'is_default' => !empty($_POST['is_default']) ? 1 : 0
-        ];
+        $data = $this->prepareAddressData($_POST);
 
         try {
-            $result = $this->addressModel->update($addressId, $data, $userId);
+            $result = $this->addressModel->updateAddress($addressId, $data, $userId);
 
             if ($result) {
                 $_SESSION['success'] = 'Đã cập nhật địa chỉ thành công!';
@@ -207,34 +133,25 @@ class AddressController extends BaseController
                 $_SESSION['error'] = 'Không thể cập nhật địa chỉ';
             }
 
-            header('Location: /addresses');
-            exit;
+            $this->redirect('/addresses');
         } catch (\Exception $e) {
             $_SESSION['error'] = 'Có lỗi xảy ra, vui lòng thử lại';
-            header("Location: /addresses/edit?id=$addressId");
-            exit;
+            $this->redirect("/addresses/edit?id={$addressId}");
         }
     }
 
     /**
      * Xóa địa chỉ
-     * 
-     * POST /addresses/delete
      */
     public function delete(): void
     {
         VerificationMiddleware::requireVerified();
+        $user = $this->requireAuth();
 
-        $userId = $this->getUserId();
-        if (!$userId) {
-            $this->jsonError('Vui lòng đăng nhập', 401);
-            return;
-        }
-
-        $addressId = (int) ($_POST['id'] ?? 0);
+        $addressId = (int) $this->input('id', 0);
 
         try {
-            $result = $this->addressModel->delete($addressId, $userId);
+            $result = $this->addressModel->deleteAddress($addressId, (int) $user['id']);
 
             if ($result) {
                 $_SESSION['success'] = 'Đã xóa địa chỉ thành công!';
@@ -245,29 +162,21 @@ class AddressController extends BaseController
             $_SESSION['error'] = 'Có lỗi xảy ra, vui lòng thử lại';
         }
 
-        header('Location: /addresses');
-        exit;
+        $this->redirect('/addresses');
     }
 
     /**
      * Đặt địa chỉ làm mặc định
-     * 
-     * POST /addresses/set-default
      */
     public function setDefault(): void
     {
         VerificationMiddleware::requireVerified();
+        $user = $this->requireAuth();
 
-        $userId = $this->getUserId();
-        if (!$userId) {
-            $this->jsonError('Vui lòng đăng nhập', 401);
-            return;
-        }
-
-        $addressId = (int) ($_POST['id'] ?? 0);
+        $addressId = (int) $this->input('id', 0);
 
         try {
-            $result = $this->addressModel->setAsDefault($addressId, $userId);
+            $result = $this->addressModel->setAsDefault($addressId, (int) $user['id']);
 
             if ($result) {
                 $_SESSION['success'] = 'Đã đặt địa chỉ mặc định!';
@@ -278,12 +187,17 @@ class AddressController extends BaseController
             $_SESSION['error'] = 'Có lỗi xảy ra, vui lòng thử lại';
         }
 
-        header('Location: /addresses');
-        exit;
+        $this->redirect('/addresses');
     }
+
+    // =========================================================================
+    // PRIVATE HELPERS
+    // =========================================================================
 
     /**
      * Validate input địa chỉ
+     * 
+     * @return array<string, string> Errors
      */
     private function validateAddressInput(array $data): array
     {
@@ -315,34 +229,31 @@ class AddressController extends BaseController
     }
 
     /**
-     * Helper: Lấy user ID từ session
+     * Chuẩn bị dữ liệu địa chỉ từ POST
+     * 
+     * @return array<string, mixed>
      */
-    private function getUserId(): ?int
+    private function prepareAddressData(array $post, ?int $userId = null): array
     {
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
+        $data = [
+            'label' => trim($post['label'] ?? 'Địa chỉ mới'),
+            'recipient_name' => trim($post['recipient_name']),
+            'phone_number' => trim($post['phone_number']),
+            'province' => trim($post['province']),
+            'district' => trim($post['district']),
+            'ward' => trim($post['ward'] ?? ''),
+            'street_address' => trim($post['street_address']),
+            'full_address' => trim($post['full_address'] ?? ''),
+            'latitude' => !empty($post['latitude']) ? (float) $post['latitude'] : null,
+            'longitude' => !empty($post['longitude']) ? (float) $post['longitude'] : null,
+            'here_place_id' => $post['here_place_id'] ?? null,
+            'is_default' => !empty($post['is_default']) ? 1 : 0,
+        ];
+
+        if ($userId !== null) {
+            $data['user_id'] = $userId;
         }
-        return $_SESSION['user']['id'] ?? null;
-    }
 
-    /**
-     * Helper: Redirect to login
-     */
-    private function redirectToLogin(): void
-    {
-        $_SESSION['error'] = 'Vui lòng đăng nhập để tiếp tục';
-        header('Location: /login');
-        exit;
-    }
-
-    /**
-     * Helper: JSON error response
-     */
-    private function jsonError(string $message, int $code = 400): void
-    {
-        http_response_code($code);
-        header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'message' => $message]);
-        exit;
+        return $data;
     }
 }

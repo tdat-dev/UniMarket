@@ -1,272 +1,491 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use App\Core\Database;
-
+/**
+ * User Model
+ * 
+ * Quản lý tất cả operations liên quan đến users.
+ * Bao gồm: authentication, profile, email verification, password reset.
+ * 
+ * @package App\Models
+ */
 class User extends BaseModel
 {
+	/** @var string */
 	protected $table = 'users';
 
-	// Đăng ký tài khoản mới
-	public function register($data)
+	/** @var array<string> */
+	protected array $fillable = [
+		'full_name',
+		'email',
+		'password',
+		'phone_number',
+		'address',
+		'avatar',
+		'role',
+		'gender',
+		'email_verified',
+	];
+
+	/** @var array<string> */
+	protected array $hidden = ['password'];
+
+	/** @var array<string> User roles */
+	public const ROLE_USER = 'user';
+	public const ROLE_ADMIN = 'admin';
+
+	/** @var int Password reset token expiry in seconds */
+	private const PASSWORD_RESET_EXPIRY = 900; // 15 minutes
+
+	/** @var int Max reset attempts before lockout */
+	private const MAX_RESET_ATTEMPTS = 5;
+
+	// =========================================================================
+	// AUTHENTICATION
+	// =========================================================================
+
+	/**
+	 * Register a new user
+	 * 
+	 * @param array{
+	 *     full_name: string,
+	 *     email: string,
+	 *     password: string,
+	 *     phone_number?: string,
+	 *     address?: string,
+	 *     email_verified?: int
+	 * } $data
+	 * @return int New user ID
+	 */
+	public function register(array $data): int
 	{
-		$sql = "INSERT INTO users (full_name, email, password, phone_number, address, email_verified) VALUES (:full_name, :email, :password, :phone_number, :address, :email_verified)";
+		$sql = "INSERT INTO {$this->table} 
+                (full_name, email, password, phone_number, address, email_verified) 
+                VALUES (?, ?, ?, ?, ?, ?)";
+
 		return $this->db->insert($sql, [
-			'full_name' => $data['full_name'],
-			'email' => $data['email'],
-			'password' => password_hash($data['password'], PASSWORD_DEFAULT),
-			'phone_number' => $data['phone_number'] ?? null,
-			'address' => $data['address'] ?? null,
-			'email_verified' => $data['email_verified'] ?? 0, // Mặc định là 0 (chưa verify)
+			$data['full_name'],
+			$data['email'],
+			password_hash($data['password'], PASSWORD_DEFAULT),
+			$data['phone_number'] ?? null,
+			$data['address'] ?? null,
+			$data['email_verified'] ?? 0,
 		]);
 	}
 
-	// Kiểm tra email đã tồn tại chưa
-	public function checkEmailExists($email)
+	/**
+	 * Attempt to login with email and password
+	 * 
+	 * @param string $email
+	 * @param string $password
+	 * @return array<string, mixed>|null User data or null on failure
+	 */
+	public function login(string $email, string $password): ?array
 	{
-		$sql = "SELECT id FROM users WHERE email = :email";
-		$user = $this->db->fetchOne($sql, ['email' => $email]);
-		return $user ? true : false;
-	}
+		$user = $this->findByEmailFull($email);
 
-	// Đăng nhập: kiểm tra email và password
-	public function login($email, $password)
-	{
-		$sql = "SELECT * FROM users WHERE email = :email";  // Đã lấy tất cả cột rồi, OK!
-		$user = $this->db->fetchOne($sql, ['email' => $email]);
-		if ($user && password_verify($password, $user['password'])) {
-			return $user;
+		if ($user === null) {
+			return null;
 		}
-		return false;
-	}
-	// Lấy thông tin user theo ID
-	public function find($id)
-	{
-		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at, balance, avatar FROM users WHERE id = :id";
-		return $this->db->fetchOne($sql, ['id' => $id]);
+
+		// Check if user is locked
+		if (!empty($user['is_locked'])) {
+			return null;
+		}
+
+		if (!password_verify($password, $user['password'])) {
+			return null;
+		}
+
+		unset($user['password']);
+		return $user;
 	}
 
-	// Lấy thông tin user theo email (cho Google OAuth)
-	public function findByEmail($email)
+	/**
+	 * Check if email already exists
+	 * 
+	 * @param string $email
+	 * @return bool
+	 */
+	public function emailExists(string $email): bool
 	{
-		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at, balance, avatar FROM users WHERE email = :email";
-		return $this->db->fetchOne($sql, ['email' => $email]);
+		$sql = "SELECT 1 FROM {$this->table} WHERE email = ? LIMIT 1";
+		return $this->db->fetchOne($sql, [$email]) !== null;
 	}
 
-	// Lưu token xác minh
+	/**
+	 * Verify user password by ID
+	 * 
+	 * @param int $id
+	 * @param string $password
+	 * @return bool
+	 */
+	public function verifyPassword(int $id, string $password): bool
+	{
+		$sql = "SELECT password FROM {$this->table} WHERE id = ?";
+		$user = $this->db->fetchOne($sql, [$id]);
+
+		return $user !== null && password_verify($password, $user['password']);
+	}
+
+	/**
+	 * Update password
+	 * 
+	 * @param int $userId
+	 * @param string $newPassword
+	 * @return bool
+	 */
+	public function updatePassword(int $userId, string $newPassword): bool
+	{
+		$hash = password_hash($newPassword, PASSWORD_DEFAULT);
+		$sql = "UPDATE {$this->table} SET password = ? WHERE id = ?";
+
+		return $this->db->execute($sql, [$hash, $userId]) > 0;
+	}
+
+	// =========================================================================
+	// FIND METHODS
+	// =========================================================================
+
+	/**
+	 * Find user by ID (without password)
+	 * 
+	 * @param int $id
+	 * @return array<string, mixed>|null
+	 */
+	public function find(int $id): ?array
+	{
+		$sql = "SELECT id, full_name, email, phone_number, address, role, gender, 
+                       created_at, balance, avatar, email_verified, is_locked 
+                FROM {$this->table} WHERE id = ?";
+
+		return $this->db->fetchOne($sql, [$id]) ?: null;
+	}
+
+	/**
+	 * Find user by email (without password)
+	 * 
+	 * @param string $email
+	 * @return array<string, mixed>|null
+	 */
+	public function findByEmail(string $email): ?array
+	{
+		$sql = "SELECT id, full_name, email, phone_number, address, role, gender,
+                       created_at, balance, avatar, email_verified 
+                FROM {$this->table} WHERE email = ?";
+
+		return $this->db->fetchOne($sql, [$email]) ?: null;
+	}
+
+	/**
+	 * Find user by email with all fields (for internal use)
+	 * 
+	 * @param string $email
+	 * @return array<string, mixed>|null
+	 */
+	public function findByEmailFull(string $email): ?array
+	{
+		$sql = "SELECT * FROM {$this->table} WHERE email = ?";
+		return $this->db->fetchOne($sql, [$email]) ?: null;
+	}
+
+	// =========================================================================
+	// EMAIL VERIFICATION
+	// =========================================================================
+
+	/**
+	 * Save email verification token
+	 * 
+	 * @param int $userId
+	 * @param string $token
+	 * @param string $expiresAt
+	 * @return bool
+	 */
 	public function saveVerificationToken(int $userId, string $token, string $expiresAt): bool
 	{
-		$sql = "UPDATE users SET 
-            email_verification_token = :token, 
-            email_verification_expires_at = :expires_at 
-            WHERE id = :id";
-		return $this->db->execute($sql, [
-			'token' => $token,
-			'expires_at' => $expiresAt,
-			'id' => $userId
-		]);
+		$sql = "UPDATE {$this->table} SET 
+                email_verification_token = ?, 
+                email_verification_expires_at = ? 
+                WHERE id = ?";
+
+		return $this->db->execute($sql, [$token, $expiresAt, $userId]) > 0;
 	}
 
-	// Tìm user theo token (cho verify bằng link)
+	/**
+	 * Find user by verification token
+	 * 
+	 * @param string $token
+	 * @return array<string, mixed>|null
+	 */
 	public function findByVerificationToken(string $token): ?array
 	{
-		$sql = "SELECT * FROM users WHERE email_verification_token LIKE :token";
-		return $this->db->fetchOne($sql, ['token' => $token . '%']) ?: null;
+		$sql = "SELECT * FROM {$this->table} WHERE email_verification_token LIKE ?";
+		return $this->db->fetchOne($sql, [$token . '%']) ?: null;
 	}
 
-	// Tìm user theo email để verify (lấy cả token)
+	/**
+	 * Find user by email for verification purposes
+	 * 
+	 * @param string $email
+	 * @return array<string, mixed>|null
+	 */
 	public function findByEmailForVerification(string $email): ?array
 	{
-		$sql = "SELECT id, full_name, email, email_verified, email_verification_token, email_verification_expires_at 
-            FROM users WHERE email = :email";
-		return $this->db->fetchOne($sql, ['email' => $email]) ?: null;
+		$sql = "SELECT id, full_name, email, email_verified, 
+                       email_verification_token, email_verification_expires_at 
+                FROM {$this->table} WHERE email = ?";
+
+		return $this->db->fetchOne($sql, [$email]) ?: null;
 	}
 
-	// Đánh dấu đã xác minh
+	/**
+	 * Mark user as verified
+	 * 
+	 * @param int $userId
+	 * @return bool
+	 */
 	public function markAsVerified(int $userId): bool
 	{
-		$sql = "UPDATE users SET 
-            email_verified = 1, 
-            email_verification_token = NULL, 
-            email_verification_expires_at = NULL 
-            WHERE id = :id";
-		return $this->db->execute($sql, ['id' => $userId]);
+		$sql = "UPDATE {$this->table} SET 
+                email_verified = 1, 
+                email_verification_token = NULL, 
+                email_verification_expires_at = NULL 
+                WHERE id = ?";
+
+		return $this->db->execute($sql, [$userId]) > 0;
 	}
 
-	// Đếm tổng số users
-	public function count(): int
+	// =========================================================================
+	// PASSWORD RESET
+	// =========================================================================
+
+	/**
+	 * Save password reset token
+	 * 
+	 * @param int $userId
+	 * @param string $token
+	 * @return bool
+	 */
+	public function savePasswordResetToken(int $userId, string $token): bool
 	{
-		$sql = "SELECT COUNT(*) as total FROM users";
-		$result = $this->db->fetchOne($sql);
-		return $result['total'] ?? 0;
+		$expiresAt = date('Y-m-d H:i:s', time() + self::PASSWORD_RESET_EXPIRY);
+
+		$sql = "UPDATE {$this->table} SET 
+                password_reset_token = ?, 
+                password_reset_expires_at = ?,
+                password_reset_attempts = 0,
+                password_reset_locked_until = NULL
+                WHERE id = ?";
+
+		return $this->db->execute($sql, [$token, $expiresAt, $userId]) > 0;
 	}
 
 	/**
-	 * Lấy tất cả users (thường dùng cho Admin)
+	 * Increment reset attempts and lock if exceeded
+	 * 
+	 * @param int $userId
+	 * @return bool True if account is now locked
 	 */
-	public function getAll()
+	public function incrementResetAttempts(int $userId): bool
 	{
-		// Lấy tất cả thông tin quan trọng (trừ password)
-		// Sắp xếp người mới nhất lên đầu
-		$sql = "SELECT id, full_name, email, phone_number, address, role, created_at, email_verified, is_locked, avatar 
-                FROM users 
-                ORDER BY created_at DESC";
-		return $this->db->fetchAll($sql);
+		$sql = "UPDATE {$this->table} SET password_reset_attempts = password_reset_attempts + 1 WHERE id = ?";
+		$this->db->execute($sql, [$userId]);
+
+		$sqlGet = "SELECT password_reset_attempts FROM {$this->table} WHERE id = ?";
+		$result = $this->db->fetchOne($sqlGet, [$userId]);
+		$attempts = (int) ($result['password_reset_attempts'] ?? 0);
+
+		if ($attempts >= self::MAX_RESET_ATTEMPTS) {
+			$lockedUntil = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+			$sqlLock = "UPDATE {$this->table} SET password_reset_locked_until = ? WHERE id = ?";
+			$this->db->execute($sqlLock, [$lockedUntil, $userId]);
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
-	 * Cập nhật thông tin user (Admin) - Yêu cầu đầy đủ các trường
+	 * Clear password reset token
+	 * 
+	 * @param int $userId
+	 * @return bool
 	 */
-	public function update($id, $data)
+	public function clearPasswordResetToken(int $userId): bool
 	{
-		$sql = "UPDATE users SET 
-                full_name = :full_name,
-                email = :email,
-                phone_number = :phone_number,
-                role = :role,
-                email_verified = :email_verified
-                WHERE id = :id";
+		$sql = "UPDATE {$this->table} SET 
+                password_reset_token = NULL, 
+                password_reset_expires_at = NULL, 
+                password_reset_attempts = 0, 
+                password_reset_locked_until = NULL 
+                WHERE id = ?";
 
-		return $this->db->execute($sql, [
-			'id' => $id,
-			'full_name' => $data['full_name'],
-			'email' => $data['email'],
-			'phone_number' => $data['phone_number'] ?? null,
-			'role' => $data['role'],
-			'email_verified' => $data['email_verified']
-		]);
+		return $this->db->execute($sql, [$userId]) > 0;
 	}
 
+	// =========================================================================
+	// PROFILE METHODS
+	// =========================================================================
+
 	/**
-	 * Cập nhật profile của user (User tự cập nhật)
-	 * Chỉ cho phép cập nhật các trường an toàn
+	 * Update user profile (safe fields only)
+	 * 
+	 * @param int $id
+	 * @param array<string, mixed> $data
+	 * @return bool
 	 */
-	public function updateProfile($id, $data)
+	public function updateProfile(int $id, array $data): bool
 	{
+		$allowedFields = ['full_name', 'phone_number', 'address', 'avatar', 'gender'];
+
 		$fields = [];
-		$params = ['id' => $id];
-
-		// Chỉ cập nhật các trường được phép
-		$allowedFields = ['full_name', 'phone_number', 'address', 'avatar'];
+		$params = [];
 
 		foreach ($allowedFields as $field) {
 			if (array_key_exists($field, $data)) {
-				$fields[] = "$field = :$field";
-				$params[$field] = $data[$field];
+				$fields[] = "{$field} = ?";
+				$params[] = $data[$field];
 			}
 		}
 
 		if (empty($fields)) {
-			return false; // Không có gì để cập nhật
+			return false;
 		}
 
-		$sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = :id";
-		return $this->db->execute($sql, $params);
+		$params[] = $id;
+		$sql = "UPDATE {$this->table} SET " . implode(', ', $fields) . " WHERE id = ?";
+
+		return $this->db->execute($sql, $params) > 0;
+	}
+
+	// =========================================================================
+	// ADMIN METHODS
+	// =========================================================================
+
+	/**
+	 * Get all users for admin panel
+	 * 
+	 * @param int $limit
+	 * @param int $offset
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function getAllForAdmin(int $limit = 50, int $offset = 0): array
+	{
+		$sql = "SELECT id, full_name, email, phone_number, address, role, 
+                       created_at, email_verified, is_locked, avatar 
+                FROM {$this->table} 
+                ORDER BY created_at DESC
+                LIMIT ? OFFSET ?";
+
+		return $this->db->fetchAll($sql, [$limit, $offset]);
 	}
 
 	/**
-	 * Khóa/Mở khóa tài khoản
+	 * Update user by admin (full access)
+	 * 
+	 * @param int $id
+	 * @param array<string, mixed> $data
+	 * @return bool
 	 */
-	public function toggleLock($id)
+	public function updateByAdmin(int $id, array $data): bool
 	{
-		// Kiểm tra trạng thái hiện tại
-		$user = $this->find($id);
-		if (!$user)
-			return false;
-
-		// Đảo ngược trạng thái: nếu đang locked (1) -> mở (0), và ngược lại
-		// Lưu ý: database có thể đang lưu is_locked là NULL hoặc 0
-		$currentStatus = !empty($user['is_locked']) ? 1 : 0;
-		$newStatus = $currentStatus == 1 ? 0 : 1;
-
-		$sql = "UPDATE users SET is_locked = :new_status WHERE id = :id";
-		return $this->db->execute($sql, ['new_status' => $newStatus, 'id' => $id]);
-	}
-
-	/**
-	 * Đổi trạng thái xác minh email
-	 */
-	public function toggleVerified($id)
-	{
-		$sql = "UPDATE users SET email_verified = NOT email_verified WHERE id = :id";
-		return $this->db->execute($sql, ['id' => $id]);
-	}
-	// --- Password Reset Methods ---
-
-	public function findByEmailFull($email)
-	{
-		$sql = "SELECT * FROM users WHERE email = :email";
-		return $this->db->fetchOne($sql, ['email' => $email]);
-	}
-
-	public function savePasswordResetToken($userId, $token)
-	{
-		// Token hết hạn sau 15 phút
-		$expiresAt = date('Y-m-d H:i:s', time() + 900);
-
-		$sql = "UPDATE users SET 
-            password_reset_token = :token, 
-            password_reset_expires_at = :expires,
-            password_reset_attempts = 0,
-            password_reset_locked_until = NULL
-            WHERE id = :id";
+		$sql = "UPDATE {$this->table} SET 
+                full_name = ?,
+                email = ?,
+                phone_number = ?,
+                role = ?,
+                email_verified = ?
+                WHERE id = ?";
 
 		return $this->db->execute($sql, [
-			'token' => $token,
-			'expires' => $expiresAt,
-			'id' => $userId
-		]);
+			$data['full_name'],
+			$data['email'],
+			$data['phone_number'] ?? null,
+			$data['role'],
+			$data['email_verified'],
+			$id,
+		]) > 0;
 	}
 
-	public function incrementResetAttempts($userId)
+	/**
+	 * Toggle user lock status
+	 * 
+	 * @param int $id
+	 * @return bool
+	 */
+	public function toggleLock(int $id): bool
 	{
-		// Tăng số lần thử
-		$sql = "UPDATE users SET password_reset_attempts = password_reset_attempts + 1 WHERE id = :id";
-		$this->db->execute($sql, ['id' => $userId]);
-
-		// Kiểm tra nếu quá 5 lần thì lock 5 phút
-		$user = $this->find($userId); // find() only gets basic info, we need reset info.
-		// Let's just fetch attempts from DB to be safe or use findByEmailFull but we only have ID here.
-		// Simplest: Get attempts directly
-		$sqlGet = "SELECT password_reset_attempts FROM users WHERE id = :id";
-		$attempts = $this->db->fetchOne($sqlGet, ['id' => $userId])['password_reset_attempts'];
-
-		if ($attempts >= 5) {
-			$lockedUntil = date('Y-m-d H:i:s', strtotime('+5 minutes'));
-			$sqlLock = "UPDATE users SET password_reset_locked_until = :locked WHERE id = :id";
-			$this->db->execute($sqlLock, ['locked' => $lockedUntil, 'id' => $userId]);
-			return true; // Bị khóa
+		$user = $this->find($id);
+		if ($user === null) {
+			return false;
 		}
-		return false;
+
+		$newStatus = empty($user['is_locked']) ? 1 : 0;
+		$sql = "UPDATE {$this->table} SET is_locked = ? WHERE id = ?";
+
+		return $this->db->execute($sql, [$newStatus, $id]) > 0;
 	}
 
-	public function clearPasswordResetToken($userId)
+	/**
+	 * Toggle email verified status
+	 * 
+	 * @param int $id
+	 * @return bool
+	 */
+	public function toggleVerified(int $id): bool
 	{
-		$sql = "UPDATE users SET 
-            password_reset_token = NULL, 
-            password_reset_expires_at = NULL, 
-            password_reset_attempts = 0, 
-            password_reset_locked_until = NULL 
-            WHERE id = :id";
-		return $this->db->execute($sql, ['id' => $userId]);
+		$sql = "UPDATE {$this->table} SET email_verified = NOT email_verified WHERE id = ?";
+		return $this->db->execute($sql, [$id]) > 0;
 	}
 
-	public function updatePassword($userId, $newPassword)
+	// =========================================================================
+	// STATISTICS
+	// =========================================================================
+
+	/**
+	 * Get user statistics
+	 * 
+	 * @return array{total: int, verified: int, locked: int, admins: int}
+	 */
+	public function getStats(): array
 	{
-		$hash = password_hash($newPassword, PASSWORD_DEFAULT);
-		$sql = "UPDATE users SET password = :password WHERE id = :id";
-		return $this->db->execute($sql, ['password' => $hash, 'id' => $userId]);
+		$sql = "SELECT 
+                    COUNT(*) AS total,
+                    SUM(email_verified) AS verified,
+                    SUM(is_locked) AS locked,
+                    SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) AS admins
+                FROM {$this->table}";
+
+		$result = $this->db->fetchOne($sql);
+
+		return [
+			'total' => (int) ($result['total'] ?? 0),
+			'verified' => (int) ($result['verified'] ?? 0),
+			'locked' => (int) ($result['locked'] ?? 0),
+			'admins' => (int) ($result['admins'] ?? 0),
+		];
 	}
 
-	public function verifyIdPassword($id, $password)
+	// =========================================================================
+	// LEGACY COMPATIBILITY (Deprecated)
+	// =========================================================================
+
+	/**
+	 * @deprecated Use emailExists() instead
+	 */
+	public function checkEmailExists(string $email): bool
 	{
-		$sql = "SELECT password FROM users WHERE id = :id";
-		$user = $this->db->fetchOne($sql, ['id' => $id]);
-		if ($user && password_verify($password, $user['password'])) {
-			return true;
-		}
-		return false;
+		return $this->emailExists($email);
+	}
+
+	/**
+	 * @deprecated Use getAllForAdmin() instead
+	 */
+	public function getAll(): array
+	{
+		return $this->getAllForAdmin();
 	}
 }
-

@@ -4,6 +4,7 @@ use App\Controllers\AuthController;
 use App\Controllers\HomeController;
 use App\Controllers\ProductController;
 use App\Controllers\SearchController;
+use App\Controllers\CategoryController;
 use App\Controllers\GoogleAuthController;
 use App\Controllers\VerificationController;
 use App\Controllers\PaymentController;
@@ -44,13 +45,22 @@ $router->post('verify-email', [VerificationController::class, 'verifyByOtp']);
 $router->get('verify-email/token', [VerificationController::class, 'verifyByToken']);
 $router->post('verify-email/resend', [VerificationController::class, 'resendVerification']);
 
+// ======================= CATEGORIES (Zoldify SEO URLs) =======================
+// Format: /dm/ten-danh-muc.c123
+$router->get('category/{id}', [CategoryController::class, 'show']);           // Fallback
+$router->get('dm/{slug}.c{id}', [CategoryController::class, 'showBySlug']);   // SEO: /dm/dien-thoai.c123
+$router->get('api/category/products', [CategoryController::class, 'getProducts']);
+
 // ======================= PRODUCTS & SEARCH =======================
-$router->get('products', [ProductController::class, 'index']);         // List danh sách
-$router->get('products/create', [ProductController::class, 'create']); // Form tạo mới (TRƯỚC {id})
-$router->get('products/{id}', [ProductController::class, 'show']);     // Chi tiết
+// Product SEO URLs: /z/ten-san-pham.p123
+$router->get('products', [ProductController::class, 'index']);
+$router->get('products/create', [ProductController::class, 'create']);
+$router->get('products/{id}', [ProductController::class, 'show']);            // Fallback
+$router->get('z/{slug}.p{productId}', [ProductController::class, 'showBySlug']); // SEO: /z/iphone-14.p123
 
 // Product Management (User đăng sản phẩm)
 $router->post('products', [ProductController::class, 'store']);
+$router->post('products/store', [ProductController::class, 'store']);  // Alias for form action
 $router->post('products/{id}/cancel-sale', [ProductController::class, 'cancelSale']);
 
 // Search (Public)

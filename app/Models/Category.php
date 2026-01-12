@@ -1,176 +1,260 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Core\RedisCache;
 
+/**
+ * Category Model
+ * 
+ * Quản lý danh mục sản phẩm với hỗ trợ cấu trúc cây (parent-child).
+ * Sử dụng Redis cache để tối ưu performance cho dữ liệu ít thay đổi.
+ * 
+ * @package App\Models
+ */
 class Category extends BaseModel
 {
+    /** @var string */
     protected $table = 'categories';
 
-    public function getAll()
-    {
-        $cacheKey = 'categories_all_v2'; // Changed key to force refresh schema
-        $cacheTTL = 300;
+    /** @var string Cache key prefix */
+    private const CACHE_KEY = 'categories_all_v2';
 
+    /** @var int Cache TTL in seconds (5 minutes) */
+    private const CACHE_TTL = 300;
+
+    /** @var array<string> Các cột được phép mass-assign */
+    protected array $fillable = [
+        'name',
+        'icon',
+        'description',
+        'parent_id',
+        'sort_order'
+    ];
+
+    // =========================================================================
+    // PUBLIC QUERY METHODS
+    // =========================================================================
+
+    /**
+     * Lấy tất cả categories với Redis cache
+     * 
+     * @return array<int, array<string, mixed>>
+     */
+    public function getAll(): array
+    {
         $redis = RedisCache::getInstance();
+
         if ($redis->isAvailable()) {
-            $categories = $redis->get($cacheKey);
-            if ($categories === null) {
-                $categories = $this->db->query("SELECT * FROM " . $this->table . " ORDER BY sort_order ASC, id ASC")->fetchAll();
-                $redis->set($cacheKey, $categories, $cacheTTL);
-            }
-            return $categories;
-        }
-
-        return $this->db->query("SELECT * FROM " . $this->table . " ORDER BY sort_order ASC, id ASC")->fetchAll();
-    }
-
-    public function getTree()
-    {
-        $all = $this->getAll();
-        $parents = [];
-        $children = [];
-
-        foreach ($all as $cat) {
-            $cat['children'] = [];
-            if (empty($cat['parent_id'])) {
-                $parents[$cat['id']] = $cat;
-            } else {
-                $children[] = $cat;
+            $cached = $redis->get(self::CACHE_KEY);
+            if ($cached !== null) {
+                return $cached;
             }
         }
 
-        foreach ($children as $child) {
-            if (isset($parents[$child['parent_id']])) {
-                $parents[$child['parent_id']]['children'][] = $child;
-            }
+        $categories = $this->fetchAllOrdered();
+
+        if ($redis->isAvailable()) {
+            $redis->set(self::CACHE_KEY, $categories, self::CACHE_TTL);
         }
 
-        return array_values($parents);
+        return $categories;
     }
 
     /**
-     * Lấy chỉ danh mục cha (không có parent_id), sắp xếp theo thứ tự hiển thị
+     * Lấy cấu trúc cây danh mục (parent → children)
+     * 
+     * Sử dụng HashMap lookup để đạt O(n) thay vì O(n²)
+     * 
+     * @return array<int, array<string, mixed>>
+     */
+    public function getTree(): array
+    {
+        $all = $this->getAll();
+
+        // Indexed lookup map - O(1) access
+        $parentMap = [];
+        $orphanChildren = [];
+
+        foreach ($all as $category) {
+            $category['children'] = [];
+            $id = (int) $category['id'];
+            $parentId = $category['parent_id'];
+
+            if (empty($parentId)) {
+                $parentMap[$id] = $category;
+            } else {
+                $orphanChildren[] = $category;
+            }
+        }
+
+        // Assign children to parents - O(n) với HashMap lookup
+        foreach ($orphanChildren as $child) {
+            $parentId = (int) $child['parent_id'];
+            if (isset($parentMap[$parentId])) {
+                $parentMap[$parentId]['children'][] = $child;
+            }
+        }
+
+        return array_values($parentMap);
+    }
+
+    /**
+     * Lấy các danh mục cha (root categories)
+     * 
+     * @param int $limit Số lượng tối đa
+     * @return array<int, array<string, mixed>>
      */
     public function getParents(int $limit = 20): array
     {
-        // Lấy các danh mục cha (parent_id IS NULL) và sắp xếp theo thứ tự hiển thị
-        $sql = "SELECT * FROM {$this->table} WHERE parent_id IS NULL ORDER BY sort_order ASC, id DESC LIMIT :limit";
-        return $this->db->fetchAll($sql, ['limit' => $limit]);
+        $sql = "SELECT * FROM {$this->table} 
+                WHERE parent_id IS NULL 
+                ORDER BY sort_order ASC, id DESC 
+                LIMIT ?";
+
+        return $this->db->fetchAll($sql, [$limit]);
     }
 
     /**
-     * Lấy danh sách ID của danh mục và các danh mục con (để filter sản phẩm)
+     * Lấy danh sách ID của danh mục và tất cả danh mục con
+     * 
+     * Hữu ích để filter sản phẩm theo danh mục (bao gồm cả sub-categories)
+     * 
+     * @param int $parentId ID danh mục cha
+     * @return array<int> Mảng các ID
      */
     public function getChildrenIds(int $parentId): array
     {
         $all = $this->getAll();
-        $ids = [$parentId]; // Bao gồm cả chính nó
+        $ids = [$parentId];
 
-        foreach ($all as $cat) {
-            // Kiểm tra parent_id (cần cast về int hoặc so sánh lỏng lẻo vì DB trả về string)
-            if (isset($cat['parent_id']) && $cat['parent_id'] == $parentId) {
-                $ids[] = $cat['id'];
+        foreach ($all as $category) {
+            if (isset($category['parent_id']) && (int) $category['parent_id'] === $parentId) {
+                $ids[] = (int) $category['id'];
             }
         }
+
         return array_unique($ids);
     }
 
-    // ===================== ADMIN METHODS =====================
-
     /**
-     * Lấy 1 category theo ID
+     * Lấy danh mục con trực tiếp của một category
+     * 
+     * @param int $parentId
+     * @return array<int, array<string, mixed>>
      */
-    public function find(int $id): ?array
+    public function getChildren(int $parentId): array
     {
-        $sql = "SELECT * FROM {$this->table} WHERE id = :id";
-        return $this->db->fetchOne($sql, ['id' => $id]) ?: null;
+        $sql = "SELECT * FROM {$this->table} 
+                WHERE parent_id = ? 
+                ORDER BY sort_order ASC, name ASC";
+
+        return $this->db->fetchAll($sql, [$parentId]);
     }
 
     /**
-     * Đếm tổng số categories
+     * Lấy tất cả categories với thông tin children (cho sidebar)
+     * 
+     * @return array<int, array<string, mixed>>
      */
-    public function count(): int
+    public function getWithChildren(): array
     {
-        $sql = "SELECT COUNT(*) as total FROM {$this->table}";
-        $result = $this->db->fetchOne($sql);
-        return $result['total'] ?? 0;
+        return $this->getTree();
     }
 
     /**
-     * Thêm category mới
-     */
-    public function create(array $data): int|false
-    {
-        $sql = "INSERT INTO {$this->table} (name, icon, description) 
-            VALUES (:name, :icon, :description)";
-
-        // Clear cache khi thêm mới
-        $redis = RedisCache::getInstance();
-        if ($redis->isAvailable()) {
-            $redis->delete('categories_all');
-        }
-
-        return $this->db->insert($sql, [
-            'name' => $data['name'],
-            'icon' => $data['icon'] ?? '',
-            'description' => $data['description'] ?? ''
-        ]);
-    }
-
-    /**
-     * Xóa category
-     */
-    public function delete(int $id): bool
-    {
-        $sql = "DELETE FROM {$this->table} WHERE id = :id";
-
-        // Clear cache
-        $redis = RedisCache::getInstance();
-        if ($redis->isAvailable()) {
-            $redis->delete('categories_all');
-        }
-
-        return $this->db->execute($sql, ['id' => $id]);
-    }
-
-    /**
-     * Đếm số sản phẩm trong category
+     * Đếm số sản phẩm trong một category
+     * 
+     * @param int $categoryId
+     * @return int
      */
     public function countProducts(int $categoryId): int
     {
-        $sql = "SELECT COUNT(*) as total FROM products WHERE category_id = :id";
-        $result = $this->db->fetchOne($sql, ['id' => $categoryId]);
-        return $result['total'] ?? 0;
+        $sql = "SELECT COUNT(*) as total FROM products WHERE category_id = ?";
+        $result = $this->db->fetchOne($sql, [$categoryId]);
+
+        return (int) ($result['total'] ?? 0);
+    }
+
+    // =========================================================================
+    // CRUD OPERATIONS (Override để xử lý cache)
+    // =========================================================================
+
+    /**
+     * Tạo category mới
+     * 
+     * @param array<string, mixed> $data
+     * @return int ID của category mới
+     */
+    public function create(array $data): int
+    {
+        $id = parent::create($data);
+        $this->clearCache();
+
+        return $id;
     }
 
     /**
      * Cập nhật category
+     * 
+     * @param int $id
+     * @param array<string, mixed> $data
+     * @return bool
      */
     public function update(int $id, array $data): bool
     {
-        // Build SQL động - chỉ update những field có giá trị
-        $fields = ['name = :name', 'description = :description'];
-        $params = [
-            'id' => $id,
-            'name' => $data['name'],
-            'description' => $data['description'] ?? '',
-        ];
+        $result = parent::update($id, $data);
 
-        // Chỉ update icon nếu có upload mới
-        if (!empty($data['icon'])) {
-            $fields[] = 'icon = :icon';
-            $params['icon'] = $data['icon'];
+        if ($result) {
+            $this->clearCache();
         }
 
-        $sql = "UPDATE {$this->table} SET " . implode(', ', $fields) . " WHERE id = :id";
+        return $result;
+    }
 
-        // Clear cache
+    /**
+     * Xóa category
+     * 
+     * @param int $id
+     * @return bool
+     */
+    public function delete(int $id): bool
+    {
+        $result = parent::delete($id);
+
+        if ($result) {
+            $this->clearCache();
+        }
+
+        return $result;
+    }
+
+    // =========================================================================
+    // PRIVATE HELPER METHODS
+    // =========================================================================
+
+    /**
+     * Fetch tất cả categories từ DB với ordering
+     * 
+     * @return array<int, array<string, mixed>>
+     */
+    private function fetchAllOrdered(): array
+    {
+        $sql = "SELECT * FROM {$this->table} ORDER BY sort_order ASC, id ASC";
+        return $this->db->fetchAll($sql);
+    }
+
+    /**
+     * Xóa cache khi dữ liệu thay đổi
+     */
+    private function clearCache(): void
+    {
         $redis = RedisCache::getInstance();
-        if ($redis->isAvailable()) {
-            $redis->delete('categories_all');
-        }
 
-        return $this->db->execute($sql, $params);
+        if ($redis->isAvailable()) {
+            $redis->delete(self::CACHE_KEY);
+        }
     }
 }

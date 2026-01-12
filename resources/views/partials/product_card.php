@@ -1,4 +1,8 @@
-<a href="/products/<?= $item['id'] ?>"
+<?php
+use App\Helpers\SlugHelper;
+$productUrl = SlugHelper::productUrl($item['name'], (int) ($item['user_id'] ?? 0), (int) $item['id']);
+?>
+<a href="<?= $productUrl ?>"
     class="block bg-white rounded-sm shadow-sm hover:shadow-md transition-all group border border-transparent hover:border-[#2C67C8]/30 overflow-hidden">
     <!-- Image với aspect ratio 1:1 -->
     <div class="aspect-square relative overflow-hidden bg-gray-100">
