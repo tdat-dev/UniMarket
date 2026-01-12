@@ -1,86 +1,88 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controllers;
 
 use App\Models\Product;
+use App\Models\Category;
 use App\Models\SearchKeyword;
 
-
+/**
+ * Search Controller
+ * 
+ * Xử lý tìm kiếm sản phẩm và autocomplete suggestions.
+ * 
+ * @package App\Controllers
+ */
 class SearchController extends BaseController
 {
-    public function index()
+    private const ITEMS_PER_PAGE = 12;
+
+    /**
+     * Trang kết quả tìm kiếm
+     */
+    public function index(): void
     {
-        $keyword = $_GET['q'] ?? '';
-        $categoryId = $_GET['category'] ?? null;
-        
-        $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
-        $limit = 12; 
-        $offset = ($page - 1) * $limit;
+        $keyword = $this->query('q', '');
+        $categoryId = $this->query('category');
+        $page = max(1, (int) $this->query('page', 1));
+        $offset = ($page - 1) * self::ITEMS_PER_PAGE;
 
-        $productModel = new Product();
-
-        // Tracking keyword nếu có
+        // Track keyword nếu có
         if (!empty(trim($keyword))) {
             $searchModel = new SearchKeyword();
             $searchModel->trackKeyword($keyword);
         }
 
-        // Resolve category children if category is selected
+        // Resolve category children nếu có filter category
         $filterCategoryId = $categoryId;
-        if ($categoryId) {
-            $categoryModel = new \App\Models\Category();
-            // Get all children IDs + parent ID
-            $filterCategoryId = $categoryModel->getChildrenIds((int)$categoryId);
+        if ($categoryId !== null) {
+            $categoryModel = new Category();
+            $filterCategoryId = $categoryModel->getChildrenIds((int) $categoryId);
         }
 
-        // Tạo mảng filter
         $filters = [
             'keyword' => $keyword,
-            'category_id' => $filterCategoryId
+            'category_id' => $filterCategoryId,
         ];
 
-        // Sử dụng getFiltered để tìm kiếm tổng quát hơn (hỗ trợ cả keyword và category)
-        $products = $productModel->getFiltered($filters, $limit, $offset);
+        $productModel = new Product();
+        $products = $productModel->getFiltered($filters, self::ITEMS_PER_PAGE, $offset);
         $totalProducts = $productModel->countFiltered($filters);
-        $totalPages = ceil($totalProducts / $limit);
 
         $this->view('search/index', [
             'products' => $products,
             'keyword' => $keyword,
             'categoryId' => $categoryId,
             'currentPage' => $page,
-            'totalPages' => $totalPages
+            'totalPages' => (int) ceil($totalProducts / self::ITEMS_PER_PAGE),
         ]);
     }
 
-    public function search()
+    /**
+     * Tìm kiếm với yêu cầu đăng nhập
+     */
+    public function search(): void
     {
-        // Đảm bảo session đã được khởi tạo
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        // Kiểm tra đăng nhập
-        if (!isset($_SESSION['user'])) {
-            // Lưu URL hiện tại vào session để redirect sau khi login
+        if (!$this->isAuthenticated()) {
             $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
-            header('Location: /login');
-            exit;
+            $this->redirect('/login');
         }
 
-        // Đã đăng nhập -> Cho phép tìm kiếm
         $this->index();
     }
 
-    public function suggest()
+    /**
+     * API: Gợi ý sản phẩm cho autocomplete
+     */
+    public function suggest(): never
     {
-        $keyword = $_GET['q'] ?? '';
-        $productModel = new Product();
+        $keyword = $this->query('q', '');
 
+        $productModel = new Product();
         $results = $productModel->searchByKeyword($keyword, 6, 0);
 
-        header('Content-Type: application/json');
-        echo json_encode($results);
-        exit;
+        $this->json($results);
     }
 }

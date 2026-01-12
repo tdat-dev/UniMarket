@@ -44,28 +44,34 @@
                     </div>
 
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Địa chỉ nhận hàng</label>
-                        <input type="text" name="address"
-                            value="<?= htmlspecialchars($_SESSION['user']['address'] ?? '') ?>"
-                            placeholder="Nhập địa chỉ nhận hàng của bạn"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Địa chỉ giao hàng</label>
+                        <a href="/addresses"
+                            class="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 hover:border-blue-500 transition-colors">
+                            <i class="fa-solid fa-location-dot text-blue-500"></i>
+                            Quản lý địa chỉ giao hàng
+                            <i class="fa-solid fa-chevron-right text-xs text-gray-400"></i>
+                        </a>
                     </div>
 
+                    <?php $currentGender = $_SESSION['user']['gender'] ?? ''; ?>
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Giới tính</label>
                         <div class="flex gap-6">
                             <div class="flex items-center">
-                                <input id="gender-male" name="gender" type="radio" value="male" checked
+                                <input id="gender-male" name="gender" type="radio" value="male"
+                                    <?= $currentGender === 'male' ? 'checked' : '' ?>
                                     class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
                                 <label for="gender-male" class="ml-2 block text-sm text-gray-700">Nam</label>
                             </div>
                             <div class="flex items-center">
                                 <input id="gender-female" name="gender" type="radio" value="female"
+                                    <?= $currentGender === 'female' ? 'checked' : '' ?>
                                     class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
                                 <label for="gender-female" class="ml-2 block text-sm text-gray-700">Nữ</label>
                             </div>
                             <div class="flex items-center">
                                 <input id="gender-other" name="gender" type="radio" value="other"
+                                    <?= $currentGender === 'other' ? 'checked' : '' ?>
                                     class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
                                 <label for="gender-other" class="ml-2 block text-sm text-gray-700">Khác</label>
                             </div>

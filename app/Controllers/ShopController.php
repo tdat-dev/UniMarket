@@ -1,99 +1,100 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controllers;
 
 use App\Models\Product;
 use App\Models\User;
+use App\Models\Review;
+use App\Models\Follow;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Notification;
 
+/**
+ * Shop Controller
+ * 
+ * Xử lý trang shop của sellers và quản lý đơn hàng bán.
+ * 
+ * @package App\Controllers
+ */
 class ShopController extends BaseController
 {
-    public function index()
+    /**
+     * Trang shop của seller
+     */
+    public function index(): void
     {
-        $userId = $_GET['id'] ?? null;
-        $currentUser = null;
+        $userId = $this->query('id');
+        $currentUserId = $this->getUserId();
 
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
-        
-        if (isset($_SESSION['user']['id'])) {
-            $currentUser = $_SESSION['user']['id'];
-        }
-
-        // If no ID provided, check if logged in -> My Shop
-        if (!$userId) {
-            if ($currentUser) {
-                $userId = $currentUser;
-            } else {
-                header('Location: /login');
-                exit;
+        // Nếu không có ID, hiển thị shop của user hiện tại
+        if ($userId === null) {
+            if ($currentUserId === null) {
+                $this->redirect('/login');
             }
+            $userId = $currentUserId;
+        } else {
+            $userId = (int) $userId;
         }
 
         $userModel = new User();
         $seller = $userModel->find($userId);
 
-        if (!$seller) {
-            echo "Không tìm thấy cửa hàng";
-            exit;
+        if ($seller === null) {
+            $this->view('errors/404', ['message' => 'Không tìm thấy cửa hàng']);
+            return;
         }
 
         $productModel = new Product();
-        $products = $productModel->getByUserId($userId);
+        $reviewModel = new Review();
+        $followModel = new Follow();
 
-        $reviewModel = new \App\Models\Review();
-        $stats = $reviewModel->getSellerStats($userId);
-
-        $followModel = new \App\Models\Follow();
-        $followerCount = $followModel->getFollowerCount($userId);
         $isFollowing = false;
-        
-        if ($currentUser && $currentUser != $userId) {
-            $isFollowing = $followModel->isFollowing($currentUser, $userId);
+        if ($currentUserId !== null && $currentUserId !== $userId) {
+            $isFollowing = $followModel->isFollowing($currentUserId, $userId);
         }
 
         $productCount = $productModel->countActiveByUserId($userId);
+
+        $products = $productModel->getByUserId($userId);
+        $stats = $reviewModel->getSellerStats($userId);
+        $followerCount = $followModel->getFollowerCount($userId);
 
         $this->view('shop/index', [
             'seller' => $seller,
             'products' => $products,
             'productCount' => $productCount,
             'stats' => $stats,
-            'isOwner' => ($currentUser == $userId),
+            'isOwner' => ($currentUserId === $userId),
             'followerCount' => $followerCount,
-            'isFollowing' => $isFollowing
+            'isFollowing' => $isFollowing,
         ]);
     }
 
-    public function toggleFollow()
+    /**
+     * API: Toggle follow shop
+     */
+    public function toggleFollow(): never
     {
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
-        
-        header('Content-Type: application/json');
-
-        if (!isset($_SESSION['user']['id'])) {
-            echo json_encode(['success' => false, 'message' => 'Bạn cần đăng nhập để theo dõi']);
-            return;
+        if (!$this->isAuthenticated()) {
+            $this->jsonError('Bạn cần đăng nhập để theo dõi');
         }
 
-        $followerId = $_SESSION['user']['id'];
-        // Read JSON input
-        $input = json_decode(file_get_contents('php://input'), true);
-        $followingId = $input['shop_id'] ?? null;
+        $followerId = $this->getUserId();
+        $input = $this->getJsonInput();
+        $followingId = (int) ($input['shop_id'] ?? 0);
 
-        if (!$followingId) {
-            echo json_encode(['success' => false, 'message' => 'Shop ID is required']);
-            return;
+        if ($followingId === 0) {
+            $this->jsonError('Shop ID is required');
         }
 
-        if ($followerId == $followingId) {
-            echo json_encode(['success' => false, 'message' => 'Bạn không thể tự theo dõi chính mình']);
-            return;
+        if ($followerId === $followingId) {
+            $this->jsonError('Bạn không thể tự theo dõi chính mình');
         }
 
-        $followModel = new \App\Models\Follow();
+        $followModel = new Follow();
         $isFollowing = $followModel->isFollowing($followerId, $followingId);
 
         if ($isFollowing) {
@@ -102,43 +103,31 @@ class ShopController extends BaseController
         } else {
             $followModel->follow($followerId, $followingId);
             $newStatus = 'followed';
-            
-            // Create notification for the seller
-            $notifModel = new \App\Models\Notification();
-            $notifModel->create($followingId, "đã bắt đầu theo dõi cửa hàng của bạn."); // Name will be handled in frontend or model if we want complex text, but simple is fine.
-            // Better: Get current user name
-            // For now simple text.
+
+            // Notify seller
+            $notifModel = new Notification();
+            $notifModel->create($followingId, 'Có người mới theo dõi cửa hàng của bạn.');
         }
 
-        $newCount = $followModel->getFollowerCount($followingId);
-
-        echo json_encode([
-            'success' => true, 
-            'status' => $newStatus, 
-            'new_count' => $newCount
+        $this->jsonSuccess('OK', [
+            'status' => $newStatus,
+            'new_count' => $followModel->getFollowerCount($followingId),
         ]);
     }
 
-    public function orders()
+    /**
+     * Trang quản lý đơn bán hàng
+     */
+    public function orders(): void
     {
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
-        if (!isset($_SESSION['user'])) {
-            header('Location: /login');
-            exit;
-        }
+        $user = $this->requireAuth();
+        $userId = (int) $user['id'];
+        $status = $this->query('status', 'all');
 
-        $userId = $_SESSION['user']['id'];
-        $status = $_GET['status'] ?? 'all';
-
-        $orderModel = new \App\Models\Order();
-
-        // Quick filter implementation (Better to have filter method in Model, but fetching all & filtering array is fine for MVP)
-        // Or adding param to getBySellerId($userId, $status)
+        $orderModel = new Order();
         $allOrders = $orderModel->getBySellerId($userId);
 
-        $orders = [];
+        // Count by status
         $counts = [
             'all' => count($allOrders),
             'pending' => 0,
@@ -146,51 +135,56 @@ class ShopController extends BaseController
             'paid' => 0,
             'shipping' => 0,
             'completed' => 0,
-            'cancelled' => 0
+            'cancelled' => 0,
         ];
 
-        foreach ($allOrders as $o) {
-            if (isset($counts[$o['status']])) {
-                $counts[$o['status']]++;
+        $orders = [];
+        foreach ($allOrders as $order) {
+            $orderStatus = $order['status'];
+            if (isset($counts[$orderStatus])) {
+                $counts[$orderStatus]++;
             }
 
-            if ($status == 'all' || $o['status'] == $status) {
-                $orders[] = $o;
+            if ($status === 'all' || $orderStatus === $status) {
+                $orders[] = $order;
             }
         }
 
-        // Enrich orders with item details
-        $orderItemModel = new \App\Models\OrderItem();
+        // Enrich with items
+        $orderItemModel = new OrderItem();
         foreach ($orders as &$order) {
-            $order['items'] = $orderItemModel->getByOrderId($order['id']);
+            $order['items'] = $orderItemModel->getByOrderId((int) $order['id']);
         }
 
         $this->view('shop/orders', [
             'pageTitle' => 'Đơn bán hàng',
             'orders' => $orders,
             'currentStatus' => $status,
-            'counts' => $counts
+            'counts' => $counts,
         ]);
     }
 
-    public function updateOrderStatus()
+    /**
+     * Cập nhật trạng thái đơn hàng
+     */
+    public function updateOrderStatus(): void
     {
-        if (session_status() == PHP_SESSION_NONE)
-            session_start();
-        $userId = $_SESSION['user']['id'];
+        $user = $this->requireAuth();
+        $userId = (int) $user['id'];
 
-        $orderId = $_POST['order_id'] ?? null;
-        $status = $_POST['status'] ?? null;
+        $orderId = (int) $this->input('order_id', 0);
+        $status = $this->input('status', '');
 
-        if ($orderId && $status) {
-            $orderModel = new \App\Models\Order();
-            // Security check: Ensure order belongs to seller
-            // Fetch order, check seller_id == userId. skipped for brevity but necessary in prod.
+        if ($orderId > 0 && !empty($status)) {
+            $orderModel = new Order();
 
-            $orderModel->updateStatus($orderId, $status);
+            // Security check: ensure order belongs to seller
+            $order = $orderModel->findWithDetails($orderId);
+            if ($order !== null && (int) $order['seller_id'] === $userId) {
+                $orderModel->updateStatus($orderId, $status);
+            }
         }
 
-        header('Location: /shop/orders');
-        exit;
+        $this->redirect('/shop/orders');
     }
 }

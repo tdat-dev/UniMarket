@@ -1,49 +1,93 @@
 <?php
+use App\Helpers\SlugHelper;
+
 include __DIR__ . '/../partials/head.php';
 include __DIR__ . '/../partials/header.php';
+
+// Variables for filter partials
+$baseUrl = '/search?q=' . urlencode($keyword);
+$currentCategoryId = $_GET['category'] ?? null;
+$priceMin = $_GET['price_min'] ?? '';
+$priceMax = $_GET['price_max'] ?? '';
+$currentCondition = $_GET['condition'] ?? '';
+$currentSort = $_GET['sort'] ?? 'newest';
+
+// Nếu categories chưa được truyền từ controller, lấy từ model
+if (!isset($categories)) {
+    $categoryModel = new \App\Models\Category();
+    $categories = $categoryModel->getTree();
+}
 ?>
 
 <main class="bg-gray-100 min-h-screen pb-20 md:pb-10">
-    <div class="max-w-[1200px] mx-auto px-4 pt-8 space-y-6">
+    <div class="max-w-[1200px] mx-auto px-4 pt-6">
 
-        <div class="bg-white rounded-sm shadow-sm p-5">
-            <h1 class="text-xl font-medium text-gray-800 mb-6 border-l-4 border-[#2C67C8] pl-3">
-                Kết quả tìm kiếm: "<?= htmlspecialchars($keyword) ?>"
-            </h1>
+        <!-- Layout 2 cột: Sidebar + Content -->
+        <div class="flex gap-4">
 
-            <?php if (empty($products)): ?>
-                <p class="text-gray-500 text-center py-10">Không tìm thấy sản phẩm nào.</p>
-            <?php else: ?>
-                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                    <?php foreach ($products as $item): ?>
-                        <?php include __DIR__ . '/../partials/product_card.php'; ?>
-                    <?php endforeach; ?>
+            <!-- Sidebar (Desktop only) -->
+            <?php include __DIR__ . '/../partials/product_sidebar.php'; ?>
+
+            <!-- Mobile Filter Drawer -->
+            <?php include __DIR__ . '/../partials/mobile_filter_drawer.php'; ?>
+
+            <!-- ========== MAIN CONTENT (Bên phải) ========== -->
+            <div class="flex-1 min-w-0">
+
+                <!-- Header kết quả tìm kiếm -->
+                <div class="bg-white rounded-sm shadow-sm p-5 mb-4">
+                    <h1 class="text-xl font-medium text-gray-800 border-l-4 border-[#2C67C8] pl-3">
+                        Kết quả tìm kiếm: "<?= htmlspecialchars($keyword) ?>"
+                        <span class="text-sm font-normal text-gray-500 ml-2">(<?= count($products) ?> sản phẩm)</span>
+                    </h1>
                 </div>
 
-                <!-- Pagination -->
-                <div class="flex justify-center mt-10 gap-2">
-                    <?php if ($currentPage > 1): ?>
-                        <a href="/search?q=<?= urlencode($keyword) ?>&page=<?= $currentPage - 1 ?>"
-                            class="px-3 py-1 bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 rounded-sm">
-                            <i class="fa-solid fa-chevron-left"></i>
-                        </a>
-                    <?php endif; ?>
+                <!-- Sorting Bar -->
+                <?php
+                $title = null; // Không hiển thị title vì đã có header ở trên
+                include __DIR__ . '/../partials/product_sorting.php';
+                ?>
 
-                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                        <a href="/search?q=<?= urlencode($keyword) ?>&page=<?= $i ?>"
-                            class="px-3 py-1 border rounded-sm transition-colors <?= $i == $currentPage ? 'bg-[#2C67C8] border-[#2C67C8] text-white' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50' ?>">
-                            <?= $i ?>
-                        </a>
-                    <?php endfor; ?>
+                <!-- Product Grid -->
+                <?php if (empty($products)): ?>
+                    <div class="bg-white rounded p-10 text-center">
+                        <i class="fa-solid fa-search text-4xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-500">Không tìm thấy sản phẩm nào phù hợp.</p>
+                        <p class="text-sm text-gray-400 mt-2">Thử tìm kiếm với từ khóa khác hoặc điều chỉnh bộ lọc.</p>
+                    </div>
+                <?php else: ?>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
+                        <?php foreach ($products as $item): ?>
+                            <?php include __DIR__ . '/../partials/product_card.php'; ?>
+                        <?php endforeach; ?>
+                    </div>
 
-                    <?php if ($currentPage < $totalPages): ?>
-                        <a href="/search?q=<?= urlencode($keyword) ?>&page=<?= $currentPage + 1 ?>"
-                            class="px-3 py-1 bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 rounded-sm">
-                            <i class="fa-solid fa-chevron-right"></i>
-                        </a>
-                    <?php endif; ?>
-                </div>
-            <?php endif; ?>
+                    <!-- Pagination -->
+                    <div class="flex justify-center mt-10 gap-2">
+                        <?php if ($currentPage > 1): ?>
+                            <a href="/search?q=<?= urlencode($keyword) ?>&page=<?= $currentPage - 1 ?><?= !empty($currentCondition) ? '&condition=' . $currentCondition : '' ?><?= !empty($priceMin) ? '&price_min=' . $priceMin : '' ?><?= !empty($priceMax) ? '&price_max=' . $priceMax : '' ?>"
+                                class="px-3 py-1 bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 rounded-sm">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </a>
+                        <?php endif; ?>
+
+                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                            <a href="/search?q=<?= urlencode($keyword) ?>&page=<?= $i ?><?= !empty($currentCondition) ? '&condition=' . $currentCondition : '' ?><?= !empty($priceMin) ? '&price_min=' . $priceMin : '' ?><?= !empty($priceMax) ? '&price_max=' . $priceMax : '' ?>"
+                                class="px-3 py-1 border rounded-sm transition-colors <?= $i == $currentPage ? 'bg-[#2C67C8] border-[#2C67C8] text-white' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50' ?>">
+                                <?= $i ?>
+                            </a>
+                        <?php endfor; ?>
+
+                        <?php if ($currentPage < $totalPages): ?>
+                            <a href="/search?q=<?= urlencode($keyword) ?>&page=<?= $currentPage + 1 ?><?= !empty($currentCondition) ? '&condition=' . $currentCondition : '' ?><?= !empty($priceMin) ? '&price_min=' . $priceMin : '' ?><?= !empty($priceMax) ? '&price_max=' . $priceMax : '' ?>"
+                                class="px-3 py-1 bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 rounded-sm">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+
+            </div>
         </div>
 
     </div>

@@ -1,94 +1,127 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controllers;
 
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\User;
 use App\Models\Category;
-use App\Middleware\VerificationMiddleware;
+use App\Models\Follow;
+use App\Models\Notification;
 
-class ProductController extends BaseController // Kế thừa BaseController để dùng hàm view()
+/**
+ * Product Controller
+ * Handles product listing, viewing, creation and deletion
+ * 
+ * @package App\Controllers
+ */
+class ProductController extends BaseController
 {
-    public function index()
-    {
-        $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
-        $limit = 20; // Giảm xuống để phù hợp với layout 5 cột
-        $offset = ($page - 1) * $limit;
+    private const ITEMS_PER_PAGE = 20;
 
-        // Lấy các tham số filter từ URL
-        $keyword = $_GET['keyword'] ?? '';
-        $categoryId = isset($_GET['category_id']) ? (int) $_GET['category_id'] : 0;
-        $sort = $_GET['sort'] ?? 'newest'; // Mặc định sắp xếp theo mới nhất
-        $priceMin = isset($_GET['price_min']) && is_numeric($_GET['price_min']) ? (int) $_GET['price_min'] : null;
-        $priceMax = isset($_GET['price_max']) && is_numeric($_GET['price_max']) ? (int) $_GET['price_max'] : null;
+    /**
+     * List all products with filtering and pagination
+     * 
+     * Nếu có category_id, redirect sang SEO URL /dm/slug.cX
+     */
+    public function index(): void
+    {
+        // Redirect sang Category SEO URL nếu có category_id
+        $categoryId = (int) $this->query('category_id', 0);
+        if ($categoryId > 0) {
+            $categoryModel = new Category();
+            $category = $categoryModel->find($categoryId);
+
+            if ($category) {
+                $seoUrl = \App\Helpers\SlugHelper::categoryUrl($category['name'], $categoryId);
+                // Preserve other query params (except category_id and page)
+                $preserveParams = $_GET;
+                unset($preserveParams['category_id']);
+                unset($preserveParams['page']);
+
+                if (!empty($preserveParams)) {
+                    $seoUrl .= '?' . http_build_query($preserveParams);
+                }
+
+                header("Location: {$seoUrl}", true, 301);
+                exit;
+            }
+        }
+
+        $page = max(1, (int) $this->query('page', 1));
+        $offset = ($page - 1) * self::ITEMS_PER_PAGE;
+
+        $filters = [
+            'category_id' => 0, // No category filter on /products
+            'keyword' => $this->query('keyword', ''),
+            'price_min' => $this->getNumericQuery('price_min'),
+            'price_max' => $this->getNumericQuery('price_max'),
+            'sort' => $this->query('sort', 'newest')
+        ];
 
         $productModel = new Product();
         $categoryModel = new Category();
 
-        // Tạo mảng filters để truyền vào model
-        $filters = [
-            'category_id' => $categoryId,
-            'keyword' => $keyword,
-            'price_min' => $priceMin,
-            'price_max' => $priceMax,
-            'sort' => $sort
-        ];
-
-        // Gọi hàm mới hỗ trợ đầy đủ filter + sort
-        $products = $productModel->getFiltered($filters, $limit, $offset);
+        $products = $productModel->getFiltered($filters, self::ITEMS_PER_PAGE, $offset);
         $totalProducts = $productModel->countFiltered($filters);
-
-        $totalPages = ceil($totalProducts / $limit);
-        $categories = $categoryModel->getTree();
+        $totalPages = (int) ceil($totalProducts / self::ITEMS_PER_PAGE);
 
         $this->view('products/index', [
             'products' => $products,
             'currentPage' => $page,
             'totalPages' => $totalPages,
-            'categories' => $categories,
-            'keyword' => $keyword,
-            'categoryId' => $categoryId,
-            'sort' => $sort,
-            'priceMin' => $priceMin,
-            'priceMax' => $priceMax
+            'categories' => $categoryModel->getTree(),
+            'keyword' => $filters['keyword'],
+            'categoryId' => 0,
+            'sort' => $filters['sort'],
+            'priceMin' => $filters['price_min'],
+            'priceMax' => $filters['price_max']
         ]);
     }
 
-    public function show()
+    /**
+     * Show product với SEO URL (Zoldify style)
+     * 
+     * URL: /z/ten-san-pham.p123
+     */
+    public function showBySlug(string $slug, int $productId): void
     {
-        // Lấy ID từ URL: product-detail?id=5
-        $id = $_GET['id'] ?? null;
+        // Gọi show() với flag fromSeoUrl=true để không redirect lại
+        $this->show($productId, true);
+    }
 
+    /**
+     * Show single product detail
+     * 
+     * Nếu truy cập bằng URL cũ /products/{id}, redirect sang SEO URL mới
+     */
+    public function show(int|string $id, bool $fromSeoUrl = false): void
+    {
         $productModel = new Product();
-        $product = $productModel->find($id);
+        $product = $productModel->find((int) $id);
 
         if (!$product) {
-            die("Sản phẩm không tồn tại"); // Hoặc redirect 404
+            $this->handleNotFound('Sản phẩm không tồn tại');
+            return;
         }
 
-        // Lấy thông tin người bán
+        // Redirect sang SEO URL nếu truy cập bằng URL cũ
+        if (!$fromSeoUrl) {
+            $seoUrl = \App\Helpers\SlugHelper::productUrl(
+                $product['name'],
+                (int) $product['user_id'],
+                (int) $product['id']
+            );
+            header("Location: {$seoUrl}", true, 301);
+            exit;
+        }
+
         $userModel = new User();
         $seller = $userModel->find($product['user_id']);
 
-        // Lấy tất cả ảnh của sản phẩm (có try-catch phòng trường hợp bảng chưa tồn tại)
-        $productImages = [];
-        try {
-            $productImageModel = new ProductImage();
-            $productImages = $productImageModel->getByProductId($id);
-        } catch (\Exception $e) {
-            // Bảng product_images chưa tồn tại, bỏ qua
-            $productImages = [];
-        }
-
-        // Nếu chưa có ảnh trong bảng mới, dùng ảnh từ cột image
-        if (empty($productImages) && !empty($product['image'])) {
-            $productImages = [
-                ['image_path' => $product['image'], 'is_primary' => 1]
-            ];
-        }
-
-        // Lấy sản phẩm liên quan (cùng danh mục, trừ sản phẩm hiện tại)
+        $productImages = $this->getProductImages((int) $id, $product['image'] ?? null);
         $relatedProducts = $productModel->getByCategory($product['category_id'], 4, $product['id']);
 
         // Stats
@@ -107,34 +140,130 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
         ]);
     }
 
-    // Hàm hiện form đăng tin
-    public function create()
+    /**
+     * Show product creation form
+     */
+    public function create(): void
     {
         $categoryModel = new Category();
-        $categories = $categoryModel->getTree();
-        $this->view('products/create', ['categories' => $categories]);
+        $this->view('products/create', [
+            'categories' => $categoryModel->getTree()
+        ]);
     }
 
-    // Hàm xử lý lưu tin
-    public function store()
+    /**
+     * Store new product
+     */
+    public function store(): void
     {
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (!isset($_SESSION['user'])) {
-            header('Location: /login');
-            exit;
-        }
+        $user = $this->requireAuth();
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /products/create');
-            exit;
+            $this->redirect('/products/create');
         }
 
-        // 1. Validate dữ liệu
-        $errors = [];
         $data = $_POST;
+        $errors = $this->validateProductData($data);
+
+        if (!empty($errors)) {
+            $categoryModel = new Category();
+            $this->view('products/create', [
+                'errors' => $errors,
+                'old' => $data,
+                'categories' => $categoryModel->getTree()
+            ]);
+            return;
+        }
+
+        $uploadedImages = $this->handleImageUpload();
+        $mainImage = $uploadedImages[0] ?? 'default_product.png';
+
+        $productData = [
+            'name' => htmlspecialchars($data['name']),
+            'price' => (int) $data['price'],
+            'description' => $this->buildDescription($data),
+            'user_id' => $user['id'],
+            'category_id' => (int) $data['category_id'],
+            'quantity' => max(1, (int) ($data['quantity'] ?? 1)),
+            'image' => $mainImage
+        ];
+
+        try {
+            $productModel = new Product();
+            $newId = $productModel->create($productData);
+
+            if ($newId) {
+                $this->saveProductImages($newId, $uploadedImages);
+                $this->notifyFollowers($user, $productData['name']);
+                $this->redirect('/shop?id=' . $user['id']);
+            } else {
+                throw new \Exception('Không thể tạo sản phẩm');
+            }
+        } catch (\Exception $e) {
+            $categoryModel = new Category();
+            $this->view('products/create', [
+                'errors' => ['db' => 'Lỗi: ' . $e->getMessage()],
+                'old' => $data,
+                'categories' => $categoryModel->getTree()
+            ]);
+        }
+    }
+
+    /**
+     * Cancel product sale (delete or hide)
+     */
+    public function cancelSale(int|string $id): void
+    {
+        if (!$this->isAuthenticated()) {
+            $this->jsonError('Bạn chưa đăng nhập', 401);
+        }
+
+        $productId = (int) $id;
+        $productModel = new Product();
+        $product = $productModel->find($productId);
+
+        if (!$product) {
+            $this->jsonError('Sản phẩm không tồn tại', 404);
+        }
+
+        if ($product['user_id'] !== $this->getUserId()) {
+            $this->jsonError('Bạn không có quyền xoá sản phẩm này', 403);
+        }
+
+        // Check if product has any orders
+        if ($productModel->hasAnyOrder($productId)) {
+            $this->jsonError(
+                'Sản phẩm đã phát sinh đơn hàng nên không thể xoá vĩnh viễn. Bạn chỉ có thể ẩn sản phẩm.',
+                400
+            );
+        }
+
+        if ($productModel->delete($productId)) {
+            $this->jsonSuccess('Đã xoá sản phẩm thành công');
+        } else {
+            $this->jsonError('Lỗi hệ thống, không thể xoá', 500);
+        }
+    }
+
+    // ==================== PRIVATE HELPERS ====================
+
+    /**
+     * Get numeric query parameter
+     */
+    private function getNumericQuery(string $key): ?int
+    {
+        $value = $this->query($key);
+        return ($value !== null && is_numeric($value)) ? (int) $value : null;
+    }
+
+    /**
+     * Validate product data
+     * 
+     * @return array<string, string> Errors
+     */
+    private function validateProductData(array $data): array
+    {
+        $errors = [];
 
         if (empty($data['name'])) {
             $errors['name'] = 'Tên sản phẩm không được để trống';
@@ -148,167 +277,132 @@ class ProductController extends BaseController // Kế thừa BaseController đ�
             $errors['category_id'] = 'Vui lòng chọn danh mục';
         }
 
-        if (empty($data['quantity']) || $data['quantity'] < 1) {
-            $data['quantity'] = 1; // Default
-        }
-
-        // Validate Image
-        if (!isset($_FILES['images']) || $_FILES['images']['error'][0] != UPLOAD_ERR_OK) {
-            // Optional: Allow product without image? Usually no for a marketplace.
-            // For now require at least one image
+        if (!isset($_FILES['images']) || $_FILES['images']['error'][0] !== UPLOAD_ERR_OK) {
             $errors['images'] = 'Vui lòng chọn ít nhất 1 ảnh sản phẩm';
         }
 
-        if (!empty($errors)) {
-            $this->view('products/create', ['errors' => $errors, 'old' => $data]);
-            return;
+        return $errors;
+    }
+
+    /**
+     * Handle image upload
+     * 
+     * @return array<string> Uploaded image paths
+     */
+    private function handleImageUpload(): array
+    {
+        $uploadedImages = [];
+
+        if (!isset($_FILES['images']) || empty($_FILES['images']['name'][0])) {
+            return $uploadedImages;
         }
 
-        // 2. Handle Image Upload - Upload TẤT CẢ ảnh
-        $uploadedImages = []; // Mảng chứa đường dẫn các ảnh đã upload
-        $mainImage = 'default_product.png'; // Fallback cho cột image (backwards compatible)
+        $rootDir = __DIR__ . '/../../public/';
+        $uploadDir = 'uploads/products/';
 
-        if (isset($_FILES['images']) && !empty($_FILES['images']['name'][0])) {
-            $rootDir = __DIR__ . '/../../public/';
-            $uploadDir = 'uploads/products/';
+        if (!is_dir($rootDir . $uploadDir)) {
+            mkdir($rootDir . $uploadDir, 0777, true);
+        }
 
-            // Đảm bảo thư mục tồn tại
-            if (!is_dir($rootDir . $uploadDir)) {
-                mkdir($rootDir . $uploadDir, 0777, true);
-            }
+        $fileCount = count($_FILES['images']['name']);
+        for ($i = 0; $i < $fileCount; $i++) {
+            if ($_FILES['images']['error'][$i] === UPLOAD_ERR_OK) {
+                $fileTmp = $_FILES['images']['tmp_name'][$i];
+                $fileName = time() . '_' . $i . '_' . basename($_FILES['images']['name'][$i]);
 
-            // Loop qua TẤT CẢ ảnh được upload
-            $fileCount = count($_FILES['images']['name']);
-            for ($i = 0; $i < $fileCount; $i++) {
-                if ($_FILES['images']['error'][$i] === UPLOAD_ERR_OK) {
-                    $fileTmp = $_FILES['images']['tmp_name'][$i];
-                    $fileName = time() . '_' . $i . '_' . $_FILES['images']['name'][$i];
-
-                    if (move_uploaded_file($fileTmp, $rootDir . $uploadDir . $fileName)) {
-                        $imagePath = 'products/' . $fileName;
-                        $uploadedImages[] = $imagePath;
-
-                        // Ảnh đầu tiên làm main image
-                        if ($i === 0) {
-                            $mainImage = $imagePath;
-                        }
-                    }
+                if (move_uploaded_file($fileTmp, $rootDir . $uploadDir . $fileName)) {
+                    $uploadedImages[] = 'products/' . $fileName;
                 }
             }
         }
 
-        // 3. Save to DB
-        $productModel = new Product();
-        $productData = [
-            'name' => htmlspecialchars($data['name']),
-            'price' => (int) $data['price'],
-            'description' => htmlspecialchars($data['description'] ?? ''),
-            'user_id' => $_SESSION['user']['id'],
-            'category_id' => (int) $data['category_id'],
-            'quantity' => (int) $data['quantity'],
-            'image' => $mainImage // Vẫn lưu ảnh chính vào cột image (backwards compatible)
-        ];
+        return $uploadedImages;
+    }
 
-        // Nếu có trường condition từ form
+    /**
+     * Build product description with condition
+     */
+    private function buildDescription(array $data): string
+    {
+        $description = htmlspecialchars($data['description'] ?? '');
+
         if (!empty($data['condition'])) {
-            $productData['description'] .= "\n\nTình trạng: " . ($data['condition'] == 'new' ? 'Mới 100%' : $data['condition']);
+            $conditionText = $data['condition'] === 'new' ? 'Mới 100%' : $data['condition'];
+            $description .= "\n\nTình trạng: " . $conditionText;
+        }
+
+        return $description;
+    }
+
+    /**
+     * Get product images with fallback
+     * 
+     * @return array<int, array<string, mixed>>
+     */
+    private function getProductImages(int $productId, ?string $fallbackImage): array
+    {
+        try {
+            $productImageModel = new ProductImage();
+            $images = $productImageModel->getByProductId($productId);
+
+            if (!empty($images)) {
+                return $images;
+            }
+        } catch (\Exception $e) {
+            // Table might not exist
+        }
+
+        // Fallback to main image
+        if (!empty($fallbackImage)) {
+            return [['image_path' => $fallbackImage, 'is_primary' => 1]];
+        }
+
+        return [];
+    }
+
+    /**
+     * Save product images to database
+     */
+    private function saveProductImages(int $productId, array $images): void
+    {
+        if (empty($images)) {
+            return;
         }
 
         try {
-            $newId = $productModel->create($productData);
-            if ($newId) {
-                // Lưu TẤT CẢ ảnh vào bảng product_images (nếu bảng tồn tại)
-                if (!empty($uploadedImages)) {
-                    try {
-                        $productImageModel = new ProductImage();
-                        $productImageModel->addMultiple($newId, $uploadedImages);
-                    } catch (\Exception $e) {
-                        // Bảng product_images chưa tồn tại, bỏ qua
-                        // Ảnh chính đã được lưu vào cột image của products
-                    }
-                }
-
-                // Notify followers
-                try {
-                    $followModel = new \App\Models\Follow();
-                    $notifModel = new \App\Models\Notification();
-                    
-                    $followers = $followModel->getFollowers($_SESSION['user']['id']);
-                    $senderName = $_SESSION['user']['full_name'];
-                    $productName = $productData['name'];
-                    
-                    foreach ($followers as $follower) {
-                        $content = "Shop $senderName vừa đăng bán sản phẩm mới: $productName";
-                        $notifModel->create($follower['id'], $content);
-                    }
-                } catch (\Exception $e) {
-                    // Ignore notification errors
-                }
-
-                // Success -> Redirect to product detail or shop
-                header('Location: /shop?id=' . $_SESSION['user']['id']);
-                exit;
-            } else {
-                $errors['db'] = 'Lỗi hệ thống, không thể tạo sản phẩm';
-                $this->view('products/create', ['errors' => $errors, 'old' => $data]);
-            }
+            $productImageModel = new ProductImage();
+            $productImageModel->addMultiple($productId, $images);
         } catch (\Exception $e) {
-            $errors['db'] = 'Lỗi: ' . $e->getMessage();
-            $this->view('products/create', ['errors' => $errors, 'old' => $data]);
+            // Table might not exist, ignore
         }
     }
 
-    public function cancelSale()
+    /**
+     * Notify followers about new product
+     */
+    private function notifyFollowers(array $user, string $productName): void
     {
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
+        try {
+            $followModel = new Follow();
+            $notifModel = new Notification();
+
+            $followers = $followModel->getFollowers($user['id']);
+            $content = "Shop {$user['full_name']} vừa đăng bán sản phẩm mới: {$productName}";
+
+            foreach ($followers as $follower) {
+                $notifModel->create($follower['id'], $content);
+            }
+        } catch (\Exception $e) {
+            // Ignore notification errors
         }
+    }
 
-        header('Content-Type: application/json');
-
-        if (!isset($_SESSION['user'])) {
-            echo json_encode(['success' => false, 'message' => 'Bạn chưa đăng nhập']);
-            return;
-        }
-
-        $input = json_decode(file_get_contents('php://input'), true);
-        $productId = $input['product_id'] ?? null;
-
-        if (!$productId) {
-            echo json_encode(['success' => false, 'message' => 'Sản phẩm không hợp lệ']);
-            return;
-        }
-
-        $productModel = new Product();
-        $product = $productModel->find($productId);
-
-        if (!$product) {
-            echo json_encode(['success' => false, 'message' => 'Sản phẩm không tồn tại']);
-            return;
-        }
-
-        if ($product['user_id'] != $_SESSION['user']['id']) {
-            echo json_encode(['success' => false, 'message' => 'Bạn không có quyền xoá sản phẩm này']);
-            return;
-        }
-
-        // Kiểm tra xem sản phẩm đã từng có đơn hàng nào chưa
-        // Nếu đã có đơn hàng (dù đã giao, huỷ hay đang giao) thì KHÔNG được xoá khỏi DB để giữ lịch sử
-        if ($productModel->hasAnyOrder($productId)) {
-             echo json_encode([
-                 'success' => false, 
-                 'message' => 'Sản phẩm này đã từng phát sinh đơn hàng nên không thể xoá vĩnh viễn khỏi hệ thống (để lưu lịch sử cho khách). Bạn chỉ có thể Huỷ bán (ẩn đi) thôi nhé!'
-             ]);
-             return;
-        }
-
-        // Nếu chưa có đơn nào -> Xoá vĩnh viễn
-        $success = $productModel->delete($productId);
-
-        if ($success) {
-            echo json_encode(['success' => true, 'message' => 'Đã xoá sản phẩm thành công']);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Lỗi hệ thống, không thể xoá']);
-        }
+    /**
+     * Handle not found response
+     */
+    private function handleNotFound(string $message): void
+    {
+        http_response_code(404);
+        $this->view('errors/404', ['message' => $message]);
     }
 }
