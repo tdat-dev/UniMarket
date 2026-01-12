@@ -1,0 +1,350 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.2.9 Chrome/140.0.7339.249 Electron/38.7.2 Safari/537.36" version="29.2.9" pages="1">
+  <diagram name="Đăng bán sản phẩm" id="product-create-seq">
+    <mxGraphModel dx="1892" dy="1212" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- ========== LIFELINES ========== -->
+        <mxCell id="user-line" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="110" y="80" as="sourcePoint" />
+            <mxPoint x="110" y="1300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="view-line" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="280" y="80" as="sourcePoint" />
+            <mxPoint x="280" y="1300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ctrl-line" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="480" y="80" as="sourcePoint" />
+            <mxPoint x="480" y="1300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="product-model-line" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="680" y="80" as="sourcePoint" />
+            <mxPoint x="680" y="1300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="image-model-line" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="880" y="80" as="sourcePoint" />
+            <mxPoint x="880" y="1300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="notif-model-line" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1060" y="80" as="sourcePoint" />
+            <mxPoint x="1060" y="1300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="db-line" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1220" y="80" as="sourcePoint" />
+            <mxPoint x="1220" y="1300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ========== PARTICIPANT BOXES ========== -->
+        <mxCell id="user-box" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;u&gt;C : User (Seller)&lt;/u&gt;" vertex="1">
+          <mxGeometry height="50" width="110" x="55" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="view-box" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;u&gt;A : View&lt;/u&gt;" vertex="1">
+          <mxGeometry height="50" width="110" x="225" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ctrl-box" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;u&gt;Controller : ProductController&lt;/u&gt;" vertex="1">
+          <mxGeometry height="50" width="130" x="415" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="product-model-box" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;u&gt;Model : Product&lt;/u&gt;" vertex="1">
+          <mxGeometry height="50" width="110" x="625" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="image-model-box" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;u&gt;Model : ProductImage&lt;/u&gt;" vertex="1">
+          <mxGeometry height="50" width="110" x="825" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="notif-model-box" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;u&gt;Model : Notification&lt;/u&gt;" vertex="1">
+          <mxGeometry height="50" width="110" x="1005" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="db-box" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;u&gt;DB : Database&lt;/u&gt;" vertex="1">
+          <mxGeometry height="50" width="110" x="1165" y="30" as="geometry" />
+        </mxCell>
+        
+        <!-- ========== PHASE 1: DISPLAY CREATE FORM ========== -->
+        <mxCell id="frame1" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 1: Hiển thị form đăng bán" vertex="1">
+          <mxGeometry x="40" y="100" width="1260" height="180" as="geometry" />
+        </mxCell>
+        
+        <!-- User clicks create product -->
+        <mxCell id="msg1" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="1 : clickCreateProduct()">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="115" y="140" as="sourcePoint" />
+            <mxPoint x="275" y="140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- View calls Controller -->
+        <mxCell id="msg2" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="2 : create()">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="285" y="165" as="sourcePoint" />
+            <mxPoint x="475" y="165" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Controller activation bar -->
+        <mxCell id="ctrl-act1" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="70" width="10" x="475" y="165" as="geometry" />
+        </mxCell>
+        
+        <!-- Controller gets categories -->
+        <mxCell id="msg3" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="3 : getTree()">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="485" y="190" as="sourcePoint" />
+            <mxPoint x="675" y="190" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Note: Call Category Model -->
+        <mxCell id="note-cat" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 10px; background-color: rgb(18, 18, 18);&quot;&gt;(via CategoryModel)&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="100" x="540" y="170" as="geometry" />
+        </mxCell>
+        
+        <!-- Return categories -->
+        <mxCell id="msg4" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;" value="4 : return $categories">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="675" y="210" as="sourcePoint" />
+            <mxPoint x="485" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Controller returns view -->
+        <mxCell id="msg5" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="5 : view('products/create', $categories)">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="475" y="235" as="sourcePoint" />
+            <mxPoint x="275" y="235" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- View displays form -->
+        <mxCell id="msg6" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="6 : displayCreateForm()">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="275" y="260" as="sourcePoint" />
+            <mxPoint x="115" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ========== PHASE 2: FILL AND SUBMIT FORM ========== -->
+        <mxCell id="frame2" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 2: Nhập thông tin và gửi" vertex="1">
+          <mxGeometry x="40" y="300" width="1260" height="200" as="geometry" />
+        </mxCell>
+        
+        <!-- User fills form -->
+        <mxCell id="msg7" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="7 : fillProductInfo(name, price, description, quantity, category)">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="115" y="340" as="sourcePoint" />
+            <mxPoint x="275" y="340" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- User uploads images -->
+        <mxCell id="msg8" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="8 : uploadImages($files[])">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="115" y="370" as="sourcePoint" />
+            <mxPoint x="275" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- User submits -->
+        <mxCell id="msg9" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="9 : submitForm()">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="115" y="400" as="sourcePoint" />
+            <mxPoint x="275" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- View calls store -->
+        <mxCell id="msg10" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="10 : store($_POST, $_FILES)">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="285" y="430" as="sourcePoint" />
+            <mxPoint x="475" y="430" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Controller activation bar for validation -->
+        <mxCell id="ctrl-act2" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="60" width="10" x="475" y="430" as="geometry" />
+        </mxCell>
+        
+        <!-- Validation note -->
+        <mxCell id="note-validate" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 11px; background-color: rgb(18, 18, 18);&quot;&gt;11 : validateData() - Check name, price, category, images&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="200" x="490" y="450" as="geometry" />
+        </mxCell>
+        
+        <!-- ========== PHASE 3: PROCESS UPLOAD AND SAVE ========== -->
+        <mxCell id="frame3" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 3: Upload ảnh và lưu sản phẩm" vertex="1">
+          <mxGeometry x="40" y="520" width="1260" height="340" as="geometry" />
+        </mxCell>
+        
+        <!-- Controller activation bar for saving -->
+        <mxCell id="ctrl-act3" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="300" width="10" x="475" y="550" as="geometry" />
+        </mxCell>
+        
+        <!-- Upload images note -->
+        <mxCell id="note-upload" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 11px; background-color: rgb(18, 18, 18);&quot;&gt;12 : processImageUpload() - move_uploaded_file() to /uploads/products/&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="250" x="490" y="560" as="geometry" />
+        </mxCell>
+        
+        <!-- Controller creates product -->
+        <mxCell id="msg11" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="13 : create($productData)">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="485" y="610" as="sourcePoint" />
+            <mxPoint x="675" y="610" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Product Model activation -->
+        <mxCell id="product-act" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="60" width="10" x="675" y="610" as="geometry" />
+        </mxCell>
+        
+        <!-- Product Model inserts to DB -->
+        <mxCell id="msg12" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="14 : INSERT INTO products (name, price, description, user_id, category_id, quantity, image)">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="685" y="635" as="sourcePoint" />
+            <mxPoint x="1215" y="635" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- DB returns product ID -->
+        <mxCell id="msg13" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;" value="15 : return $productId">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1215" y="655" as="sourcePoint" />
+            <mxPoint x="685" y="655" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Product Model returns -->
+        <mxCell id="msg14" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;" value="16 : return $newId">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="675" y="680" as="sourcePoint" />
+            <mxPoint x="485" y="680" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Controller saves images -->
+        <mxCell id="msg15" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="17 : addMultiple($productId, $uploadedImages[])">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="485" y="710" as="sourcePoint" />
+            <mxPoint x="875" y="710" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ProductImage Model activation -->
+        <mxCell id="image-act" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="60" width="10" x="875" y="710" as="geometry" />
+        </mxCell>
+        
+        <!-- ProductImage inserts to DB -->
+        <mxCell id="msg16" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="18 : INSERT INTO product_images (product_id, image_path, is_primary)">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="885" y="735" as="sourcePoint" />
+            <mxPoint x="1215" y="735" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- DB returns success -->
+        <mxCell id="msg17" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;" value="19 : success">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1215" y="755" as="sourcePoint" />
+            <mxPoint x="885" y="755" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ProductImage returns -->
+        <mxCell id="msg18" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;" value="20 : return true">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="875" y="780" as="sourcePoint" />
+            <mxPoint x="485" y="780" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ========== PHASE 4: NOTIFY FOLLOWERS ========== -->
+        <mxCell id="frame4" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 4: Thông báo người theo dõi" vertex="1">
+          <mxGeometry x="40" y="880" width="1260" height="200" as="geometry" />
+        </mxCell>
+        
+        <!-- Controller activation continues -->
+        <mxCell id="ctrl-act4" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="160" width="10" x="475" y="910" as="geometry" />
+        </mxCell>
+        
+        <!-- Controller gets followers -->
+        <mxCell id="msg19" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="21 : getFollowers($sellerId)">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="485" y="940" as="sourcePoint" />
+            <mxPoint x="1055" y="940" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Note via FollowModel -->
+        <mxCell id="note-follow" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 10px; background-color: rgb(18, 18, 18);&quot;&gt;(via FollowModel)&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="90" x="740" y="920" as="geometry" />
+        </mxCell>
+        
+        <!-- Returns followers -->
+        <mxCell id="msg20" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;" value="22 : return $followers[]">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1055" y="960" as="sourcePoint" />
+            <mxPoint x="485" y="960" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Loop frame -->
+        <mxCell id="loop-frame" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#999999;dashed=1;" value="loop [foreach $follower]" vertex="1">
+          <mxGeometry x="470" y="975" width="770" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Controller creates notification -->
+        <mxCell id="msg21" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="23 : create($followerId, 'Shop X vừa đăng sản phẩm mới: Y')">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="485" y="1005" as="sourcePoint" />
+            <mxPoint x="1055" y="1005" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Notification Model inserts -->
+        <mxCell id="msg22" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="24 : INSERT INTO notifications">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="1065" y="1020" as="sourcePoint" />
+            <mxPoint x="1215" y="1020" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ========== PHASE 5: REDIRECT ========== -->
+        <mxCell id="frame5" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 5: Hoàn thành và chuyển hướng" vertex="1">
+          <mxGeometry x="40" y="1100" width="1260" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- Controller redirects -->
+        <mxCell id="msg23" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="25 : redirect('/shop?id=' . $userId)">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="475" y="1140" as="sourcePoint" />
+            <mxPoint x="275" y="1140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- View displays shop page -->
+        <mxCell id="msg24" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="26 : displayShopPage('Đăng sản phẩm thành công!')">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="275" y="1170" as="sourcePoint" />
+            <mxPoint x="115" y="1170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

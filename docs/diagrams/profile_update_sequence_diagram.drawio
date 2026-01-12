@@ -1,0 +1,349 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.2.9 Chrome/140.0.7339.249 Electron/38.7.2 Safari/537.36" version="29.2.9" pages="1">
+  <diagram name="Cập nhật hồ sơ" id="profile-update-seq">
+    <mxGraphModel dx="1892" dy="1212" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- ========== LIFELINES ========== -->
+        <mxCell id="user-line" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="110" y="80" as="sourcePoint" />
+            <mxPoint x="110" y="1300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="view-line" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="280" y="80" as="sourcePoint" />
+            <mxPoint x="280" y="1300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ctrl-line" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="480" y="80" as="sourcePoint" />
+            <mxPoint x="480" y="1300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="auth-svc-line" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="680" y="80" as="sourcePoint" />
+            <mxPoint x="680" y="1300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="user-model-line" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="880" y="80" as="sourcePoint" />
+            <mxPoint x="880" y="1300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="db-line" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1060" y="80" as="sourcePoint" />
+            <mxPoint x="1060" y="1300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ========== PARTICIPANT BOXES ========== -->
+        <mxCell id="user-box" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;u&gt;C : User&lt;/u&gt;" vertex="1">
+          <mxGeometry height="50" width="110" x="55" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="view-box" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;u&gt;A : View&lt;/u&gt;" vertex="1">
+          <mxGeometry height="50" width="110" x="225" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ctrl-box" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;u&gt;Controller : ProfileController&lt;/u&gt;" vertex="1">
+          <mxGeometry height="50" width="130" x="415" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="auth-svc-box" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;u&gt;Service : AuthService&lt;/u&gt;" vertex="1">
+          <mxGeometry height="50" width="110" x="625" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="user-model-box" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;u&gt;Model : User&lt;/u&gt;" vertex="1">
+          <mxGeometry height="50" width="110" x="825" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="db-box" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;u&gt;DB : Database&lt;/u&gt;" vertex="1">
+          <mxGeometry height="50" width="110" x="1005" y="30" as="geometry" />
+        </mxCell>
+        
+        <!-- ========== PHASE 1: VIEW PROFILE ========== -->
+        <mxCell id="frame1" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 1: Xem thông tin hồ sơ" vertex="1">
+          <mxGeometry x="40" y="100" width="1100" height="180" as="geometry" />
+        </mxCell>
+        
+        <!-- User opens profile -->
+        <mxCell id="msg1" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="1 : clickProfileMenu()">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="115" y="140" as="sourcePoint" />
+            <mxPoint x="275" y="140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- View calls controller -->
+        <mxCell id="msg2" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="2 : index()">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="285" y="165" as="sourcePoint" />
+            <mxPoint x="475" y="165" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Controller activation -->
+        <mxCell id="ctrl-act1" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="90" width="10" x="475" y="165" as="geometry" />
+        </mxCell>
+        
+        <!-- Controller gets user -->
+        <mxCell id="msg3" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="3 : find($_SESSION['user']['id'])">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="485" y="195" as="sourcePoint" />
+            <mxPoint x="875" y="195" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- User Model returns -->
+        <mxCell id="msg4" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;" value="4 : return $user (full_name, email, phone, address, avatar)">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="875" y="215" as="sourcePoint" />
+            <mxPoint x="485" y="215" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Controller returns view -->
+        <mxCell id="msg5" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="5 : view('profile/index', $user)">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="475" y="245" as="sourcePoint" />
+            <mxPoint x="275" y="245" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- View displays -->
+        <mxCell id="msg6" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="6 : displayProfileForm()">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="275" y="265" as="sourcePoint" />
+            <mxPoint x="115" y="265" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ========== PHASE 2: UPDATE PROFILE INFO ========== -->
+        <mxCell id="frame2" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 2: Cập nhật thông tin cá nhân" vertex="1">
+          <mxGeometry x="40" y="300" width="1100" height="220" as="geometry" />
+        </mxCell>
+        
+        <!-- User edits and submits -->
+        <mxCell id="msg7" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="7 : editFields(fullname, phone, address) + submitForm()">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="115" y="340" as="sourcePoint" />
+            <mxPoint x="275" y="340" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- View calls controller update -->
+        <mxCell id="msg8" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="8 : update($_POST)">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="285" y="370" as="sourcePoint" />
+            <mxPoint x="475" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Controller activation -->
+        <mxCell id="ctrl-act2" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="110" width="10" x="475" y="370" as="geometry" />
+        </mxCell>
+        
+        <!-- Sanitize note -->
+        <mxCell id="note-sanitize" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 11px; background-color: rgb(18, 18, 18);&quot;&gt;9 : htmlspecialchars() + trim() - Sanitize input&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="200" x="490" y="390" as="geometry" />
+        </mxCell>
+        
+        <!-- Controller calls user model -->
+        <mxCell id="msg9" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="10 : updateProfile($userId, $data)">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="485" y="430" as="sourcePoint" />
+            <mxPoint x="875" y="430" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- User Model updates DB -->
+        <mxCell id="msg10" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="11 : UPDATE users SET full_name=?, phone_number=?, address=?">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="885" y="455" as="sourcePoint" />
+            <mxPoint x="1055" y="455" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Update session note -->
+        <mxCell id="note-session" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 11px; background-color: rgb(18, 18, 18);&quot;&gt;12 : $_SESSION['user'] = array_merge($_SESSION['user'], $data)&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="260" x="490" y="475" as="geometry" />
+        </mxCell>
+        
+        <!-- Controller redirects -->
+        <mxCell id="msg11" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="13 : redirect('/profile')">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="475" y="505" as="sourcePoint" />
+            <mxPoint x="115" y="505" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ========== PHASE 3: UPDATE AVATAR ========== -->
+        <mxCell id="frame3" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 3: Cập nhật ảnh đại diện" vertex="1">
+          <mxGeometry x="40" y="540" width="1100" height="260" as="geometry" />
+        </mxCell>
+        
+        <!-- User selects avatar -->
+        <mxCell id="msg12" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="14 : selectFile($avatar) + uploadForm()">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="115" y="580" as="sourcePoint" />
+            <mxPoint x="275" y="580" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- View calls controller -->
+        <mxCell id="msg13" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="15 : updateAvatar($_FILES['avatar'])">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="285" y="610" as="sourcePoint" />
+            <mxPoint x="475" y="610" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Controller activation -->
+        <mxCell id="ctrl-act3" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="160" width="10" x="475" y="610" as="geometry" />
+        </mxCell>
+        
+        <!-- Validate file -->
+        <mxCell id="note-validate-file" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 11px; background-color: rgb(18, 18, 18);&quot;&gt;16 : validateFile() - Check extension (jpg, png, gif, webp), size &lt; 5MB&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="280" x="490" y="630" as="geometry" />
+        </mxCell>
+        
+        <!-- Move file -->
+        <mxCell id="note-move" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 11px; background-color: rgb(18, 18, 18);&quot;&gt;17 : move_uploaded_file() → /uploads/avatars/avatar_userId_time.ext&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="290" x="490" y="665" as="geometry" />
+        </mxCell>
+        
+        <!-- Controller updates user model -->
+        <mxCell id="msg14" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="18 : updateProfile($userId, ['avatar' => $newFilename])">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="485" y="710" as="sourcePoint" />
+            <mxPoint x="875" y="710" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- User Model updates DB -->
+        <mxCell id="msg15" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="19 : UPDATE users SET avatar = ?">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="885" y="735" as="sourcePoint" />
+            <mxPoint x="1055" y="735" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Update session -->
+        <mxCell id="note-session-avatar" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 11px; background-color: rgb(18, 18, 18);&quot;&gt;20 : $_SESSION['user']['avatar'] = $newFilename&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="200" x="490" y="755" as="geometry" />
+        </mxCell>
+        
+        <!-- Controller redirects -->
+        <mxCell id="msg16" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="21 : redirect(HTTP_REFERER)">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="475" y="785" as="sourcePoint" />
+            <mxPoint x="115" y="785" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ========== PHASE 4: CHANGE PASSWORD ========== -->
+        <mxCell id="frame4" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 4: Đổi mật khẩu" vertex="1">
+          <mxGeometry x="40" y="820" width="1100" height="320" as="geometry" />
+        </mxCell>
+        
+        <!-- User opens change password -->
+        <mxCell id="msg17" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="22 : clickChangePassword()">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="115" y="860" as="sourcePoint" />
+            <mxPoint x="275" y="860" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- View calls controller -->
+        <mxCell id="msg18" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="23 : changePassword()">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="285" y="885" as="sourcePoint" />
+            <mxPoint x="475" y="885" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Controller returns form -->
+        <mxCell id="msg19" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="24 : view('profile/change_password')">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="475" y="910" as="sourcePoint" />
+            <mxPoint x="115" y="910" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- User submits new password -->
+        <mxCell id="msg20" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="25 : fillForm(current, new, confirm) + submit()">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="115" y="945" as="sourcePoint" />
+            <mxPoint x="275" y="945" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- View calls updatePassword -->
+        <mxCell id="msg21" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="26 : updatePassword($_POST)">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="285" y="975" as="sourcePoint" />
+            <mxPoint x="475" y="975" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Controller activation -->
+        <mxCell id="ctrl-act4" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="130" width="10" x="475" y="975" as="geometry" />
+        </mxCell>
+        
+        <!-- Validate password -->
+        <mxCell id="note-validate-pw" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 11px; background-color: rgb(18, 18, 18);&quot;&gt;27 : validate() - Check not empty, min 6 chars, confirm match&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="250" x="490" y="995" as="geometry" />
+        </mxCell>
+        
+        <!-- Controller calls AuthService -->
+        <mxCell id="msg22" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="28 : changePassword($userId, $current, $new)">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="485" y="1035" as="sourcePoint" />
+            <mxPoint x="675" y="1035" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- AuthService activation -->
+        <mxCell id="auth-act" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="50" width="10" x="675" y="1035" as="geometry" />
+        </mxCell>
+        
+        <!-- AuthService verifies current password -->
+        <mxCell id="note-verify" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 11px; background-color: rgb(18, 18, 18);&quot;&gt;29 : password_verify($current, $hash) - Verify current password&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="250" x="690" y="1050" as="geometry" />
+        </mxCell>
+        
+        <!-- AuthService updates password -->
+        <mxCell id="msg23" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="30 : updatePassword($userId, $newHash)">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="685" y="1080" as="sourcePoint" />
+            <mxPoint x="875" y="1080" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- User Model updates DB -->
+        <mxCell id="msg24" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="31 : UPDATE users SET password = ?">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="885" y="1100" as="sourcePoint" />
+            <mxPoint x="1055" y="1100" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Controller redirects -->
+        <mxCell id="msg25" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="32 : redirect('/profile/change-password') + success message">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="475" y="1125" as="sourcePoint" />
+            <mxPoint x="115" y="1125" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
