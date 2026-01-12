@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 /**
@@ -622,6 +624,6 @@ class PayOSService
         // Format: timestamp (7 chữ số cuối) + orderId (tối đa 6 chữ số)
         // Đảm bảo orderCode không vượt quá max int (2^53 cho JS)
         $timestamp = (int) substr((string) time(), -7);
-        return (int) ($timestamp . str_pad($orderId, 6, '0', STR_PAD_LEFT));
+        return (int) ($timestamp . str_pad((string) $orderId, 6, '0', STR_PAD_LEFT));
     }
 }

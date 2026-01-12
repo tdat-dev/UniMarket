@@ -1,4 +1,6 @@
 <?php
+use App\Helpers\SlugHelper;
+
 include __DIR__ . '/../partials/head.php';
 include __DIR__ . '/../partials/header.php';
 ?>
@@ -74,7 +76,8 @@ include __DIR__ . '/../partials/header.php';
                             <?php endif; ?>
                         </div>
                     <?php endif; ?>
-                    <a href="/product-detail?id=<?= $item['id'] ?>" class="block">
+                    <a href="<?= SlugHelper::productUrl($item['name'], (int) ($item['user_id'] ?? $seller['id']), (int) $item['id']) ?>"
+                        class="block">
                         <!-- Image -->
                         <div class="relative pt-[100%] overflow-hidden bg-gray-100">
                             <img src="/uploads/<?= htmlspecialchars($item['image']) ?>"
@@ -99,7 +102,8 @@ include __DIR__ . '/../partials/header.php';
                                     <?= number_format($item['price'], 0, ',', '.') ?><span
                                         class="text-xs align-top">₫</span>
                                 </div>
-                                <div class="text-[10px] text-gray-400">Đã bán <?= number_format($item['sold_count'] ?? 0) ?>
+                                <div class="text-[10px] text-gray-400">Còn
+                                    <?= $item['quantity'] ?? 0 ?>
                                 </div>
                             </div>
                         </div>
@@ -224,7 +228,7 @@ include __DIR__ . '/../partials/header.php';
         this.disabled = true;
         this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
 
-        fetch('/products/cancel-sale', {
+        fetch(`/products/${currentProductId}/cancel-sale`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

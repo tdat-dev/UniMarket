@@ -46,20 +46,53 @@ if (!empty($products)) {
                         <h3 class="text-base font-medium text-[#EE4D2D] flex items-center gap-2">
                             <i class="fa-solid fa-location-dot"></i> Địa chỉ nhận hàng
                         </h3>
-                        <a href="/profile" class="text-blue-600 text-sm hover:underline">Thay đổi</a>
+                        <a href="/addresses" class="text-blue-600 text-sm hover:underline">Quản lý địa chỉ</a>
                     </div>
-                    <div class="flex flex-col gap-1 text-sm text-gray-800">
-                        <?php if (!empty($user['address'])): ?>
-                            <div class="font-bold">
-                                <?= htmlspecialchars($user['full_name'] ?? $_SESSION['user']['username'] ?? 'Người dùng') ?>
-                                (<?= htmlspecialchars($user['phone_number'] ?? 'Chưa có SĐT') ?>)
+                    
+                    <?php if (!empty($addresses)): ?>
+                        <!-- Address Selection -->
+                        <div class="space-y-3" id="address-list">
+                            <?php foreach ($addresses as $index => $addr): ?>
+                                <label class="address-option flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:border-[#EE4D2D] transition-colors <?= $addr['is_default'] ? 'border-[#EE4D2D] bg-orange-50' : '' ?>">
+                                    <input type="radio" name="shipping_address_id" value="<?= $addr['id'] ?>" 
+                                           class="mt-1 text-[#EE4D2D] focus:ring-[#EE4D2D]"
+                                           <?= $addr['is_default'] ? 'checked' : '' ?>>
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="font-medium text-gray-800"><?= htmlspecialchars($addr['recipient_name']) ?></span>
+                                            <span class="text-gray-400">|</span>
+                                            <span class="text-gray-600"><?= htmlspecialchars($addr['phone_number']) ?></span>
+                                            <?php if ($addr['is_default']): ?>
+                                                <span class="px-2 py-0.5 text-xs bg-[#EE4D2D] text-white rounded">Mặc định</span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="text-xs text-gray-500 mb-1"><?= htmlspecialchars($addr['label']) ?></div>
+                                        <div class="text-sm text-gray-600"><?= htmlspecialchars($addr['full_address'] ?: $addr['street_address']) ?></div>
+                                    </div>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
+                        
+                        <!-- Add new address link -->
+                        <div class="mt-3 pt-3 border-t">
+                            <a href="/addresses/create?redirect_to=<?= urlencode('/checkout') ?>" 
+                               class="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline">
+                                <i class="fa-solid fa-plus"></i> Thêm địa chỉ mới
+                            </a>
+                        </div>
+                    <?php else: ?>
+                        <!-- No addresses -->
+                        <div class="text-center py-6">
+                            <div class="w-16 h-16 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
+                                <i class="fa-solid fa-location-dot text-2xl text-gray-400"></i>
                             </div>
-                            <div><?= htmlspecialchars($user['address']) ?></div>
-                        <?php else: ?>
-                            <div class="text-red-500">Bạn chưa cập nhật địa chỉ nhận hàng.</div>
-                            <a href="/profile" class="text-blue-600 underline">Cập nhật ngay</a>
-                        <?php endif; ?>
-                    </div>
+                            <p class="text-red-500 mb-3">Bạn chưa có địa chỉ nhận hàng.</p>
+                            <a href="/addresses/create?redirect_to=<?= urlencode('/checkout') ?>" 
+                               class="inline-flex items-center gap-2 px-4 py-2 bg-[#EE4D2D] text-white rounded-lg hover:bg-[#d73211] transition-colors">
+                                <i class="fa-solid fa-plus"></i> Thêm địa chỉ ngay
+                            </a>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Products -->

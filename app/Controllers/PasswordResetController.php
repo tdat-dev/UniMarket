@@ -1,70 +1,75 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controllers;
 
 use App\Models\User;
 use App\Services\EmailService;
-use Exception;
 
-class PasswordResetController
+/**
+ * Password Reset Controller
+ * 
+ * Xử lý quên mật khẩu và reset password.
+ * 
+ * @package App\Controllers
+ */
+class PasswordResetController extends BaseController
 {
-    private $userModel;
-    private $emailService;
+    private User $userModel;
+    private EmailService $emailService;
 
     public function __construct()
     {
+        parent::__construct();
         $this->userModel = new User();
         $this->emailService = new EmailService();
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
     }
 
-    public function showForgotForm()
+    /**
+     * Hiển thị form quên mật khẩu
+     */
+    public function showForgotForm(): void
     {
-        // Nếu đã login thì redirect home
-        if (isset($_SESSION['user'])) {
-            header('Location: /');
-            exit;
+        if ($this->isAuthenticated()) {
+            $this->redirect('/');
         }
-        
+
         $step = $_SESSION['reset_step'] ?? 'email';
         require __DIR__ . '/../../resources/views/auth/forgot-password.php';
     }
 
-    public function sendResetOtp()
+    /**
+     * Gửi OTP reset password
+     */
+    public function sendResetOtp(): void
     {
-        $email = $_POST['email'] ?? '';
+        $email = trim($this->input('email', ''));
 
         if (empty($email)) {
-             $_SESSION['error'] = 'Vui lòng nhập email';
-             header('Location: /forgot-password');
-             exit;
+            $_SESSION['error'] = 'Vui lòng nhập email';
+            $this->redirect('/forgot-password');
         }
 
         $user = $this->userModel->findByEmailFull($email);
 
-        if (!$user) {
+        if ($user === null) {
             $_SESSION['error'] = 'Email không tồn tại trong hệ thống';
-            header('Location: /forgot-password');
-            exit;
+            $this->redirect('/forgot-password');
         }
 
-        // Check lock
-        if ($user['password_reset_locked_until'] && strtotime($user['password_reset_locked_until']) > time()) {
-             $minutesLeft = ceil((strtotime($user['password_reset_locked_until']) - time()) / 60);
-             $_SESSION['error'] = "Bạn đã nhập sai quá 5 lần. Vui lòng thử lại sau $minutesLeft phút.";
-             header('Location: /forgot-password');
-             exit;
+        // Check if locked
+        if ($this->isResetLocked($user)) {
+            $minutesLeft = $this->getLockedMinutesLeft($user);
+            $_SESSION['error'] = "Bạn đã nhập sai quá 5 lần. Vui lòng thử lại sau {$minutesLeft} phút.";
+            $this->redirect('/forgot-password');
         }
 
-        // Generate OTP
+        // Generate and save OTP
         $otp = (string) rand(100000, 999999);
-        
-        // Save to DB
-        $this->userModel->savePasswordResetToken($user['id'], $otp);
+        $this->userModel->savePasswordResetToken((int) $user['id'], $otp);
 
-        // Send Email
+        // Send email
         $sent = $this->emailService->sendPasswordResetEmail($user['email'], $user['full_name'], $otp);
 
         if ($sent) {
@@ -75,93 +80,126 @@ class PasswordResetController
             $_SESSION['error'] = 'Có lỗi xảy ra khi gửi email. Vui lòng thử lại.';
         }
 
-        header('Location: /forgot-password');
-        exit;
+        $this->redirect('/forgot-password');
     }
 
-    public function verifyOtp()
+    /**
+     * Xác minh OTP
+     */
+    public function verifyOtp(): void
     {
-        $otp = $_POST['otp'] ?? '';
+        $otp = trim($this->input('otp', ''));
         $email = $_SESSION['reset_email'] ?? '';
 
-        if (!$email) {
-            header('Location: /forgot-password');
-            exit;
+        if (empty($email)) {
+            $this->redirect('/forgot-password');
         }
 
         $user = $this->userModel->findByEmailFull($email);
-        
-        // Check lock again
-        if ($user['password_reset_locked_until'] && strtotime($user['password_reset_locked_until']) > time()) {
-             $minutesLeft = ceil((strtotime($user['password_reset_locked_until']) - time()) / 60);
-             $_SESSION['error'] = "Tài khoản đang bị khóa. Thử lại sau $minutesLeft phút.";
-             header('Location: /forgot-password');
-             exit;
+
+        if ($user === null) {
+            $this->redirect('/forgot-password');
         }
 
-        // Verify
-        if ($user['password_reset_token'] === $otp && strtotime($user['password_reset_expires_at']) > time()) {
-            // Success
-            $_SESSION['reset_verified'] = true;
-            unset($_SESSION['reset_step']); // Clear step to exit loop
-            header('Location: /reset-password');
-            exit;
-        } else {
-            // Fail
-            $isLocked = $this->userModel->incrementResetAttempts($user['id']);
-            if ($isLocked) {
-                $_SESSION['error'] = 'Bạn đã nhập sai quá 5 lần. Vui lòng chờ 5 phút.';
-            } else {
-                $_SESSION['error'] = 'Mã xác nhận không đúng hoặc đã hết hạn.';
-            }
-            header('Location: /forgot-password');
-            exit;
+        // Check lock
+        if ($this->isResetLocked($user)) {
+            $minutesLeft = $this->getLockedMinutesLeft($user);
+            $_SESSION['error'] = "Tài khoản đang bị khóa. Thử lại sau {$minutesLeft} phút.";
+            $this->redirect('/forgot-password');
         }
+
+        // Verify OTP
+        $isValid = $user['password_reset_token'] === $otp
+            && strtotime($user['password_reset_expires_at']) > time();
+
+        if ($isValid) {
+            $_SESSION['reset_verified'] = true;
+            unset($_SESSION['reset_step']);
+            $this->redirect('/reset-password');
+        }
+
+        // Invalid OTP - increment attempts
+        $isLocked = $this->userModel->incrementResetAttempts((int) $user['id']);
+        $_SESSION['error'] = $isLocked
+            ? 'Bạn đã nhập sai quá 5 lần. Vui lòng chờ 5 phút.'
+            : 'Mã xác nhận không đúng hoặc đã hết hạn.';
+
+        $this->redirect('/forgot-password');
     }
 
-    public function showResetForm()
+    /**
+     * Hiển thị form đặt mật khẩu mới
+     */
+    public function showResetForm(): void
     {
-        if (empty($_SESSION['reset_verified']) || empty($_SESSION['reset_email'])) {
-            header('Location: /forgot-password');
-            exit;
+        if (!$this->isResetVerified()) {
+            $this->redirect('/forgot-password');
         }
+
         require __DIR__ . '/../../resources/views/auth/reset-password.php';
     }
 
-    public function resetPassword()
+    /**
+     * Đặt mật khẩu mới
+     */
+    public function resetPassword(): void
     {
-        if (empty($_SESSION['reset_verified']) || empty($_SESSION['reset_email'])) {
-            header('Location: /forgot-password');
-            exit;
+        if (!$this->isResetVerified()) {
+            $this->redirect('/forgot-password');
         }
 
-        $password = $_POST['password'] ?? '';
-        $confirm = $_POST['password_confirm'] ?? '';
+        $password = $this->input('password', '');
+        $confirm = $this->input('password_confirm', '');
 
+        // Validate
         if (strlen($password) < 6) {
             $_SESSION['error'] = 'Mật khẩu phải có ít nhất 6 ký tự';
-            header('Location: /reset-password');
-            exit;
+            $this->redirect('/reset-password');
         }
 
         if ($password !== $confirm) {
             $_SESSION['error'] = 'Mật khẩu xác nhận không khớp';
-            header('Location: /reset-password');
-            exit;
+            $this->redirect('/reset-password');
         }
 
         $user = $this->userModel->findByEmailFull($_SESSION['reset_email']);
-        
-        $this->userModel->updatePassword($user['id'], $password);
-        $this->userModel->clearPasswordResetToken($user['id']);
+
+        if ($user !== null) {
+            $this->userModel->updatePassword((int) $user['id'], $password);
+            $this->userModel->clearPasswordResetToken((int) $user['id']);
+        }
 
         // Clean session
+        $this->clearResetSession();
+
+        $_SESSION['success'] = 'Đổi mật khẩu thành công. Vui lòng đăng nhập.';
+        $this->redirect('/login');
+    }
+
+    // =========================================================================
+    // PRIVATE HELPERS
+    // =========================================================================
+
+    private function isResetLocked(array $user): bool
+    {
+        return !empty($user['password_reset_locked_until'])
+            && strtotime($user['password_reset_locked_until']) > time();
+    }
+
+    private function getLockedMinutesLeft(array $user): int
+    {
+        return (int) ceil((strtotime($user['password_reset_locked_until']) - time()) / 60);
+    }
+
+    private function isResetVerified(): bool
+    {
+        return !empty($_SESSION['reset_verified']) && !empty($_SESSION['reset_email']);
+    }
+
+    private function clearResetSession(): void
+    {
         unset($_SESSION['reset_email']);
         unset($_SESSION['reset_verified']);
         unset($_SESSION['reset_step']);
-
-        $_SESSION['success'] = 'Đổi mật khẩu thành công. Vui lòng đăng nhập.';
-        header('Location: /login');
-        exit;
     }
 }

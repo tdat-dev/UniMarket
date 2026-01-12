@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controllers\Admin;
 use App\Models\Report;
 use App\Models\Product;
@@ -46,7 +48,7 @@ class ReportController extends AdminBaseController
     // POST: /admin/reports/hide-product
     public function hideProduct()
     {
-        $reportId  = $_POST['report_id'];
+        $reportId = $_POST['report_id'];
         $productId = $_POST['product_id'];
 
         $this->productModel->hideProduct($productId);

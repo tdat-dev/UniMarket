@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controllers;
 
 use App\Services\PayOSService;
@@ -252,7 +254,7 @@ class PaymentController extends BaseController
         }
 
         // Lấy thông tin từ webhook
-        $orderCode = $data['orderCode'] ?? 0;
+        $orderCode = (int) ($data['orderCode'] ?? 0);
         $paymentLinkId = $data['paymentLinkId'] ?? '';
         $code = $data['code'] ?? '';
         $amount = $data['amount'] ?? 0;
@@ -293,9 +295,9 @@ class PaymentController extends BaseController
      */
     private function handlePaymentSuccess(array $order, array $data, string $reference)
     {
-        $orderId = $order['id'];
-        $sellerId = $order['seller_id'];
-        $amount = $order['total_amount'];
+        $orderId = (int) $order['id'];
+        $sellerId = (int) $order['seller_id'];
+        $amount = (float) $order['total_amount'];
 
         // 1. Cập nhật order status
         $this->orderModel->updatePaymentStatus($orderId, 'paid');
@@ -361,7 +363,7 @@ class PaymentController extends BaseController
      */
     public function returnUrl()
     {
-        $orderCode = $_GET['orderCode'] ?? null;
+        $orderCode = isset($_GET['orderCode']) ? (int) $_GET['orderCode'] : 0;
         $status = $_GET['status'] ?? null;
 
         // Xóa payment data khỏi session
@@ -434,7 +436,7 @@ class PaymentController extends BaseController
      */
     public function cancelUrl()
     {
-        $orderCode = $_GET['orderCode'] ?? null;
+        $orderCode = isset($_GET['orderCode']) ? (int) $_GET['orderCode'] : 0;
 
         // Xóa payment data khỏi session
         unset($_SESSION['payment_data']);
