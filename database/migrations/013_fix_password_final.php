@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Migration: Add is_locked column to users
+ * Migration: Final password fix
  * 
  * @author  Zoldify Team
- * @date    2026-01-01
+ * @date    2025-12-01
  * @version 2.0.0 (refactored)
  */
 
@@ -14,15 +14,14 @@ use Database\BaseMigration;
 
 return new class extends BaseMigration {
 
-    protected string $table = 'users';
-
     public function up(): void
     {
-        $this->addColumn($this->table, 'is_locked', "TINYINT(1) DEFAULT 0", 'role');
+        // Already handled in previous migrations
+        $this->skip("Password fixes already applied in migrations 011 and 012");
     }
 
     public function down(): void
     {
-        $this->dropColumn($this->table, 'is_locked');
+        // No-op
     }
 };

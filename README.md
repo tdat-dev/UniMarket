@@ -204,6 +204,18 @@ Hệ thống sử dụng cơ chế migration tự viết (`app/Core/Database.php
 2. Viết câu lệnh SQL vào file.
 3. Chạy lệnh `php database/migrate.php`.
 
+### ⚡ QUAN TRỌNG: Sau khi Pull Code
+
+> **⚠️ Mỗi lần pull code mới, BẮT BUỘC chạy:**
+>
+> ```bash
+> php database/migrate.php
+> ```
+>
+> Điều này đảm bảo database của bạn được cập nhật với các thay đổi mới nhất.
+
+**Xem workflow chi tiết:** Chạy lệnh `/db` trong chat với AI hoặc xem file `.agent/workflows/db.md`
+
 ---
 
 ## 📚 Tài liệu chi tiết (Documentation)

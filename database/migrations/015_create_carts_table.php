@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Migration: Create product_images table
+ * Migration: Create carts table
  * 
  * @author  Zoldify Team
- * @date    2026-01-04
+ * @date    2025-12-30
  * @version 2.0.0 (refactored)
  */
 
@@ -14,7 +14,7 @@ use Database\BaseMigration;
 
 return new class extends BaseMigration {
 
-    protected string $table = 'product_images';
+    protected string $table = 'carts';
 
     public function up(): void
     {
@@ -26,16 +26,19 @@ return new class extends BaseMigration {
         $this->pdo->exec("
             CREATE TABLE {$this->table} (
                 id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
                 product_id INT NOT NULL,
-                image_path VARCHAR(500) NOT NULL,
-                is_primary TINYINT(1) DEFAULT 0,
-                sort_order INT DEFAULT 0,
+                quantity INT NOT NULL DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 
+                UNIQUE KEY unique_user_product (user_id, product_id),
+                INDEX idx_user_id (user_id),
                 INDEX idx_product_id (product_id),
-                INDEX idx_is_primary (is_primary),
                 
-                CONSTRAINT fk_product_images_product FOREIGN KEY (product_id) 
+                CONSTRAINT fk_carts_user FOREIGN KEY (user_id) 
+                    REFERENCES users(id) ON DELETE CASCADE,
+                CONSTRAINT fk_carts_product FOREIGN KEY (product_id) 
                     REFERENCES products(id) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");

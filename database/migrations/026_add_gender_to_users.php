@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Migration: Add is_locked column to users
+ * Migration: Add gender column to users
  * 
  * @author  Zoldify Team
- * @date    2026-01-01
+ * @date    2026-01-03
  * @version 2.0.0 (refactored)
  */
 
@@ -18,11 +18,11 @@ return new class extends BaseMigration {
 
     public function up(): void
     {
-        $this->addColumn($this->table, 'is_locked', "TINYINT(1) DEFAULT 0", 'role');
+        $this->addColumn($this->table, 'gender', "ENUM('male', 'female', 'other') DEFAULT NULL", 'phone_number');
     }
 
     public function down(): void
     {
-        $this->dropColumn($this->table, 'is_locked');
+        $this->dropColumn($this->table, 'gender');
     }
 };

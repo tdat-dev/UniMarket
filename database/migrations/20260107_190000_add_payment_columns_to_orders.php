@@ -1,143 +1,95 @@
 <?php
+
 /**
  * Migration: Add payment columns to orders table
  * 
- * Thêm các cột liên quan đến thanh toán PayOS và escrow vào bảng orders.
+ * Thêm các cột liên quan đến thanh toán PayOS và escrow.
  * 
- * @author UniMarket
- * @date 2026-01-07
+ * @author  Zoldify Team
+ * @date    2026-01-07
+ * @version 2.0.0 (refactored)
  */
 
-// Load database config
-$config = require __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../BaseMigration.php';
 
-try {
-    $pdo = new PDO(
-        "mysql:host=" . $config['host'] . ";dbname=" . $config['db_name'] . ";charset=utf8mb4",
-        $config['username'],
-        $config['password'],
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
+use Database\BaseMigration;
 
-    echo "🚀 Bắt đầu migration: Add payment columns to orders...\n";
+return new class extends BaseMigration {
 
-    // 1. Thêm cột payment_method (phương thức thanh toán)
-    $stmt = $pdo->query("SHOW COLUMNS FROM orders LIKE 'payment_method'");
-    if ($stmt->rowCount() === 0) {
-        $pdo->exec("ALTER TABLE orders ADD COLUMN payment_method ENUM('cod', 'payos') DEFAULT 'cod' AFTER status");
-        echo "✅ Đã thêm cột 'payment_method'\n";
-    } else {
-        echo "⏭️ Cột 'payment_method' đã tồn tại\n";
+    protected string $table = 'orders';
+
+    public function up(): void
+    {
+        // Payment method (COD or PayOS)
+        $this->addColumn($this->table, 'payment_method', "ENUM('cod', 'payos') DEFAULT 'cod'", 'status');
+
+        // Payment status
+        $this->addColumn($this->table, 'payment_status', "ENUM('pending', 'paid', 'refunded') DEFAULT 'pending'", 'payment_method');
+
+        // PayOS link ID
+        $this->addColumn($this->table, 'payment_link_id', "VARCHAR(100) DEFAULT NULL", 'payment_status');
+
+        // PayOS order code (unique)
+        $this->addColumn($this->table, 'payos_order_code', "BIGINT UNSIGNED DEFAULT NULL", 'payment_link_id');
+
+        // Timestamps
+        $this->addColumn($this->table, 'paid_at', "TIMESTAMP NULL DEFAULT NULL", 'payos_order_code');
+        $this->addColumn($this->table, 'received_at', "TIMESTAMP NULL DEFAULT NULL", 'paid_at');
+        $this->addColumn($this->table, 'escrow_release_at', "TIMESTAMP NULL DEFAULT NULL", 'received_at');
+
+        // Trial days
+        $this->addColumn($this->table, 'trial_days', "TINYINT UNSIGNED DEFAULT 7", 'escrow_release_at');
+
+        // Update order status ENUM to include new statuses
+        $this->updateOrderStatusEnum();
+
+        // Add indexes
+        $this->addIndex($this->table, 'idx_payment_status', 'payment_status');
+        $this->addIndex($this->table, 'idx_payment_link_id', 'payment_link_id');
+        $this->addIndex($this->table, 'idx_escrow_release', 'escrow_release_at');
     }
 
-    // 2. Thêm cột payment_status (trạng thái thanh toán)
-    $stmt = $pdo->query("SHOW COLUMNS FROM orders LIKE 'payment_status'");
-    if ($stmt->rowCount() === 0) {
-        $pdo->exec("ALTER TABLE orders ADD COLUMN payment_status ENUM('pending', 'paid', 'refunded') DEFAULT 'pending' AFTER payment_method");
-        echo "✅ Đã thêm cột 'payment_status'\n";
-    } else {
-        echo "⏭️ Cột 'payment_status' đã tồn tại\n";
+    public function down(): void
+    {
+        $this->dropIndex($this->table, 'idx_escrow_release');
+        $this->dropIndex($this->table, 'idx_payment_link_id');
+        $this->dropIndex($this->table, 'idx_payment_status');
+
+        $this->dropColumn($this->table, 'trial_days');
+        $this->dropColumn($this->table, 'escrow_release_at');
+        $this->dropColumn($this->table, 'received_at');
+        $this->dropColumn($this->table, 'paid_at');
+        $this->dropColumn($this->table, 'payos_order_code');
+        $this->dropColumn($this->table, 'payment_link_id');
+        $this->dropColumn($this->table, 'payment_status');
+        $this->dropColumn($this->table, 'payment_method');
+
+        // Revert status ENUM
+        $this->pdo->exec("ALTER TABLE {$this->table} MODIFY COLUMN status ENUM('pending', 'shipping', 'completed', 'cancelled') DEFAULT 'pending'");
     }
 
-    // 3. Thêm cột payment_link_id (ID từ PayOS)
-    $stmt = $pdo->query("SHOW COLUMNS FROM orders LIKE 'payment_link_id'");
-    if ($stmt->rowCount() === 0) {
-        $pdo->exec("ALTER TABLE orders ADD COLUMN payment_link_id VARCHAR(100) NULL AFTER payment_status");
-        echo "✅ Đã thêm cột 'payment_link_id'\n";
-    } else {
-        echo "⏭️ Cột 'payment_link_id' đã tồn tại\n";
+    private function updateOrderStatusEnum(): void
+    {
+        // Check current ENUM values
+        $stmt = $this->pdo->query("SHOW COLUMNS FROM {$this->table} LIKE 'status'");
+        $column = $stmt->fetch(PDO::FETCH_ASSOC);
+        $currentType = $column['Type'] ?? '';
+
+        // Only update if 'received' is not in the enum
+        if (strpos($currentType, 'received') === false) {
+            $this->pdo->exec("ALTER TABLE {$this->table} MODIFY COLUMN status ENUM(
+                'pending',
+                'paid',
+                'shipping',
+                'received',
+                'trial_period',
+                'completed',
+                'cancelled',
+                'refunded'
+            ) DEFAULT 'pending'");
+            $this->success("Updated status ENUM with new payment statuses");
+        } else {
+            $this->skip("Status ENUM already updated");
+        }
     }
-
-    // 4. Thêm cột payos_order_code (Mã đơn hàng unique cho PayOS - kiểu INT)
-    $stmt = $pdo->query("SHOW COLUMNS FROM orders LIKE 'payos_order_code'");
-    if ($stmt->rowCount() === 0) {
-        $pdo->exec("ALTER TABLE orders ADD COLUMN payos_order_code BIGINT UNSIGNED NULL AFTER payment_link_id");
-        echo "✅ Đã thêm cột 'payos_order_code'\n";
-    } else {
-        echo "⏭️ Cột 'payos_order_code' đã tồn tại\n";
-    }
-
-    // 5. Thêm cột paid_at (thời điểm thanh toán thành công)
-    $stmt = $pdo->query("SHOW COLUMNS FROM orders LIKE 'paid_at'");
-    if ($stmt->rowCount() === 0) {
-        $pdo->exec("ALTER TABLE orders ADD COLUMN paid_at TIMESTAMP NULL AFTER payos_order_code");
-        echo "✅ Đã thêm cột 'paid_at'\n";
-    } else {
-        echo "⏭️ Cột 'paid_at' đã tồn tại\n";
-    }
-
-    // 6. Thêm cột received_at (thời điểm buyer bấm "Đã nhận hàng")
-    $stmt = $pdo->query("SHOW COLUMNS FROM orders LIKE 'received_at'");
-    if ($stmt->rowCount() === 0) {
-        $pdo->exec("ALTER TABLE orders ADD COLUMN received_at TIMESTAMP NULL AFTER paid_at");
-        echo "✅ Đã thêm cột 'received_at'\n";
-    } else {
-        echo "⏭️ Cột 'received_at' đã tồn tại\n";
-    }
-
-    // 7. Thêm cột escrow_release_at (thời điểm dự kiến giải ngân)
-    $stmt = $pdo->query("SHOW COLUMNS FROM orders LIKE 'escrow_release_at'");
-    if ($stmt->rowCount() === 0) {
-        $pdo->exec("ALTER TABLE orders ADD COLUMN escrow_release_at TIMESTAMP NULL AFTER received_at");
-        echo "✅ Đã thêm cột 'escrow_release_at'\n";
-    } else {
-        echo "⏭️ Cột 'escrow_release_at' đã tồn tại\n";
-    }
-
-    // 8. Thêm cột trial_days (số ngày thử hàng, phụ thuộc vào condition sản phẩm)
-    $stmt = $pdo->query("SHOW COLUMNS FROM orders LIKE 'trial_days'");
-    if ($stmt->rowCount() === 0) {
-        $pdo->exec("ALTER TABLE orders ADD COLUMN trial_days TINYINT UNSIGNED DEFAULT 7 AFTER escrow_release_at");
-        echo "✅ Đã thêm cột 'trial_days'\n";
-    } else {
-        echo "⏭️ Cột 'trial_days' đã tồn tại\n";
-    }
-
-    // 9. Cập nhật ENUM status để thêm các trạng thái mới
-    // Lấy các giá trị ENUM hiện tại
-    $stmt = $pdo->query("SHOW COLUMNS FROM orders LIKE 'status'");
-    $column = $stmt->fetch(PDO::FETCH_ASSOC);
-    $currentType = $column['Type'] ?? '';
-
-    // Kiểm tra xem đã có trạng thái mới chưa
-    if (strpos($currentType, 'received') === false) {
-        $pdo->exec("ALTER TABLE orders MODIFY COLUMN status ENUM(
-            'pending',
-            'paid',
-            'shipping',
-            'received',
-            'trial_period',
-            'completed',
-            'cancelled',
-            'refunded'
-        ) DEFAULT 'pending'");
-        echo "✅ Đã cập nhật ENUM status với các trạng thái mới\n";
-    } else {
-        echo "⏭️ ENUM status đã được cập nhật trước đó\n";
-    }
-
-    // 10. Thêm index cho các cột quan trọng
-    $stmt = $pdo->query("SHOW INDEX FROM orders WHERE Key_name = 'idx_payment_status'");
-    if ($stmt->rowCount() === 0) {
-        $pdo->exec("ALTER TABLE orders ADD INDEX idx_payment_status (payment_status)");
-        echo "✅ Đã thêm index 'idx_payment_status'\n";
-    }
-
-    $stmt = $pdo->query("SHOW INDEX FROM orders WHERE Key_name = 'idx_payment_link_id'");
-    if ($stmt->rowCount() === 0) {
-        $pdo->exec("ALTER TABLE orders ADD INDEX idx_payment_link_id (payment_link_id)");
-        echo "✅ Đã thêm index 'idx_payment_link_id'\n";
-    }
-
-    $stmt = $pdo->query("SHOW INDEX FROM orders WHERE Key_name = 'idx_escrow_release'");
-    if ($stmt->rowCount() === 0) {
-        $pdo->exec("ALTER TABLE orders ADD INDEX idx_escrow_release (escrow_release_at)");
-        echo "✅ Đã thêm index 'idx_escrow_release'\n";
-    }
-
-    echo "\n✅ Migration hoàn tất: Add payment columns to orders!\n";
-
-} catch (PDOException $e) {
-    echo "❌ Lỗi migration: " . $e->getMessage() . "\n";
-    exit(1);
-}
+};

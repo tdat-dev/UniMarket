@@ -1,65 +1,62 @@
 <?php
 
 /**
- * Migration: Seed Popular Keywords
- * Mục đích: Thêm dữ liệu mẫu cho bảng search_keywords
- * Giúp hiển thị gợi ý tìm kiếm ngay từ đầu
+ * Migration: Seed popular keywords
+ * 
+ * @author  Zoldify Team
+ * @date    2025-12-31
+ * @version 2.0.0 (refactored)
  */
 
-require_once __DIR__ . '/../../app/Core/Database.php';
+require_once __DIR__ . '/../BaseMigration.php';
 
-use App\Core\Database;
+use Database\BaseMigration;
 
-return new class {
-    public function run($pdo) {
-        $db = Database::getInstance();
+return new class extends BaseMigration {
 
-// Danh sách keywords phổ biến với số lượt tìm kiếm giả lập
-$popularKeywords = [
-    ['keyword' => 'sục crocs', 'search_count' => 150],
-    ['keyword' => 'áo khoác', 'search_count' => 120],
-    ['keyword' => 'giáo trình c++', 'search_count' => 95],
-    ['keyword' => 'bàn phím cơ', 'search_count' => 80],
-    ['keyword' => 'tai nghe', 'search_count' => 65],
-    ['keyword' => 'sách tiếng anh', 'search_count' => 55],
-];
+    public function up(): void
+    {
+        $keywords = [
+            ['sục crocs', 150],
+            ['áo khoác', 120],
+            ['giáo trình c++', 95],
+            ['bàn phím cơ', 80],
+            ['tai nghe', 65],
+            ['sách tiếng anh', 55],
+        ];
 
-echo "Seeding popular keywords...\n";
+        $stmt = $this->pdo->prepare("
+            INSERT INTO search_keywords (keyword, search_count) 
+            VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE search_count = search_count
+        ");
 
-foreach ($popularKeywords as $kw) {
-    try {
-        // Kiểm tra keyword đã tồn tại chưa
-        $existing = $db->fetchOne(
-            "SELECT id FROM search_keywords WHERE keyword = :keyword",
-            ['keyword' => $kw['keyword']]
-        );
-
-        if ($existing) {
-            // Đã tồn tại → Cập nhật search_count
-            $db->execute(
-                "UPDATE search_keywords SET search_count = :count WHERE keyword = :keyword",
-                [
-                    'count' => $kw['search_count'],
-                    'keyword' => $kw['keyword']
-                ]
-            );
-            echo "  ✓ Updated: {$kw['keyword']} (count: {$kw['search_count']})\n";
-        } else {
-            // Chưa tồn tại → Thêm mới
-            $db->insert(
-                "INSERT INTO search_keywords (keyword, search_count) VALUES (:keyword, :count)",
-                [
-                    'keyword' => $kw['keyword'],
-                    'count' => $kw['search_count']
-                ]
-            );
-            echo "  ✓ Inserted: {$kw['keyword']} (count: {$kw['search_count']})\n";
+        $inserted = 0;
+        foreach ($keywords as [$keyword, $count]) {
+            try {
+                $stmt->execute([$keyword, $count]);
+                if ($stmt->rowCount() > 0)
+                    $inserted++;
+            } catch (PDOException $e) {
+                // Ignore
+            }
         }
-    } catch (Exception $e) {
-        echo "  ✗ Error with '{$kw['keyword']}': " . $e->getMessage() . "\n";
-    }
-}
 
-echo "\nDone! Popular keywords seeded successfully.\n";
+        if ($inserted > 0) {
+            $this->success("Seeded {$inserted} popular keywords");
+        } else {
+            $this->skip("Keywords already seeded");
+        }
+    }
+
+    public function down(): void
+    {
+        $keywords = ['sục crocs', 'áo khoác', 'giáo trình c++', 'bàn phím cơ', 'tai nghe', 'sách tiếng anh'];
+
+        $placeholders = str_repeat('?,', count($keywords) - 1) . '?';
+        $stmt = $this->pdo->prepare("DELETE FROM search_keywords WHERE keyword IN ({$placeholders})");
+        $stmt->execute($keywords);
+
+        $this->success("Deleted seeded keywords");
     }
 };

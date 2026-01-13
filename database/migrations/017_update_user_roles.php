@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Migration: Add is_locked column to users
+ * Migration: Update user roles - add email_verified column
  * 
  * @author  Zoldify Team
- * @date    2026-01-01
+ * @date    2025-12-31
  * @version 2.0.0 (refactored)
  */
 
@@ -18,11 +18,12 @@ return new class extends BaseMigration {
 
     public function up(): void
     {
-        $this->addColumn($this->table, 'is_locked', "TINYINT(1) DEFAULT 0", 'role');
+        // Add email_verified column
+        $this->addColumn($this->table, 'email_verified', "TINYINT(1) DEFAULT 0", 'avatar');
     }
 
     public function down(): void
     {
-        $this->dropColumn($this->table, 'is_locked');
+        $this->dropColumn($this->table, 'email_verified');
     }
 };

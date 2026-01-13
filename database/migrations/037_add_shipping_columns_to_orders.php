@@ -1,125 +1,41 @@
 <?php
 
 /**
- * Migration: Add shipping columns to orders table
+ * Migration: Add shipping columns to orders
  * 
- * Thêm các cột để lưu thông tin giao hàng của đơn hàng:
- * - shipping_address: Địa chỉ giao hàng
- * - shipping_phone: Số điện thoại người nhận
- * - shipping_name: Tên người nhận
- * - note: Ghi chú đơn hàng
- * 
- * @version 037
- * @date 2026-01-12
+ * @author  Zoldify Team
+ * @date    2026-01-09
+ * @version 2.0.0 (refactored)
  */
 
-declare(strict_types=1);
+require_once __DIR__ . '/../BaseMigration.php';
 
-use App\Core\Database;
+use Database\BaseMigration;
 
-return new class {
-    private \App\Core\Database $db;
+return new class extends BaseMigration {
 
-    public function __construct()
-    {
-        $this->db = \App\Core\Database::getInstance();
-    }
+    protected string $table = 'orders';
 
-    /**
-     * Run the migration
-     */
     public function up(): void
     {
-        echo "Adding shipping columns to orders table...\n";
+        // Shipping address info
+        $this->addColumn($this->table, 'shipping_address_id', "INT DEFAULT NULL", 'total_amount');
+        $this->addColumn($this->table, 'shipping_address_snapshot', "JSON DEFAULT NULL", 'shipping_address_id');
+        $this->addColumn($this->table, 'shipping_fee', "DECIMAL(10,2) DEFAULT 0.00", 'shipping_address_snapshot');
+        $this->addColumn($this->table, 'shipping_note', "TEXT DEFAULT NULL", 'shipping_fee');
 
-        // Thêm cột shipping_address nếu chưa tồn tại
-        if (!$this->columnExists('orders', 'shipping_address')) {
-            $this->db->query("
-                ALTER TABLE orders 
-                ADD COLUMN shipping_address TEXT NULL 
-                COMMENT 'Địa chỉ giao hàng đầy đủ'
-                AFTER payment_method
-            ");
-            echo "  ✓ Added column: shipping_address\n";
-        } else {
-            echo "  - Column shipping_address already exists, skipping\n";
+        // Add index
+        if (!$this->indexExists($this->table, 'idx_shipping_address')) {
+            $this->addIndex($this->table, 'idx_shipping_address', 'shipping_address_id');
         }
-
-        // Thêm cột shipping_phone nếu chưa tồn tại
-        if (!$this->columnExists('orders', 'shipping_phone')) {
-            $this->db->query("
-                ALTER TABLE orders 
-                ADD COLUMN shipping_phone VARCHAR(20) NULL 
-                COMMENT 'Số điện thoại người nhận'
-                AFTER shipping_address
-            ");
-            echo "  ✓ Added column: shipping_phone\n";
-        } else {
-            echo "  - Column shipping_phone already exists, skipping\n";
-        }
-
-        // Thêm cột shipping_name nếu chưa tồn tại
-        if (!$this->columnExists('orders', 'shipping_name')) {
-            $this->db->query("
-                ALTER TABLE orders 
-                ADD COLUMN shipping_name VARCHAR(100) NULL 
-                COMMENT 'Tên người nhận hàng'
-                AFTER shipping_phone
-            ");
-            echo "  ✓ Added column: shipping_name\n";
-        } else {
-            echo "  - Column shipping_name already exists, skipping\n";
-        }
-
-        // Thêm cột note nếu chưa tồn tại
-        if (!$this->columnExists('orders', 'note')) {
-            $this->db->query("
-                ALTER TABLE orders 
-                ADD COLUMN note TEXT NULL 
-                COMMENT 'Ghi chú của người mua'
-                AFTER shipping_name
-            ");
-            echo "  ✓ Added column: note\n";
-        } else {
-            echo "  - Column note already exists, skipping\n";
-        }
-
-        echo "Migration completed successfully!\n";
     }
 
-    /**
-     * Rollback the migration
-     */
     public function down(): void
     {
-        echo "Removing shipping columns from orders table...\n";
-
-        $columns = ['note', 'shipping_name', 'shipping_phone', 'shipping_address'];
-
-        foreach ($columns as $column) {
-            if ($this->columnExists('orders', $column)) {
-                $this->db->query("ALTER TABLE orders DROP COLUMN {$column}");
-                echo "  ✓ Dropped column: {$column}\n";
-            }
-        }
-
-        echo "Rollback completed!\n";
-    }
-
-    /**
-     * Check if a column exists in a table
-     */
-    private function columnExists(string $table, string $column): bool
-    {
-        $result = $this->db->fetchAll(
-            "SELECT COUNT(*) as count 
-             FROM INFORMATION_SCHEMA.COLUMNS 
-             WHERE TABLE_SCHEMA = DATABASE() 
-             AND TABLE_NAME = ? 
-             AND COLUMN_NAME = ?",
-            [$table, $column]
-        );
-
-        return (int) ($result[0]['count'] ?? 0) > 0;
+        $this->dropIndex($this->table, 'idx_shipping_address');
+        $this->dropColumn($this->table, 'shipping_note');
+        $this->dropColumn($this->table, 'shipping_fee');
+        $this->dropColumn($this->table, 'shipping_address_snapshot');
+        $this->dropColumn($this->table, 'shipping_address_id');
     }
 };
