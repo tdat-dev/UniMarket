@@ -31,9 +31,11 @@ abstract class BaseMigration
     /**
      * Constructor - inject PDO
      */
-    public function __construct(PDO $pdo)
+    public function __construct(?PDO $pdo = null)
     {
-        $this->pdo = $pdo;
+        if ($pdo) {
+            $this->pdo = $pdo;
+        }
     }
 
     /**
@@ -60,8 +62,8 @@ abstract class BaseMigration
      */
     protected function tableExists(string $table): bool
     {
-        $stmt = $this->pdo->prepare("SHOW TABLES LIKE ?");
-        $stmt->execute([$table]);
+        $table = str_replace("'", "\\'", $table); // Basic escaping
+        $stmt = $this->pdo->query("SHOW TABLES LIKE '$table'");
         return $stmt->rowCount() > 0;
     }
 
@@ -74,8 +76,9 @@ abstract class BaseMigration
      */
     protected function columnExists(string $table, string $column): bool
     {
-        $stmt = $this->pdo->prepare("SHOW COLUMNS FROM `{$table}` LIKE ?");
-        $stmt->execute([$column]);
+        $table = str_replace("'", "\\'", $table);
+        $column = str_replace("'", "\\'", $column);
+        $stmt = $this->pdo->query("SHOW COLUMNS FROM `$table` LIKE '$column'");
         return $stmt->rowCount() > 0;
     }
 
@@ -88,8 +91,9 @@ abstract class BaseMigration
      */
     protected function indexExists(string $table, string $index): bool
     {
-        $stmt = $this->pdo->prepare("SHOW INDEX FROM `{$table}` WHERE Key_name = ?");
-        $stmt->execute([$index]);
+        $table = str_replace("'", "\\'", $table);
+        $index = str_replace("'", "\\'", $index);
+        $stmt = $this->pdo->query("SHOW INDEX FROM `$table` WHERE Key_name = '$index'");
         return $stmt->rowCount() > 0;
     }
 

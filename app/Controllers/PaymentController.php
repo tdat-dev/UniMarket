@@ -20,7 +20,7 @@ use App\Models\Product;
  * - GET /payment/cancel - Redirect khi hủy thanh toán
  * - GET /payment/qr - Hiển thị trang QR code
  * 
- * @author UniMarket
+ * @author Zoldify Team
  * @date 2026-01-07
  */
 class PaymentController extends BaseController

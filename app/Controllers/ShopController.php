@@ -128,11 +128,10 @@ class ShopController extends BaseController
         $allOrders = $orderModel->getBySellerId($userId);
 
         // Count by status
+        // Note: "pending" tab = pending + paid (đơn chờ seller xác nhận)
         $counts = [
             'all' => count($allOrders),
-            'pending' => 0,
-            'pending_payment' => 0,
-            'paid' => 0,
+            'pending' => 0,  // Gộp cả pending + paid
             'shipping' => 0,
             'completed' => 0,
             'cancelled' => 0,
@@ -141,11 +140,20 @@ class ShopController extends BaseController
         $orders = [];
         foreach ($allOrders as $order) {
             $orderStatus = $order['status'];
-            if (isset($counts[$orderStatus])) {
+
+            // Gộp pending và paid vào nhóm "pending" (Chờ xác nhận)
+            if ($orderStatus === 'pending' || $orderStatus === 'paid') {
+                $counts['pending']++;
+            } elseif (isset($counts[$orderStatus])) {
                 $counts[$orderStatus]++;
             }
 
-            if ($status === 'all' || $orderStatus === $status) {
+            // Filter logic: "pending" tab hiển thị cả pending và paid
+            if ($status === 'all') {
+                $orders[] = $order;
+            } elseif ($status === 'pending' && ($orderStatus === 'pending' || $orderStatus === 'paid')) {
+                $orders[] = $order;
+            } elseif ($orderStatus === $status) {
                 $orders[] = $order;
             }
         }

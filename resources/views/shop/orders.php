@@ -76,11 +76,12 @@ if (!isset($_SESSION['user'])) {
                                         class="text-xs text-gray-500"><?= date('d/m/Y H:i', strtotime($order['created_at'])) ?></span>
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-medium 
                                         <?= $order['status'] == 'pending' ? 'bg-yellow-100 text-yellow-800' : '' ?>
+                                        <?= $order['status'] == 'paid' ? 'bg-emerald-100 text-emerald-800' : '' ?>
                                         <?= $order['status'] == 'shipping' ? 'bg-blue-100 text-blue-800' : '' ?>
                                         <?= $order['status'] == 'completed' ? 'bg-green-100 text-green-800' : '' ?>
                                         <?= $order['status'] == 'cancelled' ? 'bg-red-100 text-red-800' : '' ?>
                                      ">
-                                        <?= ucfirst($order['status']) ?>
+                                        <?= $order['status'] == 'paid' ? 'Đã thanh toán' : ucfirst($order['status']) ?>
                                     </span>
                                 </div>
                                 <div class="text-sm font-bold text-red-600">
@@ -110,7 +111,7 @@ if (!isset($_SESSION['user'])) {
                                 <form action="/shop/orders/update" method="POST" class="inline-flex gap-2">
                                     <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
 
-                                    <?php if ($order['status'] == 'pending'): ?>
+                                    <?php if ($order['status'] == 'pending' || $order['status'] == 'paid'): ?>
                                         <button type="submit" name="status" value="shipping"
                                             class="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 shadow-sm">
                                             Xác nhận & Giao
