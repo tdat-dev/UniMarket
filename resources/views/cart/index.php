@@ -64,11 +64,11 @@ include __DIR__ . '/../partials/header.php';
                                             class="w-full h-full object-cover">
                                     </div>
                                     <div class="flex flex-col justify-center">
-                                        <a href="<?= SlugHelper::productUrl($item['name'], (int) ($item['user_id'] ?? 0), (int) $item['id']) ?>"
+                                        <a href="<?= SlugHelper::productUrl($item['product_name'] ?? '', (int) ($item['seller_id'] ?? 0), (int) $item['product_id']) ?>"
                                             class="text-sm font-medium text-gray-800 line-clamp-2 hover:text-[#2C67C8]">
-                                            <?= htmlspecialchars($item['name'] ?? '') ?>
+                                            <?= htmlspecialchars($item['product_name'] ?? '') ?>
                                         </a>
-                                        <span class="text-xs text-gray-400 mt-1">Còn <?= $item['quantity'] ?> sản phẩm</span>
+                                        <span class="text-xs text-gray-400 mt-1">Còn <?= $item['stock'] ?? 0 ?> sản phẩm</span>
                                     </div>
                                 </div>
                                 <div class="col-span-2 text-center text-sm font-medium text-gray-600">

@@ -245,10 +245,12 @@ include __DIR__ . '/../partials/header.php';
                                         alt="<?= htmlspecialchars($item['name'] ?? '') ?>"
                                         class="absolute top-0 left-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
 
-                                    <!-- Badges (Ví dụ: Freeship, Giảm giá) -->
-                                    <div
-                                        class="absolute top-0 left-0 bg-[#00bfa5] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-br-sm">
-                                        Freeship</div>
+                                    <!-- Badges - Freeship khi giá >= 200k -->
+                                    <?php if (((float)($item['price'] ?? 0)) >= 200000): ?>
+                                        <div class="absolute top-0 left-0 bg-[#00bfa5] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-br-sm">
+                                            Freeship
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
 
                                 <!-- Info -->

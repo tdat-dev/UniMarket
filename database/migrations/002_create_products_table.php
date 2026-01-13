@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Migration: Create payment_transactions table
+ * Migration: Create products table
  * 
  * @author  Zoldify Team
- * @date    2026-01-07
+ * @date    2025-12-01
  * @version 2.0.0 (refactored)
  */
 
@@ -14,7 +14,7 @@ use Database\BaseMigration;
 
 return new class extends BaseMigration {
 
-    protected string $table = 'payment_transactions';
+    protected string $table = 'products';
 
     public function up(): void
     {
@@ -26,27 +26,25 @@ return new class extends BaseMigration {
         $this->pdo->exec("
             CREATE TABLE {$this->table} (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                order_id INT NOT NULL,
                 user_id INT NOT NULL,
-                amount DECIMAL(15,2) NOT NULL,
-                payment_method ENUM('cod', 'payos', 'wallet') NOT NULL,
-                transaction_type ENUM('payment', 'refund', 'escrow_hold', 'escrow_release') NOT NULL,
-                status ENUM('pending', 'success', 'failed', 'cancelled') DEFAULT 'pending',
-                payos_transaction_id VARCHAR(100) DEFAULT NULL,
+                category_id INT NOT NULL,
+                name VARCHAR(255) NOT NULL,
                 description TEXT DEFAULT NULL,
-                metadata JSON DEFAULT NULL,
+                price DECIMAL(10,2) NOT NULL,
+                image VARCHAR(255) DEFAULT NULL,
+                status ENUM('active', 'sold', 'hidden') DEFAULT 'active',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                `condition` ENUM('new', 'like_new', 'good', 'fair') DEFAULT 'good',
                 
-                INDEX idx_order_id (order_id),
                 INDEX idx_user_id (user_id),
+                INDEX idx_category_id (category_id),
                 INDEX idx_status (status),
                 INDEX idx_created_at (created_at),
                 
-                CONSTRAINT fk_payment_trans_order FOREIGN KEY (order_id) 
-                    REFERENCES orders(id) ON DELETE CASCADE,
-                CONSTRAINT fk_payment_trans_user FOREIGN KEY (user_id) 
-                    REFERENCES users(id) ON DELETE CASCADE
+                CONSTRAINT fk_products_user FOREIGN KEY (user_id) 
+                    REFERENCES users(id) ON DELETE CASCADE,
+                CONSTRAINT fk_products_category FOREIGN KEY (category_id) 
+                    REFERENCES categories(id) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
 

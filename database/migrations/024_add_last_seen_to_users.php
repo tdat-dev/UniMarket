@@ -1,34 +1,28 @@
 <?php
 
-use App\Core\Database;
-
 /**
- * Migration: Thêm cột last_seen cho tính năng hiển thị online status
+ * Migration: Add last_seen column to users
  * 
- * Cột này lưu thời điểm cuối cùng user hoạt động (disconnect khỏi Socket.IO)
- * Dùng để hiển thị "X phút trước" khi user offline
+ * @author  Zoldify Team
+ * @date    2026-01-03
+ * @version 2.0.0 (refactored)
  */
-return new class {
+
+require_once __DIR__ . '/../BaseMigration.php';
+
+use Database\BaseMigration;
+
+return new class extends BaseMigration {
+
+    protected string $table = 'users';
+
     public function up(): void
     {
-        $db = Database::getInstance()->getConnection();
-
-        // Kiểm tra cột đã tồn tại chưa
-        $stmt = $db->prepare("SHOW COLUMNS FROM users LIKE 'last_seen'");
-        $stmt->execute();
-
-        if ($stmt->rowCount() === 0) {
-            $db->exec("ALTER TABLE users ADD COLUMN last_seen DATETIME NULL DEFAULT NULL");
-            echo "✅ Đã thêm cột 'last_seen' vào bảng 'users'\n";
-        } else {
-            echo "⏭️ Cột 'last_seen' đã tồn tại\n";
-        }
+        $this->addColumn($this->table, 'last_seen', "DATETIME DEFAULT NULL", 'is_locked');
     }
 
     public function down(): void
     {
-        $db = Database::getInstance()->getConnection();
-        $db->exec("ALTER TABLE users DROP COLUMN last_seen");
-        echo "✅ Đã xóa cột 'last_seen'\n";
+        $this->dropColumn($this->table, 'last_seen');
     }
 };

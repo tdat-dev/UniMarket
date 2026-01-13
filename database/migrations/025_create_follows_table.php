@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Migration: Create product_images table
+ * Migration: Create follows table
  * 
  * @author  Zoldify Team
- * @date    2026-01-04
+ * @date    2026-01-03
  * @version 2.0.0 (refactored)
  */
 
@@ -14,7 +14,7 @@ use Database\BaseMigration;
 
 return new class extends BaseMigration {
 
-    protected string $table = 'product_images';
+    protected string $table = 'follows';
 
     public function up(): void
     {
@@ -26,17 +26,18 @@ return new class extends BaseMigration {
         $this->pdo->exec("
             CREATE TABLE {$this->table} (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                product_id INT NOT NULL,
-                image_path VARCHAR(500) NOT NULL,
-                is_primary TINYINT(1) DEFAULT 0,
-                sort_order INT DEFAULT 0,
+                follower_id INT NOT NULL COMMENT 'User following',
+                following_id INT NOT NULL COMMENT 'User being followed',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 
-                INDEX idx_product_id (product_id),
-                INDEX idx_is_primary (is_primary),
+                UNIQUE KEY unique_follow (follower_id, following_id),
+                INDEX idx_follower (follower_id),
+                INDEX idx_following (following_id),
                 
-                CONSTRAINT fk_product_images_product FOREIGN KEY (product_id) 
-                    REFERENCES products(id) ON DELETE CASCADE
+                CONSTRAINT fk_follows_follower FOREIGN KEY (follower_id) 
+                    REFERENCES users(id) ON DELETE CASCADE,
+                CONSTRAINT fk_follows_following FOREIGN KEY (following_id) 
+                    REFERENCES users(id) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
 

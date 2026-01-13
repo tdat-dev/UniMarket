@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Migration: Add is_locked column to users
+ * Migration: Add cancel_reason column to orders
  * 
  * @author  Zoldify Team
- * @date    2026-01-01
+ * @date    2026-01-10
  * @version 2.0.0 (refactored)
  */
 
@@ -14,15 +14,15 @@ use Database\BaseMigration;
 
 return new class extends BaseMigration {
 
-    protected string $table = 'users';
+    protected string $table = 'orders';
 
     public function up(): void
     {
-        $this->addColumn($this->table, 'is_locked', "TINYINT(1) DEFAULT 0", 'role');
+        $this->addColumn($this->table, 'cancel_reason', "VARCHAR(255) DEFAULT NULL", 'status');
     }
 
     public function down(): void
     {
-        $this->dropColumn($this->table, 'is_locked');
+        $this->dropColumn($this->table, 'cancel_reason');
     }
 };

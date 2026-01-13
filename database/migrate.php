@@ -1,85 +1,427 @@
 <?php
+
 /**
- * MIGRATION RUNNER
- * Hỗ trợ cả file .sql và .php
+ * MIGRATION RUNNER v2.0
  * 
- * - File .sql: Chạy trực tiếp bằng PDO::exec()
- * - File .php: Include file và gọi hàm run($pdo)
+ * Hỗ trợ 4 commands:
+ *   php migrate.php           - Chạy tất cả migrations chưa thực thi
+ *   php migrate.php status    - Hiển thị trạng thái migrations
+ *   php migrate.php rollback  - Rollback migration cuối cùng
+ *   php migrate.php fresh     - Xóa tất cả và chạy lại từ đầu
+ * 
+ * Hỗ trợ 3 formats migration:
+ *   1. Anonymous class extends BaseMigration (recommended)
+ *   2. Function run_[filename]($pdo) (legacy)
+ *   3. File SQL thuần (legacy)
+ * 
+ * @author  Zoldify Team
+ * @version 2.0.0
+ * @date    2026-01-13
  */
 
-require_once __DIR__ . '/../app/Core/Database.php';
+// =============================================================================
+// BOOTSTRAP
+// =============================================================================
 
-$db = \App\Core\Database::getInstance();
+require_once __DIR__ . '/../app/Core/Database.php';
+require_once __DIR__ . '/BaseMigration.php';
+
+use App\Core\Database;
+use Database\BaseMigration;
+
+// Lấy PDO connection
+$db = Database::getInstance();
 $pdo = $db->getConnection();
 
-// Tạo bảng tracking migrations nếu chưa có
-$db->query("
-    CREATE TABLE IF NOT EXISTS migrations (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        filename VARCHAR(255) NOT NULL UNIQUE,
-        executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB;
-");
+// Parse CLI command
+$command = $argv[1] ?? 'migrate';
 
-// Lấy các file đã chạy
-$executed = $db->fetchAll("SELECT filename FROM migrations");
-$executedFiles = array_column($executed, 'filename');
+// =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
 
-// Lấy tất cả file migration (.sql và .php)
-$migrationPath = __DIR__ . '/migrations/';
-$sqlFiles = glob($migrationPath . '*.sql');
-$phpFiles = glob($migrationPath . '*.php');
-$files = array_merge($sqlFiles, $phpFiles);
-sort($files);
+/**
+ * Tạo bảng migrations nếu chưa có
+ */
+function ensureMigrationsTable(PDO $pdo): void
+{
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS migrations (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            filename VARCHAR(255) NOT NULL UNIQUE,
+            batch INT NOT NULL DEFAULT 1,
+            executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ");
+}
 
-$count = 0;
-foreach ($files as $file) {
+/**
+ * Lấy batch number tiếp theo
+ */
+function getNextBatch(PDO $pdo): int
+{
+    $result = $pdo->query("SELECT MAX(batch) as max_batch FROM migrations")->fetch(PDO::FETCH_ASSOC);
+    return ($result['max_batch'] ?? 0) + 1;
+}
+
+/**
+ * Lấy danh sách file đã migrate
+ */
+function getExecutedFiles(PDO $pdo): array
+{
+    $stmt = $pdo->query("SELECT filename FROM migrations ORDER BY id");
+    return array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'filename');
+}
+
+/**
+ * Lấy tất cả file migration
+ */
+function getMigrationFiles(): array
+{
+    $path = __DIR__ . '/migrations/';
+    $sqlFiles = glob($path . '*.sql') ?: [];
+    $phpFiles = glob($path . '*.php') ?: [];
+    $files = array_merge($sqlFiles, $phpFiles);
+    sort($files); // Sort theo tên file (timestamp prefix)
+    return $files;
+}
+
+/**
+ * Chạy một migration file
+ * 
+ * @param string $file Đường dẫn file
+ * @param PDO $pdo Connection
+ * @param string $direction 'up' hoặc 'down'
+ * @return bool Success
+ */
+function runMigration(string $file, PDO $pdo, string $direction = 'up'): bool
+{
     $filename = basename($file);
     $extension = pathinfo($file, PATHINFO_EXTENSION);
 
-    if (in_array($filename, $executedFiles)) {
-        continue;
-    }
-
     try {
         if ($extension === 'sql') {
-            // Chạy file SQL
+            // SQL file - chỉ hỗ trợ 'up'
+            if ($direction === 'down') {
+                echo "⚠️ SQL migrations không hỗ trợ rollback: {$filename}\n";
+                return false;
+            }
+
             $sql = file_get_contents($file);
             $pdo->exec($sql);
-        } elseif ($extension === 'php') {
-            // Chạy file PHP
-            // Hỗ trợ 3 cách:
-            // 1. Anonymous class với up() method (return new class { public function up() {} })
-            // 2. Hàm run_XXX($pdo) theo tên file
-            // 3. Hàm run($pdo)
-            
-            $result = require $file;
-            
-            // Kiểm tra nếu file return anonymous class với method up()
-            if (is_object($result) && method_exists($result, 'up')) {
-                $result->up();
-            } else {
-                // Lấy tên hàm từ tên file (vd: 014_seed_admin.php -> run_014_seed_admin)
-                $functionName = 'run_' . pathinfo($filename, PATHINFO_FILENAME);
-                
-                // Thử gọi hàm theo tên file trước, nếu không có thì gọi run()
-                if (function_exists($functionName)) {
-                    $functionName($pdo);
-                } elseif (function_exists('run')) {
-                    run($pdo);
-                }
-            }
+            return true;
         }
 
-        $db->insert("INSERT INTO migrations (filename) VALUES (:filename)", [
-            'filename' => $filename
-        ]);
-        echo "Migrated: $filename\n";
-        $count++;
+        if ($extension === 'php') {
+            // Clear any previously defined run functions to avoid conflicts
+            // PHP file - có thể là anonymous class hoặc function
+            $result = require $file;
+
+            // Case 1: Anonymous class extends BaseMigration
+            if (is_object($result) && method_exists($result, 'up') && method_exists($result, 'down')) {
+                // Inject PDO nếu class có constructor nhận PDO
+                $reflection = new ReflectionClass($result);
+                $constructor = $reflection->getConstructor();
+
+                if ($constructor && $constructor->getNumberOfParameters() > 0) {
+                    // Class needs PDO in constructor - recreate with PDO
+                    $migration = $reflection->newInstance($pdo);
+                } else {
+                    // Class doesn't need PDO in constructor, try to set via property
+                    $migration = $result;
+                    if (property_exists($migration, 'pdo')) {
+                        $migration->pdo = $pdo;
+                    }
+                }
+
+                if ($direction === 'up') {
+                    $migration->up();
+                } else {
+                    $migration->down();
+                }
+                return true;
+            }
+
+            // Case 2: Legacy function pattern (run_filename)
+            $functionName = 'run_' . pathinfo($filename, PATHINFO_FILENAME);
+            if (function_exists($functionName)) {
+                if ($direction === 'down') {
+                    echo "⚠️ Function-based migrations không hỗ trợ rollback: {$filename}\n";
+                    return false;
+                }
+                $functionName($pdo);
+                return true;
+            }
+
+            // Case 3: Generic run() function
+            if (function_exists('run')) {
+                if ($direction === 'down') {
+                    echo "⚠️ Function-based migrations không hỗ trợ rollback: {$filename}\n";
+                    return false;
+                }
+                run($pdo);
+                return true;
+            }
+
+            // Case 4: Self-executing script (already ran when require'd)
+            return true;
+        }
+
+        return false;
     } catch (Exception $e) {
-        echo "Failed: $filename - " . $e->getMessage() . "\n";
-        exit(1);
+        echo "❌ Error in {$filename}: " . $e->getMessage() . "\n";
+        return false;
     }
 }
 
-echo "\nDone! $count migration(s) executed.\n";
+/**
+ * Ghi nhận migration đã chạy
+ */
+function recordMigration(PDO $pdo, string $filename, int $batch): void
+{
+    $stmt = $pdo->prepare("INSERT INTO migrations (filename, batch) VALUES (?, ?)");
+    $stmt->execute([$filename, $batch]);
+}
+
+/**
+ * Xóa record migration
+ */
+function removeMigration(PDO $pdo, string $filename): void
+{
+    $stmt = $pdo->prepare("DELETE FROM migrations WHERE filename = ?");
+    $stmt->execute([$filename]);
+}
+
+// =============================================================================
+// COMMANDS
+// =============================================================================
+
+/**
+ * Command: migrate
+ * Chạy tất cả migrations chưa thực thi
+ */
+function cmdMigrate(PDO $pdo): void
+{
+    echo "\n🚀 Running migrations...\n\n";
+
+    ensureMigrationsTable($pdo);
+
+    $executedFiles = getExecutedFiles($pdo);
+    $allFiles = getMigrationFiles();
+    $batch = getNextBatch($pdo);
+
+    $count = 0;
+    foreach ($allFiles as $file) {
+        $filename = basename($file);
+
+        if (in_array($filename, $executedFiles)) {
+            continue;
+        }
+
+        echo "⏳ Migrating: {$filename}\n";
+
+        if (runMigration($file, $pdo, 'up')) {
+            recordMigration($pdo, $filename, $batch);
+            echo "✅ Migrated: {$filename}\n\n";
+            $count++;
+        } else {
+            echo "❌ Failed: {$filename}\n";
+            exit(1);
+        }
+    }
+
+    if ($count === 0) {
+        echo "✅ Nothing to migrate. Database is up to date.\n";
+    } else {
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+        echo "✅ Done! {$count} migration(s) executed in batch #{$batch}.\n";
+    }
+}
+
+/**
+ * Command: status
+ * Hiển thị trạng thái migrations
+ */
+function cmdStatus(PDO $pdo): void
+{
+    echo "\n📊 Migration Status\n";
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+
+    ensureMigrationsTable($pdo);
+
+    $executedFiles = getExecutedFiles($pdo);
+    $allFiles = getMigrationFiles();
+
+    $pending = 0;
+    $ran = 0;
+
+    foreach ($allFiles as $file) {
+        $filename = basename($file);
+        $isExecuted = in_array($filename, $executedFiles);
+
+        if ($isExecuted) {
+            echo "✅ {$filename}\n";
+            $ran++;
+        } else {
+            echo "⏳ {$filename} (pending)\n";
+            $pending++;
+        }
+    }
+
+    echo "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+    echo "Total: {$ran} ran, {$pending} pending\n";
+}
+
+/**
+ * Command: rollback
+ * Rollback batch cuối cùng
+ */
+function cmdRollback(PDO $pdo): void
+{
+    echo "\n⏪ Rolling back last batch...\n\n";
+
+    ensureMigrationsTable($pdo);
+
+    // Lấy batch cuối cùng
+    $result = $pdo->query("SELECT MAX(batch) as max_batch FROM migrations")->fetch(PDO::FETCH_ASSOC);
+    $lastBatch = $result['max_batch'] ?? 0;
+
+    if ($lastBatch === 0) {
+        echo "⚠️ Nothing to rollback.\n";
+        return;
+    }
+
+    // Lấy các migrations trong batch đó (theo thứ tự ngược)
+    $stmt = $pdo->prepare("SELECT filename FROM migrations WHERE batch = ? ORDER BY id DESC");
+    $stmt->execute([$lastBatch]);
+    $migrations = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    if (empty($migrations)) {
+        echo "⚠️ Nothing to rollback.\n";
+        return;
+    }
+
+    $count = 0;
+    foreach ($migrations as $filename) {
+        $file = __DIR__ . '/migrations/' . $filename;
+
+        if (!file_exists($file)) {
+            echo "⚠️ Migration file not found: {$filename}\n";
+            continue;
+        }
+
+        echo "⏳ Rolling back: {$filename}\n";
+
+        if (runMigration($file, $pdo, 'down')) {
+            removeMigration($pdo, $filename);
+            echo "✅ Rolled back: {$filename}\n\n";
+            $count++;
+        } else {
+            echo "⚠️ Could not rollback: {$filename} (no down() method)\n\n";
+            // Vẫn xóa record để tránh inconsistent state
+            removeMigration($pdo, $filename);
+        }
+    }
+
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+    echo "✅ Rolled back batch #{$lastBatch}: {$count} migration(s)\n";
+}
+
+/**
+ * Command: fresh
+ * Drop tất cả tables và chạy lại từ đầu
+ */
+function cmdFresh(PDO $pdo): void
+{
+    echo "\n🔄 Fresh migration (drop all tables and re-migrate)...\n\n";
+
+    // Disable foreign key checks
+    $pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
+
+    // Lấy tất cả tables
+    $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+
+    foreach ($tables as $table) {
+        echo "🗑️ Dropping table: {$table}\n";
+        $pdo->exec("DROP TABLE IF EXISTS `{$table}`");
+    }
+
+    // Re-enable foreign key checks
+    $pdo->exec("SET FOREIGN_KEY_CHECKS = 1");
+
+    echo "\n✅ All tables dropped.\n\n";
+
+    // Chạy migrate
+    cmdMigrate($pdo);
+}
+
+/**
+ * Command: help
+ */
+function cmdHelp(): void
+{
+    echo <<<HELP
+
+📚 Migration Runner v2.0
+
+Usage: php migrate.php [command]
+
+Commands:
+  migrate    Run all pending migrations (default)
+  status     Show migration status
+  rollback   Rollback last batch of migrations
+  fresh      Drop all tables and re-run all migrations
+  help       Show this help message
+
+Examples:
+  php database/migrate.php
+  php database/migrate.php status
+  php database/migrate.php rollback
+  php database/migrate.php fresh
+
+
+HELP;
+}
+
+// =============================================================================
+// MAIN
+// =============================================================================
+
+switch ($command) {
+    case 'migrate':
+    case '':
+        cmdMigrate($pdo);
+        break;
+
+    case 'status':
+        cmdStatus($pdo);
+        break;
+
+    case 'rollback':
+        cmdRollback($pdo);
+        break;
+
+    case 'fresh':
+        echo "⚠️ WARNING: This will DROP ALL TABLES!\n";
+        echo "Are you sure? Type 'yes' to confirm: ";
+        $confirm = trim(fgets(STDIN));
+        if ($confirm === 'yes') {
+            cmdFresh($pdo);
+        } else {
+            echo "Cancelled.\n";
+        }
+        break;
+
+    case 'help':
+    case '--help':
+    case '-h':
+        cmdHelp();
+        break;
+
+    default:
+        echo "❌ Unknown command: {$command}\n";
+        cmdHelp();
+        exit(1);
+}
+
+echo "\n";
