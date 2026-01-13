@@ -38,7 +38,8 @@ class AuthServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->authService = new AuthService();
+        $this->mockEmailService = $this->createMock(EmailVerificationService::class);
+        $this->authService = new AuthService($this->mockEmailService);
     }
 
     // ========== registerUser() Tests ==========
@@ -100,7 +101,7 @@ class AuthServiceTest extends TestCase
         // Arrange
         $userData = [
             'username' => 'Test',
-            'email' => 'test' . time() . '@example.com', // Unique email
+            'email' => 'test' . uniqid() . '@example.com', // Unique email
             'password' => 'password'
         ];
 
@@ -188,9 +189,10 @@ class AuthServiceTest extends TestCase
     public function registerUser_shouldNormalizeEmail(): void
     {
         // Arrange
+        $uniqueId = uniqid();
         $userData = [
             'username' => 'Test',
-            'email' => '  TEST@EXAMPLE.COM  ', // Uppercase và có space
+            'email' => '  TEST' . $uniqueId . '@EXAMPLE.COM  ', // Uppercase, space, unique
             'password' => 'password'
         ];
 
@@ -198,9 +200,8 @@ class AuthServiceTest extends TestCase
         $result = $this->authService->registerUser($userData);
 
         // Assert - Email should be normalized
-        if ($result['success']) {
-            $this->assertEquals('test@example.com', strtolower(trim($result['email'])));
-        }
+        $this->assertTrue($result['success'], 'Registration failed, likely due to duplicate email.');
+        $this->assertEquals('test' . $uniqueId . '@example.com', $result['email']);
     }
 
     /**

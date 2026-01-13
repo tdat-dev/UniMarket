@@ -14,7 +14,7 @@ use App\Models\WalletTransaction;
  * Tiền từ escrow được chuyển vào ví sau khi hết trial period.
  * Seller có thể rút tiền về tài khoản ngân hàng khi đủ ngưỡng.
  * 
- * @author UniMarket
+ * @author Zoldify Team
  * @date 2026-01-07
  */
 class WalletService

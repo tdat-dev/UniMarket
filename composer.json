@@ -1,6 +1,6 @@
 {
-  "name": "unimarket/unimarket",
-  "description": "UniMarket PHP project",
+  "name": "zoldify/zoldify",
+  "description": "Zoldify PHP project",
   "type": "project",
   "license": "proprietary",
   "require": {

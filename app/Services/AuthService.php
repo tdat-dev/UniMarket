@@ -17,6 +17,13 @@ use App\Helpers\StringHelper;
  */
 class AuthService
 {
+    private ?EmailVerificationService $emailVerificationService;
+
+    public function __construct(?EmailVerificationService $emailVerificationService = null)
+    {
+        $this->emailVerificationService = $emailVerificationService;
+    }
+
     /**
      * Đăng ký user mới
      * 
@@ -31,6 +38,9 @@ class AuthService
         $fullName = StringHelper::formatName($data['username']);
         $email = StringHelper::formatEmail($data['email']);
         $phone = StringHelper::formatPhone($data['phone'] ?? '');
+        if ($phone === '') {
+            $phone = null;
+        }
 
         // 1. Kiểm tra email trùng
         if ($userModel->emailExists($email)) {
@@ -48,7 +58,7 @@ class AuthService
 
         // 3. Gửi email xác minh
         if ($userId > 0) {
-            $verificationService = new EmailVerificationService();
+            $verificationService = $this->emailVerificationService ?? new EmailVerificationService();
             $verificationService->sendVerification($userId, $email, $fullName);
         }
 

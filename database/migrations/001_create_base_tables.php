@@ -50,6 +50,7 @@ return new class extends BaseMigration {
                 phone_number VARCHAR(20) DEFAULT NULL,
                 address VARCHAR(255) DEFAULT NULL,
                 role ENUM('buyer', 'seller', 'admin', 'moderator') DEFAULT 'buyer',
+                email_verified TINYINT(1) DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 
                 INDEX idx_email (email),

@@ -10,7 +10,7 @@ namespace App\Core;
  * - staging: Log info, warning, error (không debug)
  * - production: Chỉ log warning và error
  * 
- * @author UniMarket
+ * @author Zoldify Team
  */
 class Logger
 {

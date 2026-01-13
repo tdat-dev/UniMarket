@@ -420,7 +420,7 @@ class ProductTest extends TestCase
         $this->mockDatabase
             ->expects($this->once())
             ->method('execute')
-            ->willReturn(true);
+            ->willReturn(1);
 
         // Act
         $result = $this->product->update(1, $updateData);
@@ -441,7 +441,7 @@ class ProductTest extends TestCase
         $this->mockDatabase
             ->expects($this->once())
             ->method('execute')
-            ->willReturn(true);
+            ->willReturn(1);
 
         // Act
         $result = $this->product->delete(1);
@@ -462,7 +462,7 @@ class ProductTest extends TestCase
         // Arrange
         $this->mockDatabase
             ->method('execute')
-            ->willReturn(true);
+            ->willReturn(1);
 
         // Act
         $result = $this->product->decreaseQuantity(1, 2);
