@@ -15,12 +15,6 @@
 
             <form action="/profile/update" method="POST" class="max-w-3xl">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tên đăng nhập</label>
-                        <input type="text" value="<?= htmlspecialchars($_SESSION['user']['username'] ?? 'user123') ?>"
-                            disabled
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 shadow-sm focus:outline-none sm:text-sm">
-                    </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Họ và tên</label>
