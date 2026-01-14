@@ -55,7 +55,7 @@
         <mxCell id="db-box" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;u&gt;DB : Database&lt;/u&gt;" vertex="1">
           <mxGeometry height="50" width="110" x="1005" y="30" as="geometry" />
         </mxCell>
-        <mxCell id="frame1" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 1: Hiển thị danh sách cuộc trò chuyện" vertex="1">
+        <mxCell id="frame1" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phas 1: Display the list of conversations" vertex="1">
           <mxGeometry height="220" width="1100" x="40" y="100" as="geometry" />
         </mxCell>
         <mxCell id="msg1" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="1 : clickChatMenu()">
@@ -112,7 +112,7 @@
             <mxPoint x="115" y="305" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="frame2" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 2: Mở cuộc trò chuyện" vertex="1">
+        <mxCell id="frame2" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 2: Initiating a conversation" vertex="1">
           <mxGeometry height="240" width="1100" x="40" y="340" as="geometry" />
         </mxCell>
         <mxCell id="msg9" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="9 : selectConversation($partnerId)">
@@ -172,10 +172,10 @@
             <mxPoint x="115" y="570" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="frame3" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 3: Gửi tin nhắn" vertex="1">
+        <mxCell id="frame3" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 3: Sending messages" vertex="1">
           <mxGeometry height="220" width="1100" x="40" y="600" as="geometry" />
         </mxCell>
-        <mxCell id="msg18" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="18 : typeMessage($content) + submitForm()">
+        <mxCell id="msg18" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="">
           <mxGeometry relative="1" width="80" as="geometry">
             <mxPoint x="115" y="640" as="sourcePoint" />
             <mxPoint x="275" y="640" as="targetPoint" />
@@ -189,9 +189,6 @@
         </mxCell>
         <mxCell id="ctrl-act3" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
           <mxGeometry height="110" width="10" x="475" y="670" as="geometry" />
-        </mxCell>
-        <mxCell id="note-validate" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 11px; background-color: rgb(18, 18, 18);&quot;&gt;20 : validate() - Check not empty, not sending to self&lt;/span&gt;" vertex="1">
-          <mxGeometry height="30" width="220" x="490" y="690" as="geometry" />
         </mxCell>
         <mxCell id="msg20" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="21 : create(sender_id, receiver_id, content)">
           <mxGeometry relative="1" width="80" as="geometry">
@@ -220,11 +217,8 @@
             <mxPoint x="115" y="795" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="frame4" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 4: Bắt đầu chat mới (từ trang shop/product)" vertex="1">
+        <mxCell id="frame4" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 4: Start a new chat (from the shop/product page)" vertex="1">
           <mxGeometry height="100" width="1100" x="40" y="840" as="geometry" />
-        </mxCell>
-        <mxCell id="note-new" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 11px; background-color: rgb(18, 18, 18);&quot;&gt;25 : User click &#39;Chat với shop&#39; trên trang sản phẩm hoặc shop&lt;br&gt;→ Redirect đến /chat?user_id=$sellerId&lt;br&gt;→ Tạo cuộc trò chuyện mới nếu chưa có&lt;/span&gt;" vertex="1">
-          <mxGeometry height="60" width="300" x="400" y="875" as="geometry" />
         </mxCell>
         <mxCell id="ROPC5ITXSqM2DlVW3u88-1" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" value="User" vertex="1">
           <mxGeometry height="60" width="30" x="90" as="geometry" />
