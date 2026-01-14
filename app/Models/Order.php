@@ -25,10 +25,10 @@ class Order extends BaseModel
         'status',
         'payment_method',
         'payment_status',
-        'shipping_address',
-        'shipping_phone',
-        'shipping_name',
-        'note',
+        'shipping_address_id',
+        'shipping_address_snapshot',
+        'shipping_fee',
+        'shipping_note',
     ];
 
     /** @var array<string> Order statuses */
@@ -230,10 +230,8 @@ class Order extends BaseModel
      *     total_amount: float,
      *     status?: string,
      *     payment_method?: string,
-     *     shipping_address?: string,
-     *     shipping_phone?: string,
-     *     shipping_name?: string,
-     *     note?: string
+     *     shipping_address_id?: int,
+     *     shipping_note?: string
      * } $data
      * @return int Order ID
      */
@@ -241,8 +239,8 @@ class Order extends BaseModel
     {
         $sql = "INSERT INTO {$this->table} 
                 (buyer_id, seller_id, total_amount, status, payment_method, 
-                 shipping_address, shipping_phone, shipping_name, note) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                 shipping_address_id, shipping_note) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         return $this->db->insert($sql, [
             $data['buyer_id'],
@@ -250,10 +248,8 @@ class Order extends BaseModel
             $data['total_amount'],
             $data['status'] ?? self::STATUS_PENDING,
             $data['payment_method'] ?? 'cod',
-            $data['shipping_address'] ?? null,
-            $data['shipping_phone'] ?? null,
-            $data['shipping_name'] ?? null,
-            $data['note'] ?? null,
+            $data['shipping_address_id'] ?? null,
+            $data['shipping_note'] ?? null,
         ]);
     }
 

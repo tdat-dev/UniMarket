@@ -14,18 +14,20 @@
  */
 
 return new class {
-    public function up(\PDO $pdo): void
+    public \PDO $pdo;
+
+    public function up(): void
     {
         // Kiểm tra nếu column đã tồn tại
-        $stmt = $pdo->query("SHOW COLUMNS FROM orders LIKE 'ghn_order_code'");
+        $stmt = $this->pdo->query("SHOW COLUMNS FROM orders LIKE 'ghn_order_code'");
         if ($stmt->rowCount() > 0) {
             echo "Columns GHN đã tồn tại, bỏ qua.\n";
             return;
         }
 
-        $pdo->exec("
+        $this->pdo->exec("
             ALTER TABLE orders
-            ADD COLUMN ghn_order_code VARCHAR(20) NULL COMMENT 'Mã vận đơn GHN' AFTER note,
+            ADD COLUMN ghn_order_code VARCHAR(20) NULL COMMENT 'Mã vận đơn GHN' AFTER created_at,
             ADD COLUMN ghn_sort_code VARCHAR(20) NULL COMMENT 'Mã phân loại kho GHN' AFTER ghn_order_code,
             ADD COLUMN ghn_expected_delivery DATETIME NULL COMMENT 'Ngày giao dự kiến' AFTER ghn_sort_code,
             ADD COLUMN ghn_shipping_fee INT UNSIGNED DEFAULT 0 COMMENT 'Phí ship GHN (VND)' AFTER ghn_expected_delivery,
@@ -33,14 +35,14 @@ return new class {
         ");
 
         // Thêm index cho mã vận đơn (để tìm kiếm nhanh)
-        $pdo->exec("CREATE INDEX idx_orders_ghn_order_code ON orders(ghn_order_code)");
+        $this->pdo->exec("CREATE INDEX idx_orders_ghn_order_code ON orders(ghn_order_code)");
 
         echo "Đã thêm columns GHN vào bảng orders.\n";
     }
 
-    public function down(\PDO $pdo): void
+    public function down(): void
     {
-        $pdo->exec("
+        $this->pdo->exec("
             ALTER TABLE orders
             DROP INDEX idx_orders_ghn_order_code,
             DROP COLUMN ghn_order_code,
