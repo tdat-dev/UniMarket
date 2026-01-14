@@ -20,29 +20,29 @@
             <div class="flex gap-6">
                 <!-- Product Image -->
                 <div class="flex-shrink-0">
-                    <img src="/uploads/<?= htmlspecialchars($report['image'] ?: 'default.png') ?>" 
-                         alt="<?= htmlspecialchars($report['name']) ?>"
+                    <img src="/uploads/<?= htmlspecialchars($report['product_image'] ?: 'default.png') ?>" 
+                         alt="<?= htmlspecialchars($report['product_name']) ?>"
                          class="w-48 h-48 object-cover rounded-lg border-2 border-gray-200">
                 </div>
                 
                 <!-- Product Info -->
                 <div class="flex-1">
-                    <h3 class="text-xl font-bold text-gray-900 mb-3"><?= htmlspecialchars($report['name']) ?></h3>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3"><?= htmlspecialchars($report['product_name']) ?></h3>
                     
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Giá</p>
-                            <p class="text-lg font-bold text-red-500"><?= number_format($report['price'], 0, ',', '.') ?>đ</p>
+                            <p class="text-lg font-bold text-red-500"><?= number_format($report['product_price'], 0, ',', '.') ?>đ</p>
                         </div>
                         
                         <div>
                             <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Số Lượng</p>
-                            <p class="text-gray-800 font-medium"><?= $report['quantity'] ?></p>
+                            <p class="text-gray-800 font-medium"><?= $report['product_quantity'] ?></p>
                         </div>
                         
                         <div>
                             <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Tình Trạng</p>
-                            <p class="text-gray-800 font-medium"><?= ucfirst($report['condition'] ?? 'N/A') ?></p>
+                            <p class="text-gray-800 font-medium"><?= ucfirst($report['product_condition'] ?? 'N/A') ?></p>
                         </div>
                         
                         <div>
@@ -62,7 +62,7 @@
             <div class="mt-6 pt-6 border-t">
                 <p class="text-xs text-gray-500 uppercase font-semibold mb-2">Mô Tả Sản Phẩm</p>
                 <div class="text-gray-700 leading-relaxed">
-                    <?= nl2br(htmlspecialchars($report['description'])) ?>
+                    <?= nl2br(htmlspecialchars($report['product_description'])) ?>
                 </div>
             </div>
         </div>
@@ -85,7 +85,7 @@
                 
                 <div class="border-l-4 border-blue-500 pl-4 bg-blue-50 p-3 rounded">
                     <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Trạng Thái Sản Phẩm</p>
-                    <?php if ($report['status'] === 'hidden'): ?>
+                    <?php if ($report['product_status'] === 'hidden'): ?>
                         <span class="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
                             <i class="fa-solid fa-eye-slash"></i> Đã Ẩn
                         </span>
@@ -105,7 +105,7 @@
                 Hành Động
             </h2>
             
-            <?php if ($report['status'] !== 'hidden'): ?>
+            <?php if ($report['product_status'] !== 'hidden'): ?>
                 <form method="POST" action="/admin/reports/hide-product" onsubmit="return confirm('Bạn có chắc chắn muốn ẩn sản phẩm này khỏi danh sách công khai?')">
                     <input type="hidden" name="report_id" value="<?= $report['id'] ?>">
                     <input type="hidden" name="product_id" value="<?= $report['product_id'] ?>">

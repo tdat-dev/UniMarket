@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Category;
 use App\Models\Follow;
 use App\Models\Notification;
+use App\Models\Report;
 
 /**
  * Product Controller
@@ -404,5 +405,52 @@ class ProductController extends BaseController
     {
         http_response_code(404);
         $this->view('errors/404', ['message' => $message]);
+    }
+
+    /**
+     * Handle report product
+     */
+    public function report(): void
+    {
+        // Check login
+        if (empty($_SESSION['user'])) {
+            $this->redirect('/login');
+            return;
+        }
+
+        $productId = (int)$this->post('product_id');
+        $reason = $this->post('reason');
+        $description = $this->post('description');
+        $reporterId = $_SESSION['user']['id'];
+
+        if (!$productId || !$reason) {
+            $this->redirectWithParams($_SERVER['HTTP_REFERER'] ?? '/', ['error' => 'missing_data']);
+            return;
+        }
+
+        try {
+            $reportModel = new Report();
+            
+            $reportModel->create([
+                'product_id' => $productId,
+                'reporter_id' => $reporterId,
+                'reason' => $reason,
+                'description' => $description,
+                'status' => Report::STATUS_PENDING
+            ]);
+
+            $this->redirectWithParams($_SERVER['HTTP_REFERER'] ?? "/products/$productId", ['success' => 'report_sent']);
+
+        } catch (\Exception $e) {
+            $this->redirectWithParams($_SERVER['HTTP_REFERER'] ?? "/products/$productId", ['error' => 'server_error']);
+        }
+    }
+
+    private function redirectWithParams(string $url, array $params): void
+    {
+        $sep = (strpos($url, '?') !== false) ? '&' : '?';
+        $query = http_build_query($params);
+        header("Location: " . $url . $sep . $query);
+        exit;
     }
 }

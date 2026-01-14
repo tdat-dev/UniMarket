@@ -62,6 +62,7 @@ $router->get('z/{slug}.p{productId}', [ProductController::class, 'showBySlug']);
 $router->post('products', [ProductController::class, 'store']);
 $router->post('products/store', [ProductController::class, 'store']);  // Alias for form action
 $router->post('products/{id}/cancel-sale', [ProductController::class, 'cancelSale']);
+$router->post('report/product', [ProductController::class, 'report']);
 
 // Search (Public)
 $router->get('search', [SearchController::class, 'index']);
