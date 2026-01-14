@@ -42,6 +42,7 @@ $command = $argv[1] ?? 'migrate';
 
 /**
  * Tạo bảng migrations nếu chưa có
+ * Hoặc thêm column batch nếu bảng cũ thiếu
  */
 function ensureMigrationsTable(PDO $pdo): void
 {
@@ -53,6 +54,17 @@ function ensureMigrationsTable(PDO $pdo): void
             executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
+
+    // Backward compatibility: thêm column batch nếu bảng cũ không có
+    try {
+        $stmt = $pdo->query("SHOW COLUMNS FROM migrations LIKE 'batch'");
+        if ($stmt->rowCount() === 0) {
+            $pdo->exec("ALTER TABLE migrations ADD COLUMN batch INT NOT NULL DEFAULT 1 AFTER filename");
+            echo "📦 Added 'batch' column to migrations table.\n\n";
+        }
+    } catch (PDOException $e) {
+        // Ignore - table might not exist yet
+    }
 }
 
 /**

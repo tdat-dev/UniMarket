@@ -11,6 +11,7 @@ use App\Models\Follow;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Notification;
+use App\Services\GHNService;
 
 /**
  * Shop Controller
@@ -174,6 +175,8 @@ class ShopController extends BaseController
 
     /**
      * Cập nhật trạng thái đơn hàng
+     * 
+     * Khi chuyển sang "shipping", sẽ tự động tạo đơn trên GHN
      */
     public function updateOrderStatus(): void
     {
@@ -189,10 +192,105 @@ class ShopController extends BaseController
             // Security check: ensure order belongs to seller
             $order = $orderModel->findWithDetails($orderId);
             if ($order !== null && (int) $order['seller_id'] === $userId) {
+
+                // Nếu chuyển sang shipping, tạo đơn GHN
+                if ($status === 'shipping') {
+                    $this->createGHNOrder($order, $orderModel);
+                }
+
                 $orderModel->updateStatus($orderId, $status);
             }
         }
 
         $this->redirect('/shop/orders');
     }
+
+    /**
+     * Tạo đơn vận chuyển trên GHN
+     * 
+     * @param array $order Thông tin đơn hàng
+     * @param Order $orderModel
+     */
+    private function createGHNOrder(array $order, Order $orderModel): void
+    {
+        try {
+            $ghnService = new GHNService();
+
+            // Lấy items để tính tổng weight
+            $orderItemModel = new OrderItem();
+            $items = $orderItemModel->getByOrderId((int) $order['id']);
+
+            // Tính tổng weight (500g mỗi item nếu không có thông tin)
+            $totalWeight = 0;
+            $ghnItems = [];
+            foreach ($items as $item) {
+                $weight = (int) ($item['weight'] ?? 500);
+                $totalWeight += $weight * (int) $item['quantity'];
+
+                $ghnItems[] = [
+                    'name' => $item['product_name'] ?? 'Sản phẩm',
+                    'quantity' => (int) $item['quantity'],
+                    'price' => (int) $item['price'],
+                ];
+            }
+
+            // Đảm bảo weight tối thiểu 200g
+            $totalWeight = max($totalWeight, 200);
+
+            // Xác định COD amount
+            // Nếu đã thanh toán online → COD = 0
+            // Nếu chưa thanh toán → COD = total_amount
+            $codAmount = 0;
+            if (($order['payment_status'] ?? 'pending') !== 'paid') {
+                $codAmount = (int) $order['total_amount'];
+            }
+
+            // Tạo đơn GHN
+            // NOTE: Trong thực tế cần có thông tin district_id và ward_code
+            // Tạm thời dùng default values cho sandbox testing
+            $ghnData = [
+                'to_name' => $order['shipping_name'] ?? $order['buyer_name'] ?? 'Khách hàng',
+                'to_phone' => $order['shipping_phone'] ?? $order['buyer_phone'] ?? '0987654321',
+                'to_address' => $order['shipping_address'] ?? 'Địa chỉ giao hàng',
+                'to_ward_code' => '20308',     // TODO: Lấy từ user_addresses
+                'to_district_id' => 1444,      // TODO: Lấy từ user_addresses
+                'weight' => $totalWeight,
+                'cod_amount' => $codAmount,
+                'content' => 'Đơn hàng #' . $order['id'],
+                'client_order_code' => 'ZOLD-' . $order['id'],
+                'note' => $order['note'] ?? '',
+                'items' => $ghnItems,
+            ];
+
+            $result = $ghnService->createOrder($ghnData);
+
+            // Lưu thông tin GHN vào database
+            if (!empty($result['order_code'])) {
+                $orderModel->updateGHNInfo((int) $order['id'], [
+                    'ghn_order_code' => $result['order_code'],
+                    'ghn_sort_code' => $result['sort_code'] ?? null,
+                    'ghn_expected_delivery' => $result['expected_delivery_time'] ?? null,
+                    'ghn_shipping_fee' => $result['total_fee'] ?? 0,
+                    'ghn_status' => 'ready_to_pick',
+                ]);
+
+                // Thông báo cho buyer
+                $notifModel = new Notification();
+                $notifModel->create(
+                    (int) $order['buyer_id'],
+                    "Đơn hàng #{$order['id']} đã được gửi đi. Mã vận đơn: {$result['order_code']}"
+                );
+            }
+
+        } catch (\Exception $e) {
+            // Log lỗi nhưng không block việc update status
+            error_log("GHN Create Order Error: " . $e->getMessage());
+
+            // Trong production có thể muốn:
+            // - Set session flash message báo lỗi
+            // - Không update status
+            // Tạm thời bỏ qua để flow không bị break
+        }
+    }
 }
+
