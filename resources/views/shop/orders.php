@@ -72,7 +72,7 @@ if (!isset($_SESSION['user'])) {
                             <div class="flex flex-wrap justify-between items-start mb-4 gap-2">
                                 <div class="flex gap-3 items-center">
                                     <span class="font-bold text-blue-600">#ORD-<?= $order['id'] ?></span>
-                                    <span
+                                    <span 
                                         class="text-xs text-gray-500"><?= date('d/m/Y H:i', strtotime($order['created_at'])) ?></span>
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-medium 
                                         <?= $order['status'] == 'pending' ? 'bg-yellow-100 text-yellow-800' : '' ?>
@@ -89,7 +89,7 @@ if (!isset($_SESSION['user'])) {
                             </div>
 
                             <div class="flex flex-col gap-3">
-                                <?php foreach ($order['items'] as $item): ?>
+                                <?php foreach ($order['items'] ?? [] as $item): ?>
                                     <div class="flex gap-4">
                                         <div class="w-12 h-12 bg-gray-200 rounded-md flex-shrink-0 overflow-hidden">
                                             <img src="/uploads/<?= htmlspecialchars($item['product_image'] ?? 'default.png') ?>"

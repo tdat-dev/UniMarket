@@ -99,7 +99,8 @@ if (!isset($_SESSION['user'])) {
                             </div>
 
                             <div class="flex flex-col gap-3">
-                                <?php foreach ($order['items'] as $item): ?>
+                                <!-- DEBUG: Items count = <?= count($order['items'] ?? []) ?> -->
+                                <?php foreach ($order['items'] ?? [] as $item): ?>
                                     <div class="flex gap-4">
                                         <div
                                             class="w-16 h-16 bg-gray-100 rounded-md flex-shrink-0 overflow-hidden border border-gray-200">
