@@ -396,6 +396,49 @@ class Order extends BaseModel
         return $this->db->execute($sql, $params) !== false;
     }
 
+    /**
+     * Cập nhật thông tin GHN
+     * 
+     * @param int $orderId
+     * @param array{
+     *     ghn_order_code?: string,
+     *     ghn_sort_code?: string,
+     *     ghn_expected_delivery?: string,
+     *     ghn_shipping_fee?: int,
+     *     ghn_status?: string
+     * } $data
+     * @return bool
+     */
+    public function updateGHNInfo(int $orderId, array $data): bool
+    {
+        $allowedFields = [
+            'ghn_order_code',
+            'ghn_sort_code',
+            'ghn_expected_delivery',
+            'ghn_shipping_fee',
+            'ghn_status'
+        ];
+
+        $sets = [];
+        $params = [];
+
+        foreach ($data as $key => $value) {
+            if (in_array($key, $allowedFields, true)) {
+                $sets[] = "{$key} = ?";
+                $params[] = $value;
+            }
+        }
+
+        if (empty($sets)) {
+            return false;
+        }
+
+        $params[] = $orderId;
+        $sql = "UPDATE {$this->table} SET " . implode(', ', $sets) . " WHERE id = ?";
+
+        return $this->db->execute($sql, $params) !== false;
+    }
+
     // =========================================================================
     // STATISTICS
     // =========================================================================

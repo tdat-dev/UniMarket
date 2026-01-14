@@ -83,6 +83,12 @@ if (!isset($_SESSION['user'])) {
                                      ">
                                         <?= $order['status'] == 'paid' ? 'Đã thanh toán' : ucfirst($order['status']) ?>
                                     </span>
+                                    <?php if (!empty($order['ghn_order_code'])): ?>
+                                        <span class="px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">
+                                            <i class="fa-solid fa-truck text-[10px] mr-1"></i>
+                                            GHN: <?= htmlspecialchars($order['ghn_order_code']) ?>
+                                        </span>
+                                    <?php endif; ?>
                                 </div>
                                 <div class="text-sm font-bold text-red-600">
                                     <?= number_format($order['total_amount'], 0, ',', '.') ?>đ
