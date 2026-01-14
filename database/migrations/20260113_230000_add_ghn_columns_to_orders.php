@@ -20,12 +20,12 @@ return new class extends BaseMigration {
 
     public function up(): void
     {
-        // Thêm các columns GHN (idempotent)
-        $this->addColumn($this->table, 'ghn_order_code', "VARCHAR(20) NULL COMMENT 'Mã vận đơn GHN'", 'note');
-        $this->addColumn($this->table, 'ghn_sort_code', "VARCHAR(20) NULL COMMENT 'Mã phân loại kho GHN'", 'ghn_order_code');
-        $this->addColumn($this->table, 'ghn_expected_delivery', "DATETIME NULL COMMENT 'Ngày giao dự kiến'", 'ghn_sort_code');
-        $this->addColumn($this->table, 'ghn_shipping_fee', "INT UNSIGNED DEFAULT 0 COMMENT 'Phí ship GHN (VND)'", 'ghn_expected_delivery');
-        $this->addColumn($this->table, 'ghn_status', "VARCHAR(50) NULL COMMENT 'Trạng thái GHN'", 'ghn_shipping_fee');
+        // Thêm các columns GHN (idempotent, không dùng AFTER để tránh lỗi)
+        $this->addColumn($this->table, 'ghn_order_code', "VARCHAR(20) NULL COMMENT 'Mã vận đơn GHN'");
+        $this->addColumn($this->table, 'ghn_sort_code', "VARCHAR(20) NULL COMMENT 'Mã phân loại kho GHN'");
+        $this->addColumn($this->table, 'ghn_expected_delivery', "DATETIME NULL COMMENT 'Ngày giao dự kiến'");
+        $this->addColumn($this->table, 'ghn_shipping_fee', "INT UNSIGNED DEFAULT 0 COMMENT 'Phí ship GHN (VND)'");
+        $this->addColumn($this->table, 'ghn_status', "VARCHAR(50) NULL COMMENT 'Trạng thái GHN'");
 
         // Thêm index cho mã vận đơn (để tìm kiếm nhanh)
         $this->addIndex($this->table, 'idx_orders_ghn_order_code', 'ghn_order_code');
