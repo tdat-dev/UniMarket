@@ -73,18 +73,8 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-          cache-dependency-path: package-lock.json
-
-      - name: 📦 Install Node dependencies
-        run: npm ci
-
-      - name: 🎨 Build CSS/JS assets
-        run: npm run build
+      # ✅ Pre-built assets: CSS/JS  đã build local và commit lên Git
+      # Bỏ npm ci + npm run build để CI nhanh hơn
 
       - name: 🔑 Setup SSH Key
         run: |
@@ -150,18 +140,8 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-          cache-dependency-path: package-lock.json
-
-      - name: 📦 Install Node dependencies
-        run: npm ci
-
-      - name: 🎨 Build CSS/JS assets
-        run: npm run build
+      # ✅ Pre-built assets strategy: CSS/JS đã được build local và commit lên Git
+      # Không cần npm ci + npm run build ở đây nữa
 
       - name: 📦 Install Composer dependencies
         run: |
