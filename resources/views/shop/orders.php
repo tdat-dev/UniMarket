@@ -26,6 +26,10 @@ if (!isset($_SESSION['user'])) {
                     class="px-6 py-4 text-sm font-medium whitespace-nowrap <?= $currentStatus == 'pending' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50' : 'text-gray-500 hover:text-blue-600' ?>">
                     Chờ xác nhận (<?= $counts['pending'] ?? 0 ?>)
                 </a>
+                <a href="/shop/orders?status=pending_payment"
+                    class="px-6 py-4 text-sm font-medium whitespace-nowrap <?= $currentStatus == 'pending_payment' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50' : 'text-gray-500 hover:text-blue-600' ?>">
+                    Chờ thanh toán (<?= $counts['pending_payment'] ?? 0 ?>)
+                </a>
                 <a href="/shop/orders?status=shipping"
                     class="px-6 py-4 text-sm font-medium whitespace-nowrap <?= $currentStatus == 'shipping' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50' : 'text-gray-500 hover:text-blue-600' ?>">
                     Đang giao (<?= $counts['shipping'] ?? 0 ?>)
@@ -68,7 +72,7 @@ if (!isset($_SESSION['user'])) {
                     </div>
                 <?php else: ?>
                     <?php foreach ($orders as $order): ?>
-                        <div class="p-6 hover:bg-gray-50 transition">
+                        <div class="p-6 ho ver:bg-gray-50 transition">
                             <div class="flex flex-wrap justify-between items-start mb-4 gap-2">
                                 <div class="flex gap-3 items-center">
                                     <span class="font-bold text-blue-600">#ORD-<?= $order['id'] ?></span>
@@ -76,12 +80,21 @@ if (!isset($_SESSION['user'])) {
                                         class="text-xs text-gray-500"><?= date('d/m/Y H:i', strtotime($order['created_at'])) ?></span>
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-medium 
                                         <?= $order['status'] == 'pending' ? 'bg-yellow-100 text-yellow-800' : '' ?>
+                                        <?= $order['status'] == 'pending_payment' ? 'bg-orange-100 text-orange-800' : '' ?>
                                         <?= $order['status'] == 'paid' ? 'bg-emerald-100 text-emerald-800' : '' ?>
                                         <?= $order['status'] == 'shipping' ? 'bg-blue-100 text-blue-800' : '' ?>
                                         <?= $order['status'] == 'completed' ? 'bg-green-100 text-green-800' : '' ?>
                                         <?= $order['status'] == 'cancelled' ? 'bg-red-100 text-red-800' : '' ?>
                                      ">
-                                        <?= $order['status'] == 'paid' ? 'Đã thanh toán' : ucfirst($order['status']) ?>
+                                        <?= match($order['status']) {
+                                            'pending' => 'Chờ xác nhận',
+                                            'pending_payment' => 'Chờ thanh toán',
+                                            'paid' => 'Đã thanh toán',
+                                            'shipping' => 'Đang giao',
+                                            'completed' => 'Hoàn thành',
+                                            'cancelled' => 'Đã hủy',
+                                            default => ucfirst($order['status'])
+                                        } ?>
                                     </span>
                                     <?php if (!empty($order['ghn_order_code'])): ?>
                                         <span class="px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">
