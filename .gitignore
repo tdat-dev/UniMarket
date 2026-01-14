@@ -99,4 +99,3 @@ yarn-error.log*
 # System files
 .htaccess.local
 .htpasswd
-public/assets/css/app.css
