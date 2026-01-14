@@ -1,62 +1,60 @@
 <?php
 
 /**
- * Migration: Add pending_payment and paid to orders status ENUM
+ * Migration: Add pending payment status to orders
  * 
- * This migration adds new status values:
- * - pending_payment: Order created with PayOS, waiting for payment
- * - paid: Payment received, waiting for shipping
- * 
- * Run: php database/migrations/20260107_215000_add_pending_payment_status.php
+ * @author  Zoldify Team
+ * @date    2026-01-07
+ * @version 2.0.0 (refactored)
  */
 
-require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/../BaseMigration.php';
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../../');
-$dotenv->load();
+use Database\BaseMigration;
 
-$host = $_ENV['DB_HOST'] ?? 'localhost';
-$dbname = $_ENV['DB_DATABASE'] ?? 'zoldify';
-$username = $_ENV['DB_USERNAME'] ?? 'root';
-$password = $_ENV['DB_PASSWORD'] ?? '';
+return new class extends BaseMigration {
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    ]);
+    protected string $table = 'orders';
 
-    echo "Connected to database.\n";
+    public function up(): void
+    {
+        // Check current ENUM values
+        $stmt = $this->pdo->query("SHOW COLUMNS FROM {$this->table} LIKE 'status'");
+        $column = $stmt->fetch(PDO::FETCH_ASSOC);
+        $currentType = $column['Type'] ?? '';
 
-    // Modify status column to include new values
-    // New ENUM: pending, pending_payment, paid, confirmed, shipping, received, completed, cancelled, refunded
-    $sql = "ALTER TABLE orders 
-            MODIFY COLUMN status ENUM(
-                'pending',         -- COD: Chờ xác nhận từ seller
-                'pending_payment', -- PayOS: Chờ thanh toán
-                'paid',            -- Đã thanh toán (PayOS thành công)
-                'confirmed',       -- Seller đã xác nhận
-                'shipping',        -- Đang giao hàng
-                'received',        -- Buyer đã nhận hàng
-                'completed',       -- Hoàn thành (tiền đã về seller)
-                'cancelled',       -- Đã hủy
-                'refunded'         -- Đã hoàn tiền
-            ) NOT NULL DEFAULT 'pending'";
+        // Only update if 'pending_payment' is not in the enum
+        if (strpos($currentType, 'pending_payment') === false) {
+            $this->pdo->exec("ALTER TABLE {$this->table} MODIFY COLUMN status ENUM(
+                'pending',
+                'pending_payment',
+                'paid',
+                'shipping',
+                'received',
+                'trial_period',
+                'completed',
+                'cancelled',
+                'refunded'
+            ) DEFAULT 'pending'");
+            $this->success("Added 'pending_payment' to status ENUM");
+        } else {
+            $this->skip("Status ENUM already has 'pending_payment'");
+        }
+    }
 
-    $pdo->exec($sql);
-    echo "✅ Successfully updated orders.status ENUM.\n";
-
-    echo "\nNew status values:\n";
-    echo "  - pending: Chờ xác nhận (COD)\n";
-    echo "  - pending_payment: Chờ thanh toán (PayOS)\n";
-    echo "  - paid: Đã thanh toán\n";
-    echo "  - confirmed: Seller đã xác nhận\n";
-    echo "  - shipping: Đang giao hàng\n";
-    echo "  - received: Đã nhận hàng\n";
-    echo "  - completed: Hoàn thành\n";
-    echo "  - cancelled: Đã hủy\n";
-    echo "  - refunded: Đã hoàn tiền\n";
-
-} catch (PDOException $e) {
-    die("❌ Migration failed: " . $e->getMessage() . "\n");
-}
+    public function down(): void
+    {
+        // Revert to previous ENUM (without pending_payment)
+        $this->pdo->exec("ALTER TABLE {$this->table} MODIFY COLUMN status ENUM(
+            'pending',
+            'paid',
+            'shipping',
+            'received',
+            'trial_period',
+            'completed',
+            'cancelled',
+            'refunded'
+        ) DEFAULT 'pending'");
+        $this->success("Removed 'pending_payment' from status ENUM");
+    }
+};

@@ -9,7 +9,7 @@
  * 
  * Tích hợp với HERE Maps để lấy tọa độ và địa chỉ chuẩn hóa.
  * 
- * @author UniMarket Team
+ * @author Zoldify Team
  * @version 1.0.0
  * @date 2026-01-09
  */

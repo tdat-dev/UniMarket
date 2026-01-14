@@ -1,126 +1,66 @@
 <?php
-require_once __DIR__ . '/../../app/Core/Database.php';
 
-use App\Core\Database;
+/**
+ * Migration: Update categories structure and add parent_id, description, tag, sort_order
+ * 
+ * @author  Zoldify Team
+ * @date    2026-01-03
+ * @version 2.0.0 (refactored)
+ */
 
-try {
-    $db = Database::getInstance();
+require_once __DIR__ . '/../BaseMigration.php';
 
-    // 1. Add columns if not exist
-    // parent_id
-    try {
-        $db->query("SELECT parent_id FROM categories LIMIT 1");
-    } catch (PDOException $e) {
-        $db->execute("ALTER TABLE categories ADD COLUMN parent_id INT NULL DEFAULT NULL AFTER id");
-        $db->execute("ALTER TABLE categories ADD CONSTRAINT fk_category_parent FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE CASCADE");
-    }
+use Database\BaseMigration;
 
-    // tag
-    try {
-        $db->query("SELECT tag FROM categories LIMIT 1");
-    } catch (PDOException $e) {
-        $db->execute("ALTER TABLE categories ADD COLUMN tag VARCHAR(50) NULL AFTER name");
-    }
+return new class extends BaseMigration {
 
-    // Modify icon to varchar(50) if it's too long, or leave it. 255 is safe. 
-    // Just ensure it can hold 'fa-solid fa-book'
+    protected string $table = 'categories';
 
-    // 2. Truncate and Seed
-    $db->execute("SET FOREIGN_KEY_CHECKS = 0");
-    $db->execute("TRUNCATE TABLE categories");
-    $db->execute("SET FOREIGN_KEY_CHECKS = 1");
+    public function up(): void
+    {
+        // Add parent_id for subcategories
+        $this->addColumn($this->table, 'parent_id', "INT DEFAULT NULL", 'id');
 
-    $data = [
-        [
-            'name' => 'Sách & Giáo trình',
-            'icon' => 'fa-book',
-            'children' => [
-                ['name' => 'Sách giáo khoa - giáo trình'],
-                ['name' => 'Sách văn học'],
-                ['name' => 'Sách kinh tế'],
-                ['name' => 'Sách thiếu nhi'],
-                ['name' => 'Sách kỹ năng sống'],
-                ['name' => 'Sách học ngoại ngữ'],
-                ['name' => 'Truyện tranh (Manga/Comic)']
-            ]
-        ],
-        [
-            'name' => 'Đồ điện tử',
-            'icon' => 'fa-laptop',
-            'tag' => 'Hot',
-            'children' => [
-                ['name' => 'Điện thoại & Phụ kiện'],
-                ['name' => 'Máy tính bảng'],
-                ['name' => 'Laptop & PC'],
-                ['name' => 'Máy ảnh & Quay phim'],
-                ['name' => 'Thiết bị âm thanh']
-            ]
-        ],
-        [
-            'name' => 'Đồ học tập',
-            'icon' => 'fa-pen-ruler',
-            'children' => [
-                ['name' => 'Bút viết & Hộp bút'],
-                ['name' => 'Vở & Sổ tay'],
-                ['name' => 'Dụng cụ vẽ'],
-                ['name' => 'Máy tính bỏ túi'],
-                ['name' => 'Balo học sinh']
-            ]
-        ],
-        [
-            'name' => 'Thời trang',
-            'icon' => 'fa-shirt',
-            'tag' => 'Trend',
-            'children' => [
-                ['name' => 'Áo thun & Áo phông'],
-                ['name' => 'Áo sơ mi'],
-                ['name' => 'Quần Jeans/Kaki'],
-                ['name' => 'Áo khoác & Hoodie'],
-                ['name' => 'Váy & Đầm']
-            ]
-        ],
-        [
-            'name' => 'Phụ kiện',
-            'icon' => 'fa-glasses',
-            'children' => [
-                ['name' => 'Đồng hồ'],
-                ['name' => 'Kính mắt'],
-                ['name' => 'Trang sức'],
-                ['name' => 'Túi xách & Ví'],
-                ['name' => 'Giày dép']
-            ]
-        ],
-        [
-            'name' => 'Khác',
-            'icon' => 'fa-box-open',
-            'children' => [
-                ['name' => 'Đồ gia dụng'],
-                ['name' => 'Nhà cửa & Đời sống'],
-                ['name' => 'Thể thao & Du lịch'],
-                ['name' => 'Sản phẩm khác']
-            ]
-        ],
-    ];
+        // Add description
+        $this->addColumn($this->table, 'description', "TEXT DEFAULT NULL", 'name');
 
-    foreach ($data as $parent) {
-        $parentId = $db->insert("INSERT INTO categories (name, icon, tag) VALUES (:name, :icon, :tag)", [
-            'name' => $parent['name'],
-            'icon' => $parent['icon'],
-            'tag' => $parent['tag'] ?? null
-        ]);
+        // Add tag (Hot, New, etc.)
+        $this->addColumn($this->table, 'tag', "VARCHAR(50) DEFAULT NULL", 'description');
 
-        if (isset($parent['children'])) {
-            foreach ($parent['children'] as $child) {
-                $db->insert("INSERT INTO categories (name, parent_id) VALUES (:name, :parent_id)", [
-                    'name' => $child['name'],
-                    'parent_id' => $parentId
-                ]);
+        // Add sort_order
+        $this->addColumn($this->table, 'sort_order', "INT DEFAULT 0", 'image');
+
+        // Add index on parent_id
+        if (!$this->indexExists($this->table, 'idx_parent_id')) {
+            $this->addIndex($this->table, 'idx_parent_id', 'parent_id');
+        }
+
+        // Add foreign key for parent_id (self-referencing)
+        if (!$this->foreignKeyExists($this->table, 'fk_category_parent')) {
+            try {
+                $this->pdo->exec("
+                    ALTER TABLE {$this->table} 
+                    ADD CONSTRAINT fk_category_parent 
+                    FOREIGN KEY (parent_id) REFERENCES {$this->table}(id) ON DELETE CASCADE
+                ");
+                $this->success("Added foreign key 'fk_category_parent'");
+            } catch (PDOException $e) {
+                $this->warning("Could not add FK: " . $e->getMessage());
             }
         }
     }
 
-    echo "Migration completed successfully.";
+    public function down(): void
+    {
+        // Remove FK first
+        if ($this->foreignKeyExists($this->table, 'fk_category_parent')) {
+            $this->pdo->exec("ALTER TABLE {$this->table} DROP FOREIGN KEY fk_category_parent");
+        }
 
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage();
-}
+        $this->dropIndex($this->table, 'idx_parent_id');
+        $this->dropColumn($this->table, 'sort_order');
+        $this->dropColumn($this->table, 'tag');
+        $this->dropColumn($this->table, 'description');
+        $this->dropColumn($this->table, 'parent_id');
+    }
+};

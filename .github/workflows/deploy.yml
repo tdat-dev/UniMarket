@@ -73,6 +73,19 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: 📦 Install Node dependencies
+        run: npm ci
+
+      - name: 🎨 Build CSS/JS assets
+        run: npm run build
+
       - name: 🔑 Setup SSH Key
         run: |
           mkdir -p ~/.ssh
@@ -137,6 +150,19 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: 📦 Install Node dependencies
+        run: npm ci
+
+      - name: 🎨 Build CSS/JS assets
+        run: npm run build
+
       - name: 📦 Install Composer dependencies
         run: |
           composer install --no-interaction --prefer-dist --no-progress --optimize-autoloader --no-dev
@@ -150,30 +176,40 @@ jobs:
             \"deployed_by\": \"${{ github.actor }}\"
           }" > public/version.json
 
-      - name: 📤 Deploy to Production via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./
-          server-dir: ./
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            **/vendor/**
-            **/.env
-            **/README.md
-            **/tests/**
-            **/.github/**
-            **/chat-server/**
-            **/.agent/**
-            **/.agent*
-            **/docs/**
-            **/*.md
-            **/.vscode/**
-            **/.idea/**
+      - name: 🔑 Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>&1 || true
+
+      - name: 📤 Deploy to Production via Rsync
+        run: |
+          rsync -avz --delete \
+            --exclude='.git*' \
+            --exclude='node_modules' \
+            --exclude='vendor' \
+            --exclude='.env' \
+            --exclude='README.md' \
+            --exclude='tests' \
+            --exclude='.github' \
+            --exclude='.agent' \
+            --exclude='docs' \
+            --exclude='*.md' \
+            --exclude='.vscode' \
+            --exclude='.idea' \
+            --exclude='storage/logs/*' \
+            --exclude='storage/cache/*' \
+            --exclude='.user.ini' \
+            --exclude='.well-known' \
+            -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no" \
+            ./ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/www/wwwroot/zoldify.com/
+
+      - name: 🗄️ Run Database Migrations
+        run: |
+          ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no \
+            ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+            "cd /www/wwwroot/zoldify.com && php database/migrate.php"
 
       - name: 🔔 Notify Success
         if: success()

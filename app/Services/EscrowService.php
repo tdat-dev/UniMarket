@@ -17,7 +17,7 @@ use App\Models\PaymentTransaction;
  * 2. Buyer xác nhận đã nhận hàng
  * 3. Hết thời gian thử hàng (7 ngày cho đồ mới, ít hơn cho đồ cũ)
  * 
- * @author UniMarket
+ * @author Zoldify Team
  * @date 2026-01-07
  */
 class EscrowService

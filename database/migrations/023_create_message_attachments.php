@@ -1,54 +1,54 @@
 <?php
+
 /**
- * Migration: Tạo bảng message_attachments
- * Lưu file đính kèm trong tin nhắn
+ * Migration: Create message_attachments table
+ * 
+ * @author  Zoldify Team
+ * @date    2026-01-03
+ * @version 2.0.0 (refactored)
  */
 
-require_once __DIR__ . '/../../app/Core/Database.php';
+require_once __DIR__ . '/../BaseMigration.php';
 
-use App\Core\Database;
+use Database\BaseMigration;
 
-$db = Database::getInstance();
+return new class extends BaseMigration {
 
-try {
-    // Tạo bảng message_attachments
-    $sql = "
-        CREATE TABLE IF NOT EXISTS message_attachments (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            message_id INT NOT NULL,
-            file_name VARCHAR(255) NOT NULL,
-            file_path VARCHAR(500) NOT NULL,
-            file_type VARCHAR(50) NOT NULL,
-            file_size INT NOT NULL DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            
-            FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE,
-            INDEX idx_message_id (message_id)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-    ";
+    protected string $table = 'message_attachments';
 
-    $db->execute($sql);
-    echo "✅ Tạo bảng message_attachments thành công!\n";
+    public function up(): void
+    {
+        if ($this->tableExists($this->table)) {
+            $this->skip("Table '{$this->table}' already exists");
+            return;
+        }
 
-    // Kiểm tra xem cột has_attachment đã tồn tại chưa
-    $pdo = $db->getConnection();
-    $stmt = $pdo->query("
-        SELECT COUNT(*) as cnt FROM information_schema.COLUMNS 
-        WHERE TABLE_SCHEMA = DATABASE() 
-        AND TABLE_NAME = 'messages' 
-        AND COLUMN_NAME = 'has_attachment'
-    ");
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $this->pdo->exec("
+            CREATE TABLE {$this->table} (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                message_id INT NOT NULL,
+                file_name VARCHAR(255) NOT NULL,
+                file_path VARCHAR(500) NOT NULL,
+                file_type VARCHAR(50) NOT NULL,
+                file_size INT NOT NULL DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                
+                INDEX idx_message_id (message_id),
+                
+                CONSTRAINT fk_attachments_message FOREIGN KEY (message_id) 
+                    REFERENCES messages(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ");
 
-    if ($result['cnt'] == 0) {
-        // Thêm cột has_attachment vào bảng messages
-        $sql2 = "ALTER TABLE messages ADD COLUMN has_attachment TINYINT(1) DEFAULT 0 AFTER is_read";
-        $db->execute($sql2);
-        echo "✅ Thêm cột has_attachment vào messages thành công!\n";
-    } else {
-        echo "ℹ️ Cột has_attachment đã tồn tại.\n";
+        // Add has_attachment column to messages
+        $this->addColumn('messages', 'has_attachment', "TINYINT(1) DEFAULT 0", 'is_read');
+
+        $this->success("Created table '{$this->table}'");
     }
 
-} catch (Exception $e) {
-    echo "❌ Lỗi: " . $e->getMessage() . "\n";
-}
+    public function down(): void
+    {
+        $this->dropColumn('messages', 'has_attachment');
+        $this->dropTable($this->table);
+    }
+};

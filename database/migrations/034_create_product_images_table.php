@@ -1,42 +1,50 @@
 <?php
+
 /**
- * Migration: 034_create_product_images_table
- * Tạo bảng lưu nhiều ảnh cho mỗi sản phẩm
+ * Migration: Create product_images table
+ * 
+ * @author  Zoldify Team
+ * @date    2026-01-04
+ * @version 2.0.0 (refactored)
  */
 
-require_once __DIR__ . '/../../app/Core/Database.php';
+require_once __DIR__ . '/../BaseMigration.php';
 
-use App\Core\Database;
+use Database\BaseMigration;
 
-$db = Database::getInstance();
+return new class extends BaseMigration {
 
-// Tạo bảng product_images
-$sql = "
-CREATE TABLE IF NOT EXISTS product_images (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    product_id INT NOT NULL,
-    image_path VARCHAR(255) NOT NULL COMMENT 'Đường dẫn ảnh relative to uploads',
-    is_primary TINYINT(1) DEFAULT 0 COMMENT 'Ảnh chính của sản phẩm',
-    sort_order INT DEFAULT 0 COMMENT 'Thứ tự hiển thị',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-";
+    protected string $table = 'product_images';
 
-try {
-    $db->query($sql);
-    echo "✅ Đã tạo bảng product_images thành công!\n";
+    public function up(): void
+    {
+        if ($this->tableExists($this->table)) {
+            $this->skip("Table '{$this->table}' already exists");
+            return;
+        }
 
-    // Migrate ảnh từ cột image trong products sang product_images
-    $migrateSQL = "
-        INSERT INTO product_images (product_id, image_path, is_primary, sort_order)
-        SELECT id, image, 1, 0 FROM products 
-        WHERE image IS NOT NULL AND image != '' AND image != 'default_product.png'
-        ON DUPLICATE KEY UPDATE image_path = VALUES(image_path)
-    ";
-    $db->query($migrateSQL);
-    echo "✅ Đã migrate ảnh từ products sang product_images!\n";
+        $this->pdo->exec("
+            CREATE TABLE {$this->table} (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                product_id INT NOT NULL,
+                image_path VARCHAR(500) NOT NULL,
+                is_primary TINYINT(1) DEFAULT 0,
+                sort_order INT DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                
+                INDEX idx_product_id (product_id),
+                INDEX idx_is_primary (is_primary),
+                
+                CONSTRAINT fk_product_images_product FOREIGN KEY (product_id) 
+                    REFERENCES products(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ");
 
-} catch (Exception $e) {
-    echo "❌ Lỗi: " . $e->getMessage() . "\n";
-}
+        $this->success("Created table '{$this->table}'");
+    }
+
+    public function down(): void
+    {
+        $this->dropTable($this->table);
+    }
+};

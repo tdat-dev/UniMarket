@@ -12,7 +12,7 @@ namespace App\Services;
  * 
  * API Documentation: https://payos.vn/docs/api/
  * 
- * @author UniMarket
+ * @author Zoldify Team
  * @date 2026-01-07
  */
 class PayOSService
@@ -37,7 +37,7 @@ class PayOSService
         if (isset($_SERVER['HTTP_HOST'])) {
             $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https" : "http";
             $domain = $protocol . "://" . $_SERVER['HTTP_HOST'];
-            
+
             // Luôn ưu tiên dynamic URL để đảm bảo redirect về đúng nơi user đang đứng
             $this->returnUrl = $domain . '/payment/return';
             $this->cancelUrl = $domain . '/payment/cancel';
