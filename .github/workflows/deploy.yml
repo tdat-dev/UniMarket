@@ -236,33 +236,35 @@ jobs:
         working-directory: ./chat-server
         run: npm ci --production
 
-      - name: 📤 Deploy Chat Server via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./chat-server/
-          server-dir: ./chat-server/
-          exclude: |
-            **/.git*
-            **/.env
-            **/README.md
+      - name: 🔑 Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>&1 || true
 
-      - name: 📋 Post-deploy instructions
+      - name: 📤 Deploy Chat Server via SSH
+        run: |
+          rsync -avz --delete \
+            --exclude='.git*' \
+            --exclude='.env' \
+            --exclude='README.md' \
+            --exclude='*.md' \
+            -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no" \
+            ./chat-server/ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/www/wwwroot/zoldify.com/chat-server/
+
+      - name: 🔄 Restart Chat Server
+        run: |
+          ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no \
+            ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+            "cd /www/wwwroot/zoldify.com/chat-server && pm2 restart zoldify-chat || pm2 start index.js --name zoldify-chat"
+
+      - name: 📋 Deployment Success
         run: |
           echo "========================================"
           echo "   💬 CHAT SERVER DEPLOYED!            "
           echo "========================================"
-          echo ""
-          echo "⚠️  IMPORTANT: SSH vào server và chạy:"
-          echo ""
-          echo "   cd /www/wwwroot/zoldify.com/chat-server"
-          echo "   pm2 restart zoldify-chat"
-          echo ""
-          echo "   Hoặc nếu chưa có PM2:"
-          echo "   pm2 start index.js --name zoldify-chat"
-          echo ""
+          echo "🌐 Chat server restarted via PM2"
           echo "========================================"
 
   # ============================================
