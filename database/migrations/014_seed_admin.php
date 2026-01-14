@@ -1,17 +1,50 @@
 <?php
-return new class {
-    public function run($pdo)
+
+/**
+ * Migration: Seed admin user
+ * 
+ * @author  Zoldify Team
+ * @date    2025-12-30
+ * @version 2.0.0 (refactored)
+ */
+
+require_once __DIR__ . '/../BaseMigration.php';
+
+use Database\BaseMigration;
+
+return new class extends BaseMigration {
+
+    public function up(): void
     {
-        // Hash password bằng PHP
+        $email = 'superadmin@zoldify.vn';
+
+        // Check if admin exists
+        $stmt = $this->pdo->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+
+        if ($stmt->rowCount() > 0) {
+            $this->skip("Super admin already exists");
+            return;
+        }
+
         $hash = password_hash('admin123', PASSWORD_BCRYPT);
 
-        $stmt = $pdo->prepare("
-            INSERT INTO users (email, password, role, full_name) 
-            VALUES (?, ?, 'admin', 'Super Admin')
-            ON DUPLICATE KEY UPDATE password = ?
+        $stmt = $this->pdo->prepare("
+            INSERT INTO users (email, password, role, full_name, email_verified) 
+            VALUES (?, ?, 'admin', 'Super Admin', 1)
         ");
-        $stmt->execute(['superadmin@zoldify.vn', $hash, $hash]);
+        $stmt->execute([$email, $hash]);
 
-        echo "Created super admin!\n";
+        $this->success("Created super admin: {$email}");
+    }
+
+    public function down(): void
+    {
+        $email = 'superadmin@zoldify.vn';
+
+        $stmt = $this->pdo->prepare("DELETE FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+
+        $this->success("Deleted super admin: {$email}");
     }
 };

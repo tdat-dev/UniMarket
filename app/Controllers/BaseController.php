@@ -5,42 +5,210 @@ namespace App\Controllers;
 use App\Models\Cart;
 use App\Models\SearchKeyword;
 use App\Core\RedisCache;
-use \App\Models\Setting;
+use App\Models\Setting;
 
+/**
+ * Base Controller Class
+ * Provides common functionality for all controllers
+ * 
+ * @package App\Controllers
+ */
 class BaseController
 {
+    protected const CACHE_TTL = 300; // 5 minutes
 
     public function __construct()
     {
-        // Khởi tạo session nếu cần
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        $this->ensureSession();
         $this->checkUserLocked();
         $this->checkMaintenance();
     }
 
+    // ==================== SESSION HELPERS ====================
+
     /**
-     * Lấy số lượng sản phẩm trong giỏ hàng
+     * Ensure session is started
      */
-    protected function getCartCount()
+    protected function ensureSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+    }
 
+    /**
+     * Get the current authenticated user
+     * 
+     * @return array<string, mixed>|null
+     */
+    protected function getUser(): ?array
+    {
+        return $_SESSION['user'] ?? null;
+    }
+
+    /**
+     * Get current user ID
+     */
+    protected function getUserId(): ?int
+    {
+        return isset($_SESSION['user']['id']) ? (int) $_SESSION['user']['id'] : null;
+    }
+
+    /**
+     * Check if user is authenticated
+     */
+    protected function isAuthenticated(): bool
+    {
+        return isset($_SESSION['user']['id']);
+    }
+
+    /**
+     * Check if user is admin
+     */
+    protected function isAdmin(): bool
+    {
+        return isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'admin';
+    }
+
+    // ==================== AUTH HELPERS ====================
+
+    /**
+     * Require authentication - redirect to login if not authenticated
+     * 
+     * @return array<string, mixed> The authenticated user
+     */
+    protected function requireAuth(): array
+    {
+        if (!$this->isAuthenticated()) {
+            $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
+            $this->redirect('/login');
+        }
+        return $_SESSION['user'];
+    }
+
+    /**
+     * Require admin role
+     * 
+     * @return array<string, mixed> The authenticated admin user
+     */
+    protected function requireAdmin(): array
+    {
+        $user = $this->requireAuth();
+        if (!$this->isAdmin()) {
+            $this->redirect('/');
+        }
+        return $user;
+    }
+
+    // ==================== RESPONSE HELPERS ====================
+
+    /**
+     * Send JSON response
+     * 
+     * @param array<string, mixed> $data
+     * @param int $status HTTP status code
+     */
+    protected function json(array $data, int $status = 200): never
+    {
+        http_response_code($status);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($data, JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    /**
+     * Send success JSON response
+     * 
+     * @param string $message
+     * @param array<string, mixed> $data Additional data
+     */
+    protected function jsonSuccess(string $message = 'Success', array $data = []): never
+    {
+        $this->json(array_merge(['success' => true, 'message' => $message], $data));
+    }
+
+    /**
+     * Send error JSON response
+     * 
+     * @param string $message
+     * @param int $status HTTP status code
+     */
+    protected function jsonError(string $message, int $status = 400): never
+    {
+        $this->json(['success' => false, 'message' => $message], $status);
+    }
+
+    /**
+     * Redirect to URL
+     * 
+     * @param string $url
+     * @param array<string, string> $flash Flash messages
+     */
+    protected function redirect(string $url, array $flash = []): never
+    {
+        foreach ($flash as $key => $value) {
+            $_SESSION["flash_{$key}"] = $value;
+        }
+        header("Location: {$url}");
+        exit;
+    }
+
+    /**
+     * Redirect back to previous page
+     * 
+     * @param array<string, string> $flash Flash messages
+     */
+    protected function back(array $flash = []): never
+    {
+        $referer = $_SERVER['HTTP_REFERER'] ?? '/';
+        $this->redirect($referer, $flash);
+    }
+
+    // ==================== VIEW HELPERS ====================
+
+    /**
+     * Render a view with data
+     * 
+     * @param string $viewPath Path to view file (without .php)
+     * @param array<string, mixed> $data Data to pass to view
+     */
+    protected function view(string $viewPath, array $data = []): void
+    {
+        // Add common data to all views
+        $settingModel = new Setting();
+        $data['siteSettings'] = $settingModel->getAllGrouped();
+        $data['cartCount'] = $this->getCartCount();
+        $data['topKeywords'] = $this->getTopKeywords();
+        $data['currentUser'] = $this->getUser();
+
+        extract($data);
+
+        $viewFile = __DIR__ . '/../../resources/views/' . $viewPath . '.php';
+
+        if (file_exists($viewFile)) {
+            require_once $viewFile;
+        } else {
+            throw new \RuntimeException("View not found: {$viewPath}");
+        }
+    }
+
+    // ==================== DATA HELPERS ====================
+
+    /**
+     * Get cart item count
+     */
+    protected function getCartCount(): int
+    {
         $cartCount = 0;
 
-        if (isset($_SESSION['user']['id'])) {
-            // Đã đăng nhập -> Đếm từ Database
+        if ($this->isAuthenticated()) {
             $cartModel = new Cart();
-            $cartCount = $cartModel->countItems($_SESSION['user']['id']);
+            $cartCount = $cartModel->countItems($this->getUserId());
         } else {
-            // Chưa đăng nhập -> Đếm từ Session
             if (isset($_SESSION['cart'])) {
                 foreach ($_SESSION['cart'] as $item) {
                     $qty = is_array($item) ? ($item['quantity'] ?? 1) : $item;
-                    $cartCount += $qty;
+                    $cartCount += (int) $qty;
                 }
             }
         }
@@ -49,99 +217,62 @@ class BaseController
     }
 
     /**
-     * Lấy top keywords phổ biến (có cache 5 phút)
-     * Ưu tiên dùng Redis, fallback về Session nếu Redis không khả dụng
+     * Get top search keywords (cached)
+     * 
+     * @return array<int, array<string, mixed>>
      */
-    protected function getTopKeywords()
+    protected function getTopKeywords(): array
     {
         $cacheKey = 'top_keywords';
-        $cacheTTL = 300; // 5 phút
-
-        // Thử dùng Redis trước
         $redis = RedisCache::getInstance();
 
         if ($redis->isAvailable()) {
-            // Redis khả dụng → Dùng Redis
             $topKeywords = $redis->get($cacheKey);
 
             if ($topKeywords === null) {
-                // Cache miss → Query DB
                 $keywordModel = new SearchKeyword();
                 $topKeywords = $keywordModel->getTopKeywords(4);
-
-                // Lưu vào Redis
-                $redis->set($cacheKey, $topKeywords, $cacheTTL);
+                $redis->set($cacheKey, $topKeywords, self::CACHE_TTL);
             }
 
             return $topKeywords;
         }
 
-        // Redis không khả dụng → Fallback về Session cache
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
+        // Fallback to session cache
         if (
             !isset($_SESSION['cached_top_keywords']) ||
             !isset($_SESSION['keywords_cache_time']) ||
-            (time() - $_SESSION['keywords_cache_time']) > $cacheTTL
+            (time() - $_SESSION['keywords_cache_time']) > self::CACHE_TTL
         ) {
-            // Cache hết hạn → Query DB
             $keywordModel = new SearchKeyword();
             $topKeywords = $keywordModel->getTopKeywords(4);
 
-            // Lưu vào session
             $_SESSION['cached_top_keywords'] = $topKeywords;
             $_SESSION['keywords_cache_time'] = time();
         } else {
-            // Dùng cache
             $topKeywords = $_SESSION['cached_top_keywords'];
         }
 
         return $topKeywords;
     }
 
-    /**
-     * Render view với data
-     */
-    protected function view($viewPath, $data = [])
-    {
-        // Thêm settings vào tất cả views
-        $settingModel = new Setting();
-        $data['siteSettings'] = $settingModel->getAll();
-        // Tự động thêm cartCount và topKeywords vào mọi view
-        $data['cartCount'] = $this->getCartCount();
-        $data['topKeywords'] = $this->getTopKeywords();
-
-        extract($data);
-
-        // Tìm file view .php
-        $viewFile = __DIR__ . '/../../resources/views/' . $viewPath . '.php';
-
-        if (file_exists($viewFile)) {
-            require_once $viewFile;
-        } else {
-            echo "View not found: $viewPath";
-        }
-    }
+    // ==================== SECURITY CHECKS ====================
 
     /**
-     * Kiểm tra user hiện tại có bị khóa không
-     * Nếu bị khóa -> logout và redirect về login
+     * Check if current user is locked
      */
-    protected function checkUserLocked()
+    protected function checkUserLocked(): void
     {
-        if (isset($_SESSION['user']['id'])) {
+        if ($this->isAuthenticated()) {
             $userModel = new \App\Models\User();
-            $user = $userModel->find($_SESSION['user']['id']);
+            $user = $userModel->find($this->getUserId());
 
-            // Nếu user bị khóa hoặc không tồn tại
             if (!$user || !empty($user['is_locked'])) {
-                // Xóa session
                 unset($_SESSION['user']);
                 session_destroy();
 
-                // Redirect về login với thông báo
+                // Start new session for flash message
+                session_start();
                 $_SESSION['error'] = 'Tài khoản của bạn đã bị khóa.';
                 header('Location: /login');
                 exit;
@@ -150,33 +281,61 @@ class BaseController
     }
 
     /**
-     * Kiểm tra chế độ bảo trì
-     * Nếu bật -> hiển thị trang bảo trì (trừ admin)
+     * Check maintenance mode
      */
-    protected function checkMaintenance()
+    protected function checkMaintenance(): void
     {
-        // Bỏ qua nếu là admin
-        if (isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'admin') {
+        if ($this->isAdmin()) {
             return;
         }
 
-        // Bỏ qua các route admin và login
         $currentUri = $_SERVER['REQUEST_URI'] ?? '/';
-        if (strpos($currentUri, '/admin') === 0 || strpos($currentUri, '/login') === 0) {
+        if (str_starts_with($currentUri, '/admin') || str_starts_with($currentUri, '/login')) {
             return;
         }
 
-        // Kiểm tra maintenance mode
         $settingModel = new Setting();
         $maintenanceMode = $settingModel->get('maintenance_mode', '0');
 
         if ($maintenanceMode === '1') {
-            $message = $settingModel->get('maintenance_message', 'Website đang bảo trì, vui lòng quay lại sau.');
-
-            // Hiển thị trang bảo trì
             http_response_code(503);
             include __DIR__ . '/../../resources/views/maintenance.php';
             exit;
         }
+    }
+
+    // ==================== INPUT HELPERS ====================
+
+    /**
+     * Get POST input with sanitization
+     * 
+     * @param string $key
+     * @param mixed $default
+     */
+    protected function input(string $key, mixed $default = null): mixed
+    {
+        return isset($_POST[$key]) ? htmlspecialchars(trim($_POST[$key])) : $default;
+    }
+
+    /**
+     * Get GET query parameter
+     * 
+     * @param string $key
+     * @param mixed $default
+     */
+    protected function query(string $key, mixed $default = null): mixed
+    {
+        return $_GET[$key] ?? $default;
+    }
+
+    /**
+     * Get JSON body input
+     * 
+     * @return array<string, mixed>
+     */
+    protected function getJsonInput(): array
+    {
+        $input = file_get_contents('php://input');
+        return json_decode($input, true) ?? [];
     }
 }

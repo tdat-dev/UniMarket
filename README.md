@@ -204,6 +204,18 @@ Hệ thống sử dụng cơ chế migration tự viết (`app/Core/Database.php
 2. Viết câu lệnh SQL vào file.
 3. Chạy lệnh `php database/migrate.php`.
 
+### ⚡ QUAN TRỌNG: Sau khi Pull Code
+
+> **⚠️ Mỗi lần pull code mới, BẮT BUỘC chạy:**
+>
+> ```bash
+> php database/migrate.php
+> ```
+>
+> Điều này đảm bảo database của bạn được cập nhật với các thay đổi mới nhất.
+
+**Xem workflow chi tiết:** Chạy lệnh `/db` trong chat với AI hoặc xem file `.agent/workflows/db.md`
+
 ---
 
 ## 📚 Tài liệu chi tiết (Documentation)
@@ -234,6 +246,10 @@ Ngoài README chính, dự án còn có các tài liệu hướng dẫn chi ti�
 ### 🛠 Troubleshooting (Sửa lỗi)
 
 - [**Fix Lỗi Checkout**](docs/BUG_FIX_CHECKOUT_TYPEERROR.md): Hướng dẫn fix lỗi TypeError khi thanh toán.
+
+### 🧪 Testing
+
+- [**Hướng dẫn Testing**](docs/TESTING.md): Cách chạy Jest (JS) và PHPUnit (PHP) tests, viết tests mới, coverage.
 
 ---
 

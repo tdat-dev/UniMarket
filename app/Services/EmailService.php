@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Services;
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -111,6 +114,35 @@ class EmailService
         </body>
         </html>
         HTML;
+    }
+
+    public function sendPasswordResetEmail(string $toEmail, string $toName, string $otp): bool
+    {
+        try {
+            $this->mailer->clearAddresses();
+            $this->mailer->addAddress($toEmail, $toName);
+
+            $this->mailer->isHTML(true);
+            $this->mailer->Subject = 'Đặt lại mật khẩu Zoldify';
+
+            $this->mailer->Body = <<<HTML
+            <div style="font-family: Arial, sans-serif; padding: 20px;">
+                <h2>Xin chào {$toName},</h2>
+                <p>Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản Zoldify.</p>
+                <p>Mã xác nhận của bạn là:</p>
+                <h1 style="color: #4CAF50; letter-spacing: 5px;">{$otp}</h1>
+                <p>Mã này sẽ hết hạn sau 15 phút.</p>
+                <p>Nếu bạn không yêu cầu, vui lòng bỏ qua email này.</p>
+            </div>
+HTML;
+            $this->mailer->AltBody = "Mã xác nhận đặt lại mật khẩu: $otp";
+
+            $this->mailer->send();
+            return true;
+        } catch (Exception $e) {
+            error_log("Email Error: " . $this->mailer->ErrorInfo);
+            return false;
+        }
     }
 
     private function getBaseUrl(): string

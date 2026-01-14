@@ -47,6 +47,15 @@
 
         <div class="border-t border-slate-700 my-4"></div>
 
+        <!-- Report Management -->
+        <a href="/admin/reports"
+          class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm
+          <?= str_contains($_SERVER['REQUEST_URI'], '/admin/reports') ? 'active' : '' ?>">
+          <i class="fa-solid fa-flag w-5"></i>
+          <span>Báo cáo vi phạm</span>
+        </a>
+
+
         <!-- Settings -->
         <a href="/admin/settings" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm">
             <i class="fa-solid fa-cog w-5"></i>

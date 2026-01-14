@@ -1,9 +1,11 @@
 <?php
+use App\Helpers\SlugHelper;
+
 include __DIR__ . '/../partials/head.php';
 include __DIR__ . '/../partials/header.php';
 ?>
 
-<main class="bg-gray-100 min-h-screen pb-10">
+<main class="bg-gray-100 min-h-screen pb-20 md:pb-10">
     <div class="max-w-[1200px] mx-auto px-4 pt-4">
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-6">
             <a href="/" class="hover:text-[#2C67C8]">Trang chủ</a>
@@ -62,11 +64,11 @@ include __DIR__ . '/../partials/header.php';
                                             class="w-full h-full object-cover">
                                     </div>
                                     <div class="flex flex-col justify-center">
-                                        <a href="/product-detail?id=<?= $item['id'] ?>"
+                                        <a href="<?= SlugHelper::productUrl($item['product_name'] ?? '', (int) ($item['seller_id'] ?? 0), (int) $item['product_id']) ?>"
                                             class="text-sm font-medium text-gray-800 line-clamp-2 hover:text-[#2C67C8]">
-                                            <?= htmlspecialchars($item['name'] ?? '') ?>
+                                            <?= htmlspecialchars($item['product_name'] ?? '') ?>
                                         </a>
-                                        <span class="text-xs text-gray-400 mt-1">Còn <?= $item['quantity'] ?> sản phẩm</span>
+                                        <span class="text-xs text-gray-400 mt-1">Còn <?= $item['stock'] ?? 0 ?> sản phẩm</span>
                                     </div>
                                 </div>
                                 <div class="col-span-2 text-center text-sm font-medium text-gray-600">

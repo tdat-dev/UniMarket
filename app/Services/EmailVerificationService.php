@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\User;
@@ -27,7 +30,7 @@ class EmailVerificationService
         $token = bin2hex(random_bytes(32));
 
         // 2. Tạo OTP 6 số
-        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
         // 3. Tính thời gian hết hạn
         $expiresAt = date('Y-m-d H:i:s', time() + $this->tokenExpiry);
@@ -67,6 +70,7 @@ class EmailVerificationService
      */
     public function verifyByOtp(string $email, string $otp): array
     {
+        $email = strtolower(trim($email)); // Normalize
         $user = $this->userModel->findByEmailForVerification($email);
 
         if (!$user) {
@@ -99,6 +103,7 @@ class EmailVerificationService
      */
     public function resendVerification(string $email): array
     {
+        $email = strtolower(trim($email)); // Normalize
         $user = $this->userModel->findByEmailForVerification($email);
 
         if (!$user) {

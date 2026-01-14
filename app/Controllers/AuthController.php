@@ -1,21 +1,33 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Controllers;
 
 use App\Services\AuthService;
 use App\Validators\AuthValidator;
 
+/**
+ * Auth Controller
+ * 
+ * Xử lý đăng nhập, đăng ký, đăng xuất.
+ * 
+ * @package App\Controllers
+ */
 class AuthController extends BaseController
 {
-    // --- LOGIN (HIỂN THỊ FORM) ---
-    public function login()
+    /**
+     * Hiển thị form đăng nhập
+     */
+    public function login(): void
     {
-        if (isset($_SESSION['user'])) {
-            header('Location: /');
-            exit;
+        if ($this->isAuthenticated()) {
+            $this->redirect('/');
         }
 
-        // Kiểm tra lỗi từ Session (ví dụ từ Google Auth redirect về)
         $data = [];
+
+        // Check for error from Google Auth redirect
         if (isset($_SESSION['error'])) {
             $data['errors']['login'] = $_SESSION['error'];
             unset($_SESSION['error']);
@@ -24,24 +36,22 @@ class AuthController extends BaseController
         $this->view('auth/login', $data);
     }
 
-    // --- XỬ LÝ ĐĂNG NHẬP ---
-    public function processLogin()
+    /**
+     * Xử lý đăng nhập
+     */
+    public function processLogin(): void
     {
-        // 1. Validate dữ liệu đầu vào
         $validator = new AuthValidator();
         $errors = $validator->validateLogin($_POST);
 
         if (!empty($errors)) {
-            // Lấy lỗi đầu tiên để hiển thị ra alert
-            $firstError = reset($errors);
             $this->view('auth/login', [
-                'error' => $firstError,
-                'errors' => $errors
+                'errors' => ['login' => reset($errors)],
+                'old' => $_POST,
             ]);
             return;
         }
 
-        // 2. Gọi Service để kiểm tra đăng nhập
         $authService = new AuthService();
         $email = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
@@ -49,48 +59,32 @@ class AuthController extends BaseController
         $result = $authService->loginUser($email, $password);
 
         if ($result['success']) {
-            // Đăng nhập thành công
-            if (isset($_SESSION['redirect_after_login'])) {
-                $redirectUrl = $_SESSION['redirect_after_login'];
-                unset($_SESSION['redirect_after_login']);
-                header("Location: $redirectUrl");
-            } else {
-                header('Location: /');
-            }
-            exit;
-        } elseif ($result['reason'] === 'unverified') {
-            // Email chưa xác minh -> chuyển đến trang verify
-            $_SESSION['pending_verification_email'] = $result['email'];
-            header('Location: /verify-email');
-            exit;
-        } elseif ($result['reason'] === 'locked') {
-            // Tài khoản bị khóa
-            $this->view('auth/login', [
-                'errors' => ['login' => $result['message']],
-                'old' => ['username' => $email]
-            ]);
-        } else {
-            $this->view('auth/login', [
-                'error' => 'Email hoặc mật khẩu không đúng', // Sửa key thành 'error' để khớp với view
-                'old' => ['username' => $email]
-            ]);
+            $redirectUrl = $_SESSION['redirect_after_login'] ?? '/';
+            unset($_SESSION['redirect_after_login']);
+            $this->redirect($redirectUrl);
         }
+
+        // Handle specific failure reasons
+        $this->handleLoginFailure($result, $email);
     }
 
-    // --- REGISTER (HIỂN THỊ FORM) ---
-    public function register()
+    /**
+     * Hiển thị form đăng ký
+     */
+    public function register(): void
     {
-        if (isset($_SESSION['user'])) {
-            header('Location: /');
-            exit;
+        if ($this->isAuthenticated()) {
+            $this->redirect('/');
         }
+
         $this->view('auth/register');
     }
 
-    // --- XỬ LÝ ĐĂNG KÝ (Chuyển đến trang verify) ---
-    public function processRegister()
+    /**
+     * Xử lý đăng ký
+     */
+    public function processRegister(): void
     {
-        // 1. Validate dữ liệu
         $validator = new AuthValidator();
         $errors = $validator->validateRegister($_POST);
 
@@ -99,38 +93,59 @@ class AuthController extends BaseController
             return;
         }
 
-        // 2. Gọi Service xử lý đăng ký
         $authService = new AuthService();
         $result = $authService->registerUser($_POST);
 
         if ($result['success']) {
-            // Lưu email để hiển thị ở trang verify
             $_SESSION['pending_verification_email'] = $result['email'];
-
-            // Chuyển đến trang xác minh email
-            header('Location: /verify-email');
-            exit;
-        } else {
-            $this->view('auth/register', [
-                'errors' => ['email' => $result['message']]
-            ]);
+            $this->redirect('/verify-email');
         }
+
+        $this->view('auth/register', [
+            'errors' => ['email' => $result['message']],
+        ]);
     }
 
-
-
-    // --- ĐĂNG XUẤT ---
-    public function logout()
+    /**
+     * Đăng xuất
+     */
+    public function logout(): never
     {
-        // Khởi động session nếu chưa có để còn destroy nó
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
+        $this->ensureSession();
+        session_destroy();
+
+        $this->redirect('/login');
+    }
+
+    // =========================================================================
+    // PRIVATE HELPERS
+    // =========================================================================
+
+    /**
+     * Xử lý các trường hợp đăng nhập thất bại
+     */
+    private function handleLoginFailure(array $result, string $email): void
+    {
+        $reason = $result['reason'] ?? 'invalid';
+
+        switch ($reason) {
+            case 'unverified':
+                $_SESSION['pending_verification_email'] = $result['email'];
+                $this->redirect('/verify-email');
+                break;
+
+            case 'locked':
+                $this->view('auth/login', [
+                    'errors' => ['login' => $result['message']],
+                    'old' => ['username' => $email],
+                ]);
+                break;
+
+            default:
+                $this->view('auth/login', [
+                    'errors' => ['login' => 'Email hoặc mật khẩu không đúng'],
+                    'old' => ['username' => $email],
+                ]);
         }
-
-        session_destroy(); // Xóa sạch dữ liệu đăng nhập
-
-        // SỬA DÒNG NÀY: Chuyển về /login thay vì /
-        header('Location: /login');
-        exit;
     }
 }

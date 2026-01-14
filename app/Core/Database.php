@@ -4,13 +4,22 @@ namespace App\Core;
 
 use PDO;
 use PDOException;
+use PDOStatement;
 
+/**
+ * Database Singleton Class
+ * Handles all database connections and queries using PDO
+ * 
+ * @package App\Core
+ */
 class Database
 {
-    private static $instance = null;
-    private $connection;
+    private static ?Database $instance = null;
+    private PDO $connection;
 
-    // Constructor - Kết nối database khi khởi tạo
+    /**
+     * Private constructor - connects to database on instantiation
+     */
     private function __construct()
     {
         $config = require __DIR__ . '/../../config/database.php';
@@ -19,14 +28,12 @@ class Database
             $dsn = "mysql:host={$config['host']};dbname={$config['db_name']};charset=utf8mb4";
 
             $options = [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, // Bật báo lỗi
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC, // Trả về mảng associative
-                PDO::ATTR_EMULATE_PREPARES => false, // Dùng prepared statement thật
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
             ];
 
             $this->connection = new PDO($dsn, $config['username'], $config['password'], $options);
-            
-            // Tự động tạo bảng nếu chưa có (theo yêu cầu fix lỗi nhanh)
             $this->ensureTablesExist();
 
         } catch (PDOException $ex) {
@@ -34,9 +41,11 @@ class Database
         }
     }
 
-    private function ensureTablesExist()
+    /**
+     * Auto-create required tables if they don't exist
+     */
+    private function ensureTablesExist(): void
     {
-        // Tạo bảng carts
         $sql = "CREATE TABLE IF NOT EXISTS carts (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT NOT NULL,
@@ -49,7 +58,6 @@ class Database
             FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 
-        // Tạo bảng settings
         $sqlSettings = "CREATE TABLE IF NOT EXISTS settings (
             id INT AUTO_INCREMENT PRIMARY KEY,
             setting_key VARCHAR(100) NOT NULL UNIQUE,
@@ -63,13 +71,14 @@ class Database
             $this->connection->exec($sql);
             $this->connection->exec($sqlSettings);
         } catch (PDOException $e) {
-            // Bỏ qua nếu lỗi, tránh chết trang vì lỗi tạo bảng phụ
             error_log("Error creating tables: " . $e->getMessage());
         }
     }
 
-    // Lấy instance duy nhất (Singleton)
-    public static function getInstance()
+    /**
+     * Get the singleton instance
+     */
+    public static function getInstance(): self
     {
         if (self::$instance === null) {
             self::$instance = new self();
@@ -77,14 +86,23 @@ class Database
         return self::$instance;
     }
 
-    // Lấy PDO connection
-    public function getConnection()
+    /**
+     * Get the raw PDO connection
+     */
+    public function getConnection(): PDO
     {
         return $this->connection;
     }
 
-    // Thực thi query với prepared statement
-    public function query($sql, $params = [])
+    /**
+     * Execute a query with prepared statement
+     * 
+     * @param string $sql SQL query with placeholders
+     * @param array $params Parameters to bind
+     * @return PDOStatement
+     * @throws PDOException
+     */
+    public function query(string $sql, array $params = []): PDOStatement
     {
         try {
             $stmt = $this->connection->prepare($sql);
@@ -95,61 +113,105 @@ class Database
         }
     }
 
-    // SELECT nhiều dòng
-    public function fetchAll($sql, $params = [])
+    /**
+     * Fetch multiple rows
+     * 
+     * @param string $sql SQL query
+     * @param array $params Parameters to bind
+     * @return array<int, array<string, mixed>>
+     */
+    public function fetchAll(string $sql, array $params = []): array
     {
         $stmt = $this->query($sql, $params);
         return $stmt->fetchAll();
     }
 
-    // SELECT 1 dòng
-    public function fetchOne($sql, $params = [])
+    /**
+     * Fetch a single row
+     * 
+     * @param string $sql SQL query
+     * @param array $params Parameters to bind
+     * @return array<string, mixed>|null
+     */
+    public function fetchOne(string $sql, array $params = []): ?array
     {
         $stmt = $this->query($sql, $params);
-        return $stmt->fetch();
+        $result = $stmt->fetch();
+        return $result !== false ? $result : null;
     }
 
-    // INSERT và trả về ID
-    public function insert($sql, $params = [])
+    /**
+     * Insert a row and return the last insert ID
+     * 
+     * @param string $sql INSERT query
+     * @param array $params Parameters to bind
+     * @return int Last insert ID
+     */
+    public function insert(string $sql, array $params = []): int
     {
         $this->query($sql, $params);
-        return $this->connection->lastInsertId();
+        return (int) $this->connection->lastInsertId();
     }
 
-    // UPDATE/DELETE và trả về số dòng affected
-    public function execute($sql, $params = [])
+    /**
+     * Execute UPDATE/DELETE and return affected row count
+     * 
+     * @param string $sql SQL query
+     * @param array $params Parameters to bind
+     * @return int Number of affected rows
+     */
+    public function execute(string $sql, array $params = []): int
     {
         $stmt = $this->query($sql, $params);
         return $stmt->rowCount();
     }
 
-    // Bắt đầu transaction
-    public function beginTransaction()
+    /**
+     * Begin a database transaction
+     */
+    public function beginTransaction(): bool
     {
         return $this->connection->beginTransaction();
     }
 
-    // Commit transaction
-    public function commit()
+    /**
+     * Commit the current transaction
+     */
+    public function commit(): bool
     {
         return $this->connection->commit();
     }
 
-    // Rollback transaction
-    public function rollback()
+    /**
+     * Rollback the current transaction
+     */
+    public function rollback(): bool
     {
-        return $this->connection->rollback();
+        return $this->connection->rollBack();
     }
 
-    // Ngăn clone object
-    private function __clone()
+    /**
+     * Check if currently in a transaction
+     */
+    public function inTransaction(): bool
+    {
+        return $this->connection->inTransaction();
+    }
+
+    /**
+     * Prevent cloning of singleton
+     */
+    private function __clone(): void
     {
     }
 
-    // Ngăn unserialize
-    public function __wakeup()
+    /**
+     * Prevent unserialization of singleton
+     * 
+     * @throws \Exception
+     */
+    public function __wakeup(): void
     {
         throw new \Exception("Cannot unserialize singleton");
     }
 }
-?>

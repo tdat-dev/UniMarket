@@ -1,140 +1,122 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controllers;
 
 use App\Models\Product;
 use App\Models\Cart;
 use App\Middleware\VerificationMiddleware;
 
+/**
+ * Cart Controller
+ * 
+ * Quản lý giỏ hàng của users.
+ * 
+ * @package App\Controllers
+ */
 class CartController extends BaseController
 {
-    private $cartModel;
+    private Cart $cartModel;
 
     public function __construct()
     {
+        parent::__construct();
         $this->cartModel = new Cart();
-    }
-
-    /**
-     * Kiểm tra user đã đăng nhập chưa
-     */
-    private function getUserId()
-    {
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
-        return $_SESSION['user']['id'] ?? null;
     }
 
     /**
      * Thêm sản phẩm vào giỏ hàng hoặc Mua ngay
      */
-    public function add()
+    public function add(): void
     {
         $userId = $this->getUserId();
-        $action = $_POST['action'] ?? 'add';
-        $productId = $_POST['product_id'] ?? null;
-        $quantity = (int) ($_POST['quantity'] ?? 1);
 
-        // Bắt buộc đăng nhập mới được mua hàng
-        if (!$userId) {
-            if (session_status() == PHP_SESSION_NONE) {
-                session_start();
-            }
+        if ($userId === null) {
             $_SESSION['error'] = 'Vui lòng đăng nhập để mua hàng.';
             $_SESSION['redirect_after_login'] = $_SERVER['HTTP_REFERER'] ?? '/products';
-            header('Location: /login');
-            exit;
+            $this->redirect('/login');
         }
 
         VerificationMiddleware::requireVerified();
 
-        if (!$productId) {
-            header('Location: /products');
-            exit;
+        $action = $this->input('action', 'add');
+        $productId = (int) $this->input('product_id', 0);
+        $quantity = max(1, (int) $this->input('quantity', 1));
+
+        if ($productId === 0) {
+            $this->redirect('/products');
         }
 
-        // Xử lý theo action
-        if ($action === 'buy') {
-            // MUA NGAY: Đi thẳng checkout, KHÔNG thêm vào giỏ hàng
-            echo '<form id="buy_now_form" action="/checkout" method="POST">';
-            echo '<input type="hidden" name="selected_products[]" value="' . $productId . '">';
-            echo '<input type="hidden" name="quantities[' . $productId . ']" value="' . $quantity . '">';
-            echo '</form>';
-            echo '<script>document.getElementById("buy_now_form").submit();</script>';
-            exit;
-        } else {
-            // THÊM VÀO GIỎ: Lưu vào Database
-            $this->cartModel->addItem($userId, $productId, $quantity);
-            header("Location: /product-detail?id=$productId&added=1");
-            exit;
+        // Không cho phép mua sản phẩm của chính mình
+        $productModel = new Product();
+        $product = $productModel->find($productId);
+
+        if ($product !== null && (int) $product['user_id'] === $userId) {
+            $_SESSION['error'] = 'Bạn không thể mua sản phẩm của chính mình!';
+            $this->redirect($_SERVER['HTTP_REFERER'] ?? '/products');
         }
+
+        // "Buy Now" flow - redirect thẳng tới checkout
+        if ($action === 'buy') {
+            $this->redirectToBuyNow($productId, $quantity);
+        }
+
+        // "Add to Cart" flow
+        $this->cartModel->addItem($userId, $productId, $quantity);
+        $this->redirect("/product-detail?id={$productId}&added=1");
     }
 
     /**
      * Hiển thị giỏ hàng
      */
-    public function index()
+    public function index(): void
     {
         $userId = $this->getUserId();
 
-        // Bắt buộc đăng nhập mới được xem giỏ hàng
-        if (!$userId) {
-            if (session_status() == PHP_SESSION_NONE) {
-                session_start();
-            }
+        if ($userId === null) {
             $_SESSION['error'] = 'Vui lòng đăng nhập để xem giỏ hàng.';
-            header('Location: /login');
-            exit;
+            $this->redirect('/login');
         }
 
         VerificationMiddleware::requireVerified();
 
-        $products = [];
+        $cartItems = $this->cartModel->getByUserId($userId);
         $total = 0;
 
-        // Lấy giỏ hàng từ Database
-        $cartItems = $this->cartModel->getByUserId($userId);
+        $products = [];
         foreach ($cartItems as $item) {
             $item['cart_quantity'] = $item['quantity'];
             $products[] = $item;
-            $total += $item['price'] * $item['quantity'];
+            $total += (float) $item['price'] * (int) $item['quantity'];
         }
 
         $this->view('cart/index', [
             'products' => $products,
-            'total' => $total
+            'total' => $total,
         ]);
     }
 
     /**
-     * Cập nhật số lượng sản phẩm
+     * Cập nhật số lượng sản phẩm (AJAX)
      */
-    public function update()
+    public function update(): never
     {
         $userId = $this->getUserId();
 
-        // Get raw POST data for JSON
-        $input = json_decode(file_get_contents('php://input'), true);
+        // Support both JSON and form POST
+        $input = $this->getJsonInput();
+        $productId = (int) ($input['product_id'] ?? $this->input('product_id', 0));
+        $quantity = (int) ($input['quantity'] ?? $this->input('quantity', 0));
 
-        $productId = $input['product_id'] ?? $_POST['product_id'] ?? null;
-        $quantity = isset($input['quantity']) ? (int) $input['quantity'] : (isset($_POST['quantity']) ? (int) $_POST['quantity'] : null);
-
-        if (!$productId || $quantity === null) {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Invalid data']);
-            exit;
+        if ($productId === 0) {
+            $this->jsonError('Invalid data');
         }
 
-        if ($userId) {
-            // Đã đăng nhập -> Cập nhật Database
+        if ($userId !== null) {
             $this->cartModel->updateQuantity($userId, $productId, $quantity);
         } else {
-            // Chưa đăng nhập -> Cập nhật Session
-            if (!isset($_SESSION['cart'])) {
-                $_SESSION['cart'] = [];
-            }
-
+            // Fallback: session cart cho guest (legacy)
             if ($quantity <= 0) {
                 unset($_SESSION['cart'][$productId]);
             } else {
@@ -142,67 +124,61 @@ class CartController extends BaseController
             }
         }
 
-        header('Content-Type: application/json');
-        echo json_encode(['success' => true]);
-        exit;
+        $this->jsonSuccess('Updated');
     }
 
     /**
      * Xóa sản phẩm khỏi giỏ
      */
-    public function remove()
+    public function remove(): void
     {
         $userId = $this->getUserId();
-        $productId = $_POST['product_id'] ?? $_GET['product_id'] ?? null;
+        $productId = (int) ($this->input('product_id') ?? $this->query('product_id', 0));
 
-        if ($productId) {
-            if ($userId) {
-                $this->cartModel->removeItem($userId, $productId);
-            } else {
-                unset($_SESSION['cart'][$productId]);
-            }
+        if ($productId > 0 && $userId !== null) {
+            $this->cartModel->removeItem($userId, $productId);
         }
 
-        header('Location: /cart');
-        exit;
+        $this->redirect('/cart');
     }
 
     /**
      * Xóa toàn bộ giỏ hàng
      */
-    public function clear()
+    public function clear(): void
     {
         $userId = $this->getUserId();
 
-        if ($userId) {
+        if ($userId !== null) {
             $this->cartModel->clearCart($userId);
-        } else {
-            $_SESSION['cart'] = [];
         }
 
-        header('Location: /cart');
-        exit;
+        $this->redirect('/cart');
     }
 
     /**
-     * Đếm số lượng sản phẩm trong giỏ (cho header badge)
+     * API: Đếm số lượng trong giỏ (cho header badge)
      */
-    public function count()
+    public function count(): never
     {
-        $userId = $this->getUserId();
-        $count = 0;
+        $count = $this->getCartCount();
+        $this->json(['count' => $count]);
+    }
 
-        if ($userId) {
-            $count = $this->cartModel->countItems($userId);
-        } else {
-            $cart = $_SESSION['cart'] ?? [];
-            foreach ($cart as $item) {
-                $count += is_array($item) ? ($item['quantity'] ?? 1) : $item;
-            }
-        }
+    // =========================================================================
+    // PRIVATE HELPERS
+    // =========================================================================
 
-        header('Content-Type: application/json');
-        echo json_encode(['count' => $count]);
+    /**
+     * Redirect tới checkout với "Buy Now" flow
+     */
+    private function redirectToBuyNow(int $productId, int $quantity): never
+    {
+        echo '<form id="buy_now_form" action="/checkout" method="POST">';
+        echo '<input type="hidden" name="selected_products[]" value="' . $productId . '">';
+        echo '<input type="hidden" name="quantities[' . $productId . ']" value="' . $quantity . '">';
+        echo '</form>';
+        echo '<script>document.getElementById("buy_now_form").submit();</script>';
         exit;
     }
 }

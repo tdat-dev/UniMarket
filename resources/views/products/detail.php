@@ -1,9 +1,11 @@
 <?php
+use App\Helpers\SlugHelper;
+
 include __DIR__ . '/../partials/head.php';
 include __DIR__ . '/../partials/header.php';
 ?>
 
-<main class="bg-gray-100 min-h-screen pb-10">
+<main class="bg-gray-100 min-h-screen pb-20 md:pb-10">
     <div class="max-w-[1200px] mx-auto px-4 pt-4 space-y-6">
 
         <!-- Breadcrumb -->
@@ -21,22 +23,71 @@ include __DIR__ . '/../partials/header.php';
 
                 <!-- Left: Image Gallery -->
                 <div class="md:col-span-5">
+                    <?php
+                    // Lấy ảnh chính (ảnh đầu tiên hoặc ảnh có is_primary = 1)
+                    $mainImagePath = '';
+                    if (!empty($productImages)) {
+                        foreach ($productImages as $img) {
+                            if (!empty($img['is_primary'])) {
+                                $mainImagePath = $img['image_path'];
+                                break;
+                            }
+                        }
+                        if (empty($mainImagePath)) {
+                            $mainImagePath = $productImages[0]['image_path'];
+                        }
+                    } else {
+                        $mainImagePath = $product['image'] ?? '';
+                    }
+                    ?>
                     <div
                         class="relative w-full aspect-square bg-gray-100 rounded-sm overflow-hidden border border-gray-200">
-                        <img src="/uploads/<?= htmlspecialchars($product['image'] ?? '') ?>"
+                        <img id="main-product-image" src="/uploads/<?= htmlspecialchars($mainImagePath) ?>"
                             alt="<?= htmlspecialchars($product['name'] ?? '') ?>"
-                            class="w-full h-full object-contain cursor-zoom-in"
-                            onclick="window.open(this.src, '_blank')">
+                            class="w-full h-full object-contain cursor-zoom-in" onclick="openLightbox(0)">
                     </div>
-                    <!-- Thumbnails (Placeholder for now since we only have 1 image) -->
-                    <div class="flex gap-2 mt-4 overflow-x-auto">
-                        <?php for ($i = 0; $i < 5; $i++): ?>
-                            <div
-                                class="w-20 h-20 border border-gray-200 hover:border-[#2C67C8] cursor-pointer rounded-sm overflow-hidden <?= $i === 0 ? 'border-[#2C67C8]' : '' ?>">
-                                <img src="/uploads/<?= htmlspecialchars($product['image'] ?? '') ?>"
-                                    class="w-full h-full object-cover">
-                            </div>
-                        <?php endfor; ?>
+                    <!-- Thumbnails - Hiển thị đúng số ảnh thực tế -->
+                    <?php if (!empty($productImages) && count($productImages) > 0): ?>
+                        <div class="flex gap-2 mt-4 overflow-x-auto">
+                            <?php foreach ($productImages as $index => $image): ?>
+                                <div class="product-thumbnail w-20 h-20 border border-gray-200 hover:border-[#2C67C8] cursor-pointer rounded-sm overflow-hidden flex-shrink-0 <?= $index === 0 ? 'border-[#2C67C8]' : '' ?>"
+                                    data-image="/uploads/<?= htmlspecialchars($image['image_path']) ?>"
+                                    data-index="<?= $index ?>">
+                                    <img src="/uploads/<?= htmlspecialchars($image['image_path']) ?>"
+                                        class="w-full h-full object-cover">
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Lightbox Modal -->
+                <div id="image-lightbox"
+                    class="fixed inset-0 z-50 hidden bg-black/90 flex items-center justify-center p-8">
+                    <!-- Nút đóng -->
+                    <button onclick="closeLightbox()"
+                        class="absolute top-4 right-4 text-white text-3xl hover:text-gray-300 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition">&times;</button>
+
+                    <!-- Nút Previous -->
+                    <button onclick="prevImage()"
+                        class="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition">
+                        <i class="fa-solid fa-chevron-left text-xl"></i>
+                    </button>
+
+                    <!-- Ảnh chính trong lightbox - Giới hạn kích thước vừa màn hình -->
+                    <img id="lightbox-image" src="" alt=""
+                        class="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                        style="max-width: min(800px, 80vw); max-height: 75vh;">
+
+                    <!-- Nút Next -->
+                    <button onclick="nextImage()"
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition">
+                        <i class="fa-solid fa-chevron-right text-xl"></i>
+                    </button>
+
+                    <!-- Chỉ số ảnh -->
+                    <div id="lightbox-counter"
+                        class="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-3 py-1 rounded-full">
                     </div>
                 </div>
 
@@ -84,7 +135,16 @@ include __DIR__ . '/../partials/header.php';
 
                     <!-- Buttons -->
                     <div class="flex gap-4 pt-4">
-                        <?php if ($product['quantity'] > 0 && $product['status'] === 'active'): ?>
+                        <?php 
+                        $currentUserId = $_SESSION['user']['id'] ?? null;
+                        $isOwner = $currentUserId && $currentUserId == $product['user_id'];
+                        ?>
+                        
+                        <?php if ($isOwner): ?>
+                             <div class="w-full px-8 py-3 bg-gray-100 text-gray-500 font-medium rounded-sm border border-gray-200 text-center select-none">
+                                <i class="fa-solid fa-user-tag mr-2"></i>Bạn là người bán sản phẩm này
+                             </div>
+                        <?php elseif ($product['quantity'] > 0 && $product['status'] === 'active'): ?>
                             <form action="/cart/add" method="POST" class="flex gap-4 w-full">
                                 <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
                                 <input type="hidden" name="quantity" value="1" id="input-quantity-submit">
@@ -124,7 +184,7 @@ include __DIR__ . '/../partials/header.php';
 
         <!-- Seller Info -->
         <div class="bg-white rounded-sm shadow-sm p-4">
-            <div class="flex items-center gap-4">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <div class="relative">
                     <img src="https://ui-avatars.com/api/?name=<?= urlencode($seller['full_name']) ?>&background=random&size=128"
                         alt="<?= htmlspecialchars($seller['full_name']) ?>"
@@ -138,15 +198,20 @@ include __DIR__ . '/../partials/header.php';
                         <i class="fa-solid fa-circle-check text-blue-500 text-sm" title="Đã xác minh"></i>
                     </h3>
                     <div class="text-sm text-gray-500 flex items-center gap-4 mt-1">
-                        <span><i class="fa-solid fa-box mr-1"></i> 26 sản phẩm</span>
-                        <span><i class="fa-solid fa-star mr-1 text-yellow-500"></i> 4.8 (15 đánh giá)</span>
+                        <span><i class="fa-solid fa-box mr-1"></i> <?= $activeProductCount ?? 0 ?> sản phẩm</span>
+                        <span>
+                            <i class="fa-solid fa-star mr-1 text-yellow-500"></i> 
+                            <?= ($stats['review_count'] ?? 0) > 0 ? number_format($stats['avg_rating'], 1) . ' (' . $stats['review_count'] . ' đánh giá)' : 'Chưa có đánh giá' ?>
+                        </span>
                     </div>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex gap-2 w-full sm:w-auto mt-3 sm:mt-0">
+                    <?php if (($currentUserId ?? ($_SESSION['user']['id'] ?? null)) != $seller['id']): ?>
                     <a href="/chat?user_id=<?= $seller['id'] ?>"
                         class="px-4 py-2 border border-[#2C67C8] text-[#2C67C8] rounded-sm hover:bg-blue-50 font-medium text-sm flex items-center gap-1">
                         <i class="fa-regular fa-comment-dots"></i> Chat ngay
                     </a>
+                    <?php endif; ?>
                     <a href="/shop?id=<?= $seller['id'] ?>"
                         class="px-4 py-2 bg-gray-100 text-gray-600 rounded-sm hover:bg-gray-200 font-medium text-sm flex items-center gap-1">
                         <i class="fa-solid fa-store"></i> Xem Shop
@@ -173,17 +238,19 @@ include __DIR__ . '/../partials/header.php';
                     <?php foreach ($relatedProducts as $item): ?>
                         <div
                             class="group bg-white border border-transparent hover:border-[#2C67C8] hover:shadow-md transition-all duration-200 rounded-sm overflow-hidden relative">
-                            <a href="/product-detail?id=<?= $item['id'] ?>" class="block">
+                            <a href="<?= SlugHelper::productUrl($item['name'], (int)($item['user_id'] ?? 0), (int)$item['id']) ?>" class="block">
                                 <!-- Image -->
                                 <div class="relative pt-[100%] overflow-hidden bg-gray-100">
                                     <img src="/public/uploads/<?= htmlspecialchars($item['image'] ?? '') ?>"
                                         alt="<?= htmlspecialchars($item['name'] ?? '') ?>"
                                         class="absolute top-0 left-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
 
-                                    <!-- Badges (Ví dụ: Freeship, Giảm giá) -->
-                                    <div
-                                        class="absolute top-0 left-0 bg-[#00bfa5] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-br-sm">
-                                        Freeship</div>
+                                    <!-- Badges - Freeship khi giá >= 200k -->
+                                    <?php if (((float)($item['price'] ?? 0)) >= 200000): ?>
+                                        <div class="absolute top-0 left-0 bg-[#00bfa5] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-br-sm">
+                                            Freeship
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
 
                                 <!-- Info -->
@@ -198,7 +265,7 @@ include __DIR__ . '/../partials/header.php';
                                             <?= number_format($item['price'], 0, ',', '.') ?><span
                                                 class="text-xs align-top">₫</span>
                                         </div>
-                                        <div class="text-[10px] text-gray-400">Đã bán 0</div>
+                                        <div class="text-[10px] text-gray-400">Còn <?= $item['quantity'] ?? 0 ?></div>
                                     </div>
 
                                     <!-- Location -->
@@ -224,26 +291,39 @@ include __DIR__ . '/../partials/header.php';
 </main>
 
 <script>
+    const isLoggedIn = <?= isset($_SESSION['user']['id']) ? 'true' : 'false' ?>;
+
     document.addEventListener('DOMContentLoaded', function () {
         const btnDecrease = document.getElementById('btn-decrease');
         const btnIncrease = document.getElementById('btn-increase');
         const inputQuantity = document.getElementById('input-quantity');
-        const maxStock = parseInt(document.getElementById('max-stock').value) || 0;
+        const maxStock = parseInt(document.getElementById('max-stock')?.value) || 0;
         const inputSubmit = document.getElementById('input-quantity-submit');
         const btnSubmitCart = document.querySelector('button[value="add"]');
         const btnSubmitBuy = document.querySelector('button[value="buy"]');
+
+        const formCart = document.querySelector('form[action="/cart/add"]');
+
+        if (formCart) {
+            formCart.addEventListener('submit', function (e) {
+                if (!isLoggedIn) {
+                    e.preventDefault();
+                    window.location.href = '/login';
+                }
+            });
+        }
 
         function updateQuantity(val) {
             let newVal = parseInt(val);
             if (isNaN(newVal) || newVal < 1) newVal = 1;
             if (newVal > maxStock) newVal = maxStock;
 
-            inputQuantity.value = newVal;
+            if (inputQuantity) inputQuantity.value = newVal;
             if (inputSubmit) inputSubmit.value = newVal; // Update hidden input for form
 
             // Validate functionality if stock is somehow 0 (though covered by PHP)
             if (maxStock <= 0) {
-                inputQuantity.value = 0;
+                if (inputQuantity) inputQuantity.value = 0;
                 if (btnSubmitCart) btnSubmitCart.disabled = true;
                 if (btnSubmitBuy) btnSubmitBuy.disabled = true;
             }
@@ -251,13 +331,13 @@ include __DIR__ . '/../partials/header.php';
 
         if (btnDecrease) {
             btnDecrease.addEventListener('click', function () {
-                updateQuantity(parseInt(inputQuantity.value) - 1);
+                if (inputQuantity) updateQuantity(parseInt(inputQuantity.value) - 1);
             });
         }
 
         if (btnIncrease) {
             btnIncrease.addEventListener('click', function () {
-                updateQuantity(parseInt(inputQuantity.value) + 1);
+                if (inputQuantity) updateQuantity(parseInt(inputQuantity.value) + 1);
             });
         }
 
@@ -265,10 +345,87 @@ include __DIR__ . '/../partials/header.php';
             inputQuantity.addEventListener('change', function () {
                 updateQuantity(this.value);
             });
+            // Initial check
+            updateQuantity(inputQuantity.value);
         }
 
-        // Initial check
-        updateQuantity(inputQuantity.value);
+        // Xử lý click thumbnail để đổi ảnh chính
+        const thumbnails = document.querySelectorAll('.product-thumbnail');
+        const mainImage = document.getElementById('main-product-image');
+
+        thumbnails.forEach(thumb => {
+            thumb.addEventListener('click', function () {
+                // Đổi ảnh chính
+                const newSrc = this.getAttribute('data-image');
+                if (mainImage && newSrc) {
+                    mainImage.src = newSrc;
+                }
+
+                // Cập nhật currentIndex cho lightbox
+                currentImageIndex = parseInt(this.getAttribute('data-index')) || 0;
+
+                // Highlight thumbnail được chọn
+                thumbnails.forEach(t => t.classList.remove('border-[#2C67C8]'));
+                this.classList.add('border-[#2C67C8]');
+            });
+        });
+    });
+
+    // ===== LIGHTBOX FUNCTIONS =====
+    const productImages = <?= json_encode(array_map(function ($img) {
+        return '/uploads/' . $img['image_path'];
+    }, $productImages ?? [])) ?>;
+
+    let currentImageIndex = 0;
+    const lightbox = document.getElementById('image-lightbox');
+    const lightboxImage = document.getElementById('lightbox-image');
+    const lightboxCounter = document.getElementById('lightbox-counter');
+
+    function openLightbox(index = 0) {
+        if (productImages.length === 0) return;
+
+        currentImageIndex = index;
+        updateLightboxImage();
+        lightbox.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Ngăn scroll trang
+    }
+
+    function closeLightbox() {
+        lightbox.classList.add('hidden');
+        document.body.style.overflow = ''; // Cho phép scroll lại
+    }
+
+    function updateLightboxImage() {
+        if (productImages[currentImageIndex]) {
+            lightboxImage.src = productImages[currentImageIndex];
+            lightboxCounter.textContent = `${currentImageIndex + 1} / ${productImages.length}`;
+        }
+    }
+
+    function nextImage() {
+        currentImageIndex = (currentImageIndex + 1) % productImages.length;
+        updateLightboxImage();
+    }
+
+    function prevImage() {
+        currentImageIndex = (currentImageIndex - 1 + productImages.length) % productImages.length;
+        updateLightboxImage();
+    }
+
+    // Đóng lightbox khi click vào nền đen
+    lightbox?.addEventListener('click', function (e) {
+        if (e.target === lightbox) {
+            closeLightbox();
+        }
+    });
+
+    // Đóng lightbox khi nhấn ESC, chuyển ảnh bằng phím mũi tên
+    document.addEventListener('keydown', function (e) {
+        if (lightbox?.classList.contains('hidden')) return;
+
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowRight') nextImage();
+        if (e.key === 'ArrowLeft') prevImage();
     });
 </script>
 

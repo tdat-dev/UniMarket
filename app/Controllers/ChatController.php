@@ -1,98 +1,129 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controllers;
 
 use App\Middleware\VerificationMiddleware;
+use App\Models\User;
+use App\Models\Message;
 
+/**
+ * Chat Controller
+ * 
+ * Xử lý chat real-time giữa các users.
+ * 
+ * @package App\Controllers
+ */
 class ChatController extends BaseController
 {
-    public function index()
+    /**
+     * Trang chat chính
+     */
+    public function index(): void
     {
         VerificationMiddleware::requireVerified();
-        // Require login for chat
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
+        $user = $this->requireAuth();
 
-        if (!isset($_SESSION['user'])) {
-            // Redirect to login handled by middleware ideally, but basic check here
-            header('Location: /login');
-            exit;
-             header('Location: /login');
-             exit;
-        }
-        
-        $currentUserId = $_SESSION['user']['id'];
-        $messageModel = new \App\Models\Message();
-        $userModel = new \App\Models\User();
+        $currentUserId = (int) $user['id'];
+        $messageModel = new Message();
+        $userModel = new User();
 
-        // 1. Get List of Conversations
+        // Get recent conversations
         $conversations = $messageModel->getRecentConversations($currentUserId);
-        
-        // 2. Identify Active Conversation
-        $activePartnerId = $_GET['user_id'] ?? null;
+
+        // Check if viewing specific conversation
+        $activePartnerId = $this->query('user_id');
         $activePartner = null;
         $messages = [];
 
-        if ($activePartnerId) {
-             // Validate partner
-             $activePartner = $userModel->find($activePartnerId);
-             if ($activePartner) {
-                 // Fetch messages
-                 $messages = $messageModel->getConversation($currentUserId, $activePartnerId);
-             }
-        } elseif (!empty($conversations)) {
-            // Default to first conversation
-            $first = $conversations[0];
-            $activePartnerId = $first['partner']['id'];
-            $activePartner = $first['partner'];
-            $messages = $messageModel->getConversation($currentUserId, $activePartnerId);
+        if ($activePartnerId !== null) {
+            $activePartnerId = (int) $activePartnerId;
+
+            // Prevent chatting with self
+            if ($activePartnerId === $currentUserId) {
+                $this->redirect('/chat');
+            }
+
+            $activePartner = $userModel->find($activePartnerId);
+
+            if ($activePartner !== null) {
+                $messages = $messageModel->getConversation($currentUserId, $activePartnerId);
+
+                // Mark messages as read
+                $messageModel->markConversationAsRead($currentUserId, $activePartnerId);
+            }
         }
 
         $this->view('chat/index', [
             'conversations' => $conversations,
             'activePartner' => $activePartner,
             'messages' => $messages,
-            'currentUserId' => $currentUserId
+            'currentUserId' => $currentUserId,
         ]);
     }
 
-    public function send()
+    /**
+     * Gửi tin nhắn
+     */
+    public function send(): void
     {
-        if (session_status() == PHP_SESSION_NONE) {
-             session_start();
+        $user = $this->requireAuth();
+        $senderId = (int) $user['id'];
+
+        $receiverId = $this->input('receiver_id');
+        $content = trim($this->input('content', ''));
+
+        // Validate
+        if (empty($receiverId) || empty($content)) {
+            $this->jsonError('Dữ liệu không hợp lệ');
         }
 
-        if (!isset($_SESSION['user'])) {
-             echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
-             exit;
+        $receiverId = (int) $receiverId;
+
+        // Prevent self-messaging
+        if ($receiverId === $senderId) {
+            $this->jsonError('Không thể gửi tin nhắn cho chính mình');
         }
 
-        $receiverId = $_POST['receiver_id'] ?? null;
-        $content = trim($_POST['content'] ?? '');
+        $messageModel = new Message();
+        $messageId = $messageModel->send($senderId, $receiverId, $content);
 
-        if (!$receiverId || empty($content)) {
-             echo json_encode(['status' => 'error', 'message' => 'Invalid data']);
-             exit;
-        }
-
-        $messageModel = new \App\Models\Message();
-        $id = $messageModel->create([
-            'sender_id' => $_SESSION['user']['id'],
-            'receiver_id' => $receiverId,
-            'content' => $content
-        ]);
-
-        if ($id) {
-             // If ajax request, return json. If form submit, redirect.
-             // For now assume standard form post or simple ajax handled by view
-             // Let's just redirect back to chat
-             header('Location: /chat?user_id=' . $receiverId);
-             exit;
+        if ($messageId > 0) {
+            // Redirect back to conversation
+            $this->redirect("/chat?user_id={$receiverId}");
         } else {
-             // Handle error
-             header('Location: /chat?user_id=' . $receiverId . '&error=1');
-             exit;
+            $this->redirect("/chat?user_id={$receiverId}&error=1");
+        }
+    }
+
+    /**
+     * API: Gửi tin nhắn (AJAX)
+     */
+    public function sendAjax(): never
+    {
+        $user = $this->requireAuth();
+        $senderId = (int) $user['id'];
+
+        $input = $this->getJsonInput();
+        $receiverId = (int) ($input['receiver_id'] ?? 0);
+        $content = trim($input['content'] ?? '');
+
+        if ($receiverId === 0 || empty($content)) {
+            $this->jsonError('Dữ liệu không hợp lệ');
+        }
+
+        if ($receiverId === $senderId) {
+            $this->jsonError('Không thể gửi tin nhắn cho chính mình');
+        }
+
+        $messageModel = new Message();
+        $messageId = $messageModel->send($senderId, $receiverId, $content);
+
+        if ($messageId > 0) {
+            $this->jsonSuccess('Đã gửi', ['message_id' => $messageId]);
+        } else {
+            $this->jsonError('Không thể gửi tin nhắn', 500);
         }
     }
 }

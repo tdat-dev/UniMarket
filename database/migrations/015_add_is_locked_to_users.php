@@ -1,19 +1,28 @@
 <?php
-return new class {
-    public function run($pdo)
+
+/**
+ * Migration: Add is_locked column to users
+ * 
+ * @author  Zoldify Team
+ * @date    2026-01-01
+ * @version 2.0.0 (refactored)
+ */
+
+require_once __DIR__ . '/../BaseMigration.php';
+
+use Database\BaseMigration;
+
+return new class extends BaseMigration {
+
+    protected string $table = 'users';
+
+    public function up(): void
     {
-        // Kiểm tra xem cột is_locked đã tồn tại chưa
-        $checkSql = "SHOW COLUMNS FROM users LIKE 'is_locked'";
-        $result = $pdo->query($checkSql)->fetch();
+        $this->addColumn($this->table, 'is_locked', "TINYINT(1) DEFAULT 0", 'role');
+    }
 
-        if ($result) {
-            echo "Column is_locked already exists, skipping...\n";
-            return;
-        }
-
-        // Thêm cột is_locked vào bảng users
-        $sql = "ALTER TABLE users ADD COLUMN is_locked TINYINT(1) DEFAULT 0";
-        $pdo->exec($sql);
-        echo "Added is_locked column to users table!\n";
+    public function down(): void
+    {
+        $this->dropColumn($this->table, 'is_locked');
     }
 };
