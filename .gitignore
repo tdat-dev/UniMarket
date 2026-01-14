@@ -27,8 +27,6 @@ docs/CREDENTIALS.md
 /tests/security/
 
 # Uploads (giữ cấu trúc thư mục nhưng ignore files)
-/public/uploads/*
-!/public/uploads/.gitkeep
 
 # Playwright
 /test-results/
