@@ -26,31 +26,45 @@ include __DIR__ . '/../partials/header.php';
                     <?php else: ?>
                         <?php foreach ($conversations as $conv): ?>
                             <?php
-                            $partner = $conv['partner'];
-                            $lastMsg = $conv['last_message'];
-                            $isActive = ($activePartner && $activePartner['id'] == $partner['id']);
+                            // Dữ liệu từ Model trả về dạng flat, không phải nested array
+                            $partnerId = $conv['partner_id'] ?? null;
+                            $partnerName = $conv['partner_name'] ?? 'Người dùng';
+                            $partnerAvatar = $conv['partner_avatar'] ?? null;
+                            $lastMessageContent = $conv['last_message_content'] ?? '';
+                            $lastMessageAt = $conv['last_message_at'] ?? null;
+                            $lastMessageSenderId = $conv['last_message_sender_id'] ?? null;
+                            $lastMessageIsRead = $conv['last_message_is_read'] ?? 1;
+
+                            // Bỏ qua conversation không hợp lệ
+                            if ($partnerId === null)
+                                continue;
+
+                            $isActive = ($activePartner && ($activePartner['id'] ?? null) == $partnerId);
                             ?>
-                            <a href="/chat?user_id=<?= $partner['id'] ?>" class="block chat-conversation-link">
+                            <a href="/chat?user_id=<?= $partnerId ?>" class="block chat-conversation-link">
                                 <div
                                     class="p-3 border-b border-gray-100 flex gap-3 hover:bg-gray-50 cursor-pointer <?= $isActive ? 'bg-blue-50/50 border-l-4 border-l-[#2C67C8]' : '' ?>">
                                     <div class="relative">
-                                        <img src="https://ui-avatars.com/api/?name=<?= urlencode($partner['full_name']) ?>&background=random"
+                                        <img src="https://ui-avatars.com/api/?name=<?= urlencode($partnerName) ?>&background=random"
                                             class="w-10 h-10 rounded-full object-cover">
-                                        <!-- Online status mock -->
-                                        <!-- <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white"></div> -->
+                                        <!-- Online status - sẽ được JS cập nhật -->
+                                        <span
+                                            class="partner-status-dot absolute bottom-0 right-0 w-2.5 h-2.5 bg-gray-400 rounded-full border-2 border-white"
+                                            data-partner-id="<?= $partnerId ?>"></span>
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <div class="flex justify-between items-baseline mb-1">
                                             <h4 class="text-sm font-medium text-gray-800 truncate">
-                                                <?= htmlspecialchars($partner['full_name']) ?>
+                                                <?= htmlspecialchars($partnerName) ?>
                                             </h4>
-                                            <span
-                                                class="text-[10px] text-gray-400"><?= date('H:i', strtotime($lastMsg['created_at'])) ?></span>
+                                            <span class="text-[10px] text-gray-400">
+                                                <?= $lastMessageAt ? date('H:i', strtotime($lastMessageAt)) : '' ?>
+                                            </span>
                                         </div>
                                         <p
-                                            class="text-xs text-gray-500 truncate <?= !$lastMsg['is_read'] && $lastMsg['receiver_id'] == $currentUserId ? 'font-bold' : '' ?>">
-                                            <?= $lastMsg['sender_id'] == $currentUserId ? 'Bạn: ' : '' ?>
-                                            <?= htmlspecialchars($lastMsg['content']) ?>
+                                            class="text-xs text-gray-500 truncate <?= !$lastMessageIsRead && $lastMessageSenderId != $currentUserId ? 'font-bold' : '' ?>">
+                                            <?= $lastMessageSenderId == $currentUserId ? 'Bạn: ' : '' ?>
+                                            <?= htmlspecialchars($lastMessageContent) ?>
                                         </p>
                                     </div>
                                 </div>
