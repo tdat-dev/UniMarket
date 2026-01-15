@@ -11,6 +11,7 @@ use App\Models\Follow;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Notification;
+use App\Models\UserAddress;
 use App\Services\GHNService;
 
 /**
@@ -215,6 +216,40 @@ class ShopController extends BaseController
     {
         try {
             $ghnService = new GHNService();
+            $addressModel = new UserAddress();
+
+            // Lấy địa chỉ mặc định của SELLER (địa chỉ lấy hàng)
+            $sellerId = (int) $order['seller_id'];
+            $sellerAddress = $addressModel->getDefaultAddress($sellerId);
+
+            if (!$sellerAddress || empty($sellerAddress['ghn_district_id']) || empty($sellerAddress['ghn_ward_code'])) {
+                throw new \Exception("Seller chưa cập nhật địa chỉ GHN. Vui lòng cập nhật địa chỉ với thông tin Tỉnh/Quận/Phường.");
+            }
+
+            // Lấy địa chỉ shipping của BUYER (địa chỉ giao hàng)
+            // Nếu có shipping_address_id trong order thì lấy theo id đó
+            // Nếu không thì lấy default address của buyer
+            $buyerId = (int) $order['buyer_id'];
+            $buyerAddress = null;
+
+            if (!empty($order['shipping_address_id'])) {
+                $buyerAddress = $addressModel->findById((int) $order['shipping_address_id'], $buyerId);
+            }
+
+            if (!$buyerAddress) {
+                $buyerAddress = $addressModel->getDefaultAddress($buyerId);
+            }
+
+            // Nếu buyer chưa có địa chỉ GHN, dùng thông tin từ order với fallback values
+            $toDistrictId = (int) ($buyerAddress['ghn_district_id'] ?? 0);
+            $toWardCode = $buyerAddress['ghn_ward_code'] ?? '';
+
+            // Fallback nếu buyer chưa có GHN codes
+            if (!$toDistrictId || !$toWardCode) {
+                error_log("Buyer chưa có địa chỉ GHN, dùng sandbox defaults");
+                $toDistrictId = 1444;  // Quận 10 - Sandbox
+                $toWardCode = '20308'; // Phường 1 - Sandbox
+            }
 
             // Lấy items để tính tổng weight
             $orderItemModel = new OrderItem();
@@ -238,22 +273,26 @@ class ShopController extends BaseController
             $totalWeight = max($totalWeight, 200);
 
             // Xác định COD amount
-            // Nếu đã thanh toán online → COD = 0
-            // Nếu chưa thanh toán → COD = total_amount
             $codAmount = 0;
             if (($order['payment_status'] ?? 'pending') !== 'paid') {
                 $codAmount = (int) $order['total_amount'];
             }
 
-            // Tạo đơn GHN
-            // NOTE: Trong thực tế cần có thông tin district_id và ward_code
-            // Tạm thời dùng default values cho sandbox testing
+            // Tạo đơn GHN với địa chỉ seller (from) và buyer (to)
             $ghnData = [
-                'to_name' => $order['shipping_name'] ?? $order['buyer_name'] ?? 'Khách hàng',
-                'to_phone' => $order['shipping_phone'] ?? $order['buyer_phone'] ?? '0987654321',
-                'to_address' => $order['shipping_address'] ?? 'Địa chỉ giao hàng',
-                'to_ward_code' => '20308',     // TODO: Lấy từ user_addresses
-                'to_district_id' => 1444,      // TODO: Lấy từ user_addresses
+                // Địa chỉ lấy hàng (Seller)
+                'from_name' => $sellerAddress['recipient_name'] ?? 'Shop',
+                'from_phone' => $sellerAddress['phone_number'] ?? '',
+                'from_address' => $sellerAddress['street_address'] ?? '',
+                'from_district_id' => (int) $sellerAddress['ghn_district_id'],
+                'from_ward_code' => $sellerAddress['ghn_ward_code'],
+                // Địa chỉ giao hàng (Buyer)
+                'to_name' => $order['shipping_name'] ?? $buyerAddress['recipient_name'] ?? 'Khách hàng',
+                'to_phone' => $order['shipping_phone'] ?? $buyerAddress['phone_number'] ?? '',
+                'to_address' => $order['shipping_address'] ?? $buyerAddress['street_address'] ?? '',
+                'to_district_id' => $toDistrictId,
+                'to_ward_code' => $toWardCode,
+                // Thông tin hàng hóa
                 'weight' => $totalWeight,
                 'cod_amount' => $codAmount,
                 'content' => 'Đơn hàng #' . $order['id'],
@@ -286,10 +325,8 @@ class ShopController extends BaseController
             // Log lỗi nhưng không block việc update status
             error_log("GHN Create Order Error: " . $e->getMessage());
 
-            // Trong production có thể muốn:
-            // - Set session flash message báo lỗi
-            // - Không update status
-            // Tạm thời bỏ qua để flow không bị break
+            // Set session flash message để báo lỗi
+            $_SESSION['warning'] = "Không thể tạo đơn GHN: " . $e->getMessage();
         }
     }
 }

@@ -6,23 +6,105 @@ namespace App\Controllers;
 
 use App\Models\UserAddress;
 use App\Middleware\VerificationMiddleware;
+use App\Services\GHNService;
 
 /**
  * Address Controller
  * 
- * CRUD địa chỉ giao hàng với tích hợp HERE Maps.
+ * CRUD địa chỉ giao hàng với tích hợp GHN và HERE Maps.
  * 
  * @package App\Controllers
  */
 class AddressController extends BaseController
 {
     private UserAddress $addressModel;
+    private GHNService $ghnService;
 
     public function __construct()
     {
         parent::__construct();
         $this->addressModel = new UserAddress();
+        $this->ghnService = new GHNService();
     }
+
+    // =========================================================================
+    // GHN API ENDPOINTS (cho dropdown địa chỉ)
+    // =========================================================================
+
+    /**
+     * API lấy danh sách Tỉnh/Thành phố từ GHN
+     */
+    public function getProvinces(): void
+    {
+        header('Content-Type: application/json');
+
+        try {
+            $provinces = $this->ghnService->getProvinces();
+
+            // Filter bỏ dữ liệu test từ GHN sandbox
+            $provinces = array_filter($provinces, function ($p) {
+                $name = strtolower($p['ProvinceName'] ?? '');
+                return strpos($name, 'test') === false;
+            });
+
+            echo json_encode(['success' => true, 'data' => array_values($provinces)]);
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * API lấy danh sách Quận/Huyện từ GHN
+     */
+    public function getDistricts(): void
+    {
+        header('Content-Type: application/json');
+
+        $provinceId = (int) $this->query('province_id', 0);
+
+        if ($provinceId <= 0) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'province_id is required']);
+            return;
+        }
+
+        try {
+            $districts = $this->ghnService->getDistricts($provinceId);
+            echo json_encode(['success' => true, 'data' => $districts]);
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * API lấy danh sách Phường/Xã từ GHN
+     */
+    public function getWards(): void
+    {
+        header('Content-Type: application/json');
+
+        $districtId = (int) $this->query('district_id', 0);
+
+        if ($districtId <= 0) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'district_id is required']);
+            return;
+        }
+
+        try {
+            $wards = $this->ghnService->getWards($districtId);
+            echo json_encode(['success' => true, 'data' => $wards]);
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
+    // =========================================================================
+    // CRUD METHODS
+    // =========================================================================
 
     /**
      * Danh sách địa chỉ
@@ -248,6 +330,10 @@ class AddressController extends BaseController
             'longitude' => !empty($post['longitude']) ? (float) $post['longitude'] : null,
             'here_place_id' => $post['here_place_id'] ?? null,
             'is_default' => !empty($post['is_default']) ? 1 : 0,
+            // GHN codes cho vận chuyển
+            'ghn_province_id' => !empty($post['ghn_province_id']) ? (int) $post['ghn_province_id'] : null,
+            'ghn_district_id' => !empty($post['ghn_district_id']) ? (int) $post['ghn_district_id'] : null,
+            'ghn_ward_code' => !empty($post['ghn_ward_code']) ? trim($post['ghn_ward_code']) : null,
         ];
 
         if ($userId !== null) {
