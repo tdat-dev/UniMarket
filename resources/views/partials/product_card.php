@@ -1,12 +1,13 @@
 <?php
 use App\Helpers\SlugHelper;
+use App\Helpers\ImageHelper;
 $productUrl = SlugHelper::productUrl($item['name'], (int) ($item['user_id'] ?? 0), (int) $item['id']);
 ?>
 <a href="<?= $productUrl ?>"
     class="block bg-white rounded-sm shadow-sm hover:shadow-md transition-all group border border-transparent hover:border-[#2C67C8]/30 overflow-hidden">
     <!-- Image với aspect ratio 1:1 -->
     <div class="aspect-square relative overflow-hidden bg-gray-100">
-        <img src="/uploads/<?= !empty($item['image']) ? $item['image'] : 'default.png' ?>"
+        <img src="<?= ImageHelper::url('uploads/' . ($item['image'] ?? '')) ?>"
             class="w-full h-full object-cover transition-transform group-hover:scale-105" loading="lazy">
         <?php
         // Freeship badge - chỉ hiện khi giá >= 200k VND

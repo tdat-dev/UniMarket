@@ -1,4 +1,7 @@
-<?php include __DIR__ . '/../partials/head.php'; ?>
+<?php
+use App\Helpers\ImageHelper;
+include __DIR__ . '/../partials/head.php';
+?>
 <?php
 // Fake seller check 
 if (!isset($_SESSION['user'])) {
@@ -41,7 +44,7 @@ if (!isset($_SESSION['user'])) {
                         <?php foreach ($unreviewed as $item): ?>
                             <li class="p-6 hover:bg-gray-50 transition">
                                 <div class="flex gap-4">
-                                    <img src="/uploads/<?= htmlspecialchars($item['product_image'] ?? 'default.png') ?>"
+                                    <img src="<?= ImageHelper::url('uploads/' . ($item['product_image'] ?? '')) ?>"
                                         class="w-16 h-16 object-cover rounded-md border border-gray-200">
                                     <div class="flex-1">
                                         <h4 class="font-bold text-gray-900"><?= htmlspecialchars($item['product_name']) ?></h4>
@@ -94,7 +97,7 @@ if (!isset($_SESSION['user'])) {
                     <ul class="divide-y divide-gray-100">
                         <?php foreach ($reviews as $review): ?>
                             <li class="p-6 hover:bg-gray-50 flex gap-4">
-                                <img src="/uploads/<?= htmlspecialchars($review['product_image'] ?? 'default.png') ?>"
+                                <img src="<?= ImageHelper::url('uploads/' . ($review['product_image'] ?? '')) ?>"
                                     class="w-16 h-16 object-cover rounded-md border border-gray-200">
                                 <div class="flex-1">
                                     <div class="flex justify-between items-start">

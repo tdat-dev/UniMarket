@@ -1,10 +1,12 @@
+<?php use App\Helpers\ImageHelper; ?>
 <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 relative z-10">
     <div class="px-6 py-6 md:flex md:items-center md:justify-between">
         <div class="flex items-center gap-4">
             <div class="relative flex-shrink-0">
                 <?php
+                <?php
                 $avatarUrl = !empty($_SESSION['user']['avatar'])
-                    ? '/uploads/avatars/' . $_SESSION['user']['avatar']
+                    ? ImageHelper::url('uploads/avatars/' . $_SESSION['user']['avatar'])
                     : 'https://ui-avatars.com/api/?name=' . urlencode($_SESSION['user']['full_name']) . '&background=random&size=128';
                 ?>
                 <img id="avatar-preview" class="h-32 w-32 rounded-full ring-4 ring-white bg-white object-cover"

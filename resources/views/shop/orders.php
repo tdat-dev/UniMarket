@@ -1,4 +1,7 @@
-<?php include __DIR__ . '/../partials/head.php'; ?>
+<?php
+use App\Helpers\ImageHelper;
+include __DIR__ . '/../partials/head.php';
+?>
 <?php
 // Fake seller check 
 if (!isset($_SESSION['user'])) {
@@ -99,7 +102,7 @@ if (!isset($_SESSION['user'])) {
                                 <?php foreach ($order['items'] as $item): ?>
                                     <div class="flex gap-4">
                                         <div class="w-12 h-12 bg-gray-200 rounded-md flex-shrink-0 overflow-hidden">
-                                            <img src="/uploads/<?= htmlspecialchars($item['product_image'] ?? 'default.png') ?>"
+                                            <img src="<?= ImageHelper::url('uploads/' . ($item['product_image'] ?? '')) ?>"
                                                 class="w-full h-full object-cover">
                                         </div>
                                         <div>

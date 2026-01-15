@@ -1,3 +1,4 @@
+<?php use App\Helpers\ImageHelper; ?>
 <!-- Page Header -->
 <div class="flex items-center gap-4 mb-6">
     <a href="/admin/orders" class="p-2 hover:bg-gray-100 rounded-lg transition">
@@ -65,7 +66,7 @@
             <div class="divide-y divide-gray-100">
                 <?php foreach ($orderDetails as $item): ?>
                     <div class="flex items-center gap-4 py-4">
-                        <img src="/uploads/<?= $item['product_image'] ?: 'default.png' ?>"
+                        <img src="<?= ImageHelper::url('uploads/' . ($item['product_image'] ?? '')) ?>"
                             alt="<?= $item['product_name'] ?>" class="w-16 h-16 object-cover rounded-lg border">
                         <div class="flex-1">
                             <h3 class="font-medium text-gray-800"><?= htmlspecialchars($item['product_name']) ?></h3>
@@ -73,7 +74,8 @@
                         </div>
                         <div class="text-right">
                             <div class="font-medium text-red-500">
-                                <?= number_format($item['price_at_purchase'], 0, ',', '.') ?>đ</div>
+                                <?= number_format($item['price_at_purchase'], 0, ',', '.') ?>đ
+                            </div>
                             <div class="text-xs text-gray-500">x<?= $item['quantity'] ?></div>
                         </div>
                     </div>
