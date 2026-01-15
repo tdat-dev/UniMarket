@@ -15,6 +15,8 @@
                     <li><a href="#" class="hover:text-gray-800 transition-colors">Liên Hệ
                             <?= $siteSettings['general']['site_name'] ?? 'Zoldify' ?></a></li>
                     <li><a href="#" class="hover:text-gray-800 transition-colors">Chính Sách Bảo Hành</a></li>
+                    <li><a href="/privacy" class="hover:text-gray-800 transition-colors">Chính Sách Bảo Mật</a></li>
+                    <li><a href="/terms" class="hover:text-gray-800 transition-colors">Điều Khoản Sử Dụng</a></li>
                 </ul>
             </div>
 
