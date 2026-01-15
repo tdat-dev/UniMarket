@@ -39,4 +39,20 @@ class HomeController extends BaseController
     {
         $this->view('support/index');
     }
+
+    /**
+     * Trang Chính sách bảo mật
+     */
+    public function privacy(): void
+    {
+        $this->view('legal/privacy');
+    }
+
+    /**
+     * Trang Điều khoản sử dụng
+     */
+    public function terms(): void
+    {
+        $this->view('legal/terms');
+    }
 }

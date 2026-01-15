@@ -21,6 +21,8 @@ use App\Controllers\AddressController;
 // ======================= HOME & SUPPORT =======================
 $router->get('/', [HomeController::class, 'index']);
 $router->get('support', [HomeController::class, 'support']);
+$router->get('privacy', [HomeController::class, 'privacy']);
+$router->get('terms', [HomeController::class, 'terms']);
 
 // ======================= AUTHENTICATION =======================
 $router->get('login', [AuthController::class, 'login']);
