@@ -100,8 +100,8 @@ $redirectTo = $_GET['redirect_to'] ?? '';
                         class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EE4D2D] focus:border-transparent outline-none bg-white <?= isset($errors['province']) ? 'border-red-500' : '' ?>">
                         <option value="">-- Chọn Tỉnh/TP --</option>
                     </select>
-                    <input type="hidden" name="province_id" id="province_id"
-                        value="<?= htmlspecialchars($old['province_id'] ?? '') ?>">
+                    <input type="hidden" name="ghn_province_id" id="ghn_province_id"
+                        value="<?= htmlspecialchars($old['ghn_province_id'] ?? '') ?>">
                     <?php if (isset($errors['province'])): ?>
                         <p class="text-red-500 text-sm mt-1"><?= $errors['province'] ?></p>
                     <?php endif; ?>
@@ -117,8 +117,8 @@ $redirectTo = $_GET['redirect_to'] ?? '';
                         disabled>
                         <option value="">-- Chọn Quận/Huyện --</option>
                     </select>
-                    <input type="hidden" name="district_id" id="district_id"
-                        value="<?= htmlspecialchars($old['district_id'] ?? '') ?>">
+                    <input type="hidden" name="ghn_district_id" id="ghn_district_id"
+                        value="<?= htmlspecialchars($old['ghn_district_id'] ?? '') ?>">
                     <?php if (isset($errors['district'])): ?>
                         <p class="text-red-500 text-sm mt-1"><?= $errors['district'] ?></p>
                     <?php endif; ?>
@@ -134,8 +134,8 @@ $redirectTo = $_GET['redirect_to'] ?? '';
                         disabled>
                         <option value="">-- Chọn Phường/Xã --</option>
                     </select>
-                    <input type="hidden" name="ward_id" id="ward_id"
-                        value="<?= htmlspecialchars($old['ward_id'] ?? '') ?>">
+                    <input type="hidden" name="ghn_ward_code" id="ghn_ward_code"
+                        value="<?= htmlspecialchars($old['ghn_ward_code'] ?? '') ?>">
                 </div>
             </div>
 
@@ -206,155 +206,165 @@ $redirectTo = $_GET['redirect_to'] ?? '';
 
 <script>
     document.addEventListener('DOMContentLoaded', async function () {
-        // ============= DVHCVN Data =============
-        let dvhcvnData = [];
-
-        // Elements - declare first
+        // ============= GHN API Address Loader =============
+        
+        // Elements
         const provinceSelect = document.getElementById('province');
         const districtSelect = document.getElementById('district');
         const wardSelect = document.getElementById('ward');
-        const provinceIdInput = document.getElementById('province_id');
-        const districtIdInput = document.getElementById('district_id');
-        const wardIdInput = document.getElementById('ward_id');
+        const ghnProvinceIdInput = document.getElementById('ghn_province_id');
+        const ghnDistrictIdInput = document.getElementById('ghn_district_id');
+        const ghnWardCodeInput = document.getElementById('ghn_ward_code');
         const fullAddressInput = document.getElementById('full_address');
         const streetAddressInput = document.getElementById('street_address');
 
-        // Old values for repopulation - MUST declare before initProvinceDropdown is called
-        const oldProvinceId = '<?= htmlspecialchars($old['province_id'] ?? '') ?>';
-        const oldDistrictId = '<?= htmlspecialchars($old['district_id'] ?? '') ?>';
-        const oldWardId = '<?= htmlspecialchars($old['ward_id'] ?? '') ?>';
+        // Old values for repopulation
+        const oldProvinceId = '<?= htmlspecialchars($old['ghn_province_id'] ?? '') ?>';
+        const oldDistrictId = '<?= htmlspecialchars($old['ghn_district_id'] ?? '') ?>';
+        const oldWardCode = '<?= htmlspecialchars($old['ghn_ward_code'] ?? '') ?>';
 
         // Show loading state
         provinceSelect.innerHTML = '<option value="">⏳ Đang tải dữ liệu...</option>';
 
-        // Load DVHCVN data
+        // Load provinces from GHN API
         try {
-            console.log('⏳ Loading DVHCVN data...');
-            const response = await fetch('/data/dvhcvn.json');
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
+            console.log('⏳ Loading GHN provinces...');
+            const response = await fetch('/api/ghn/provinces');
             const json = await response.json();
-            dvhcvnData = json.data || json;
-
-            if (!Array.isArray(dvhcvnData) || dvhcvnData.length === 0) {
-                throw new Error('Invalid data format');
+            
+            if (!json.success) {
+                throw new Error(json.error || 'Unknown error');
             }
-
-            console.log('✅ Loaded DVHCVN data:', dvhcvnData.length, 'provinces');
-            initProvinceDropdown();
-        } catch (error) {
-            console.error('❌ Failed to load DVHCVN data:', error);
-            provinceSelect.innerHTML = '<option value="">❌ Lỗi tải dữ liệu - Thử lại sau</option>';
-            alert('Không thể tải dữ liệu địa chỉ. Vui lòng refresh trang.');
-            return;
-        }
-
-        // Initialize Province dropdown
-        function initProvinceDropdown() {
+            
+            const provinces = json.data;
+            console.log('✅ Loaded', provinces.length, 'provinces');
+            
+            // Populate province dropdown
             provinceSelect.innerHTML = '<option value="">-- Chọn Tỉnh/TP --</option>';
-
-            dvhcvnData.forEach(province => {
+            provinces.forEach(p => {
                 const opt = document.createElement('option');
-                opt.value = province.name;
-                opt.dataset.id = province.level1_id;
-                opt.textContent = province.name;
-                if (province.level1_id === oldProvinceId) {
+                opt.value = p.ProvinceName;
+                opt.dataset.id = p.ProvinceID;
+                opt.textContent = p.ProvinceName;
+                if (p.ProvinceID.toString() === oldProvinceId) {
                     opt.selected = true;
                 }
                 provinceSelect.appendChild(opt);
             });
-
-            // If old value exists, trigger change
+            
+            // Trigger change if old value exists
             if (oldProvinceId) {
                 provinceSelect.dispatchEvent(new Event('change'));
             }
+        } catch (error) {
+            console.error('❌ Failed to load provinces:', error);
+            provinceSelect.innerHTML = '<option value="">❌ Lỗi tải dữ liệu</option>';
         }
 
         // Province change -> load Districts
-        provinceSelect.addEventListener('change', function () {
+        provinceSelect.addEventListener('change', async function () {
             const selectedOption = this.options[this.selectedIndex];
             const provinceId = selectedOption?.dataset?.id || '';
-
-            provinceIdInput.value = provinceId;
-
+            
+            ghnProvinceIdInput.value = provinceId;
+            
             // Reset district and ward
             districtSelect.innerHTML = '<option value="">-- Chọn Quận/Huyện --</option>';
             wardSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
             districtSelect.disabled = true;
             wardSelect.disabled = true;
-            districtIdInput.value = '';
-            wardIdInput.value = '';
-
-            if (!provinceId) return;
-
-            // Find province data
-            const province = dvhcvnData.find(p => p.level1_id === provinceId);
-            if (!province || !province.level2s) return;
-
-            // Populate districts
-            districtSelect.disabled = false;
-            province.level2s.forEach(district => {
-                const opt = document.createElement('option');
-                opt.value = district.name;
-                opt.dataset.id = district.level2_id;
-                opt.textContent = district.name;
-                if (district.level2_id === oldDistrictId) {
-                    opt.selected = true;
-                }
-                districtSelect.appendChild(opt);
-            });
-
-            // If old value exists, trigger change
-            if (oldDistrictId) {
-                districtSelect.dispatchEvent(new Event('change'));
+            ghnDistrictIdInput.value = '';
+            ghnWardCodeInput.value = '';
+            
+            if (!provinceId) {
+                updateFullAddress();
+                return;
             }
-
+            
+            // Load districts from GHN API
+            districtSelect.innerHTML = '<option value="">⏳ Đang tải...</option>';
+            try {
+                const response = await fetch(`/api/ghn/districts?province_id=${provinceId}`);
+                const json = await response.json();
+                
+                if (!json.success) throw new Error(json.error);
+                
+                districtSelect.innerHTML = '<option value="">-- Chọn Quận/Huyện --</option>';
+                districtSelect.disabled = false;
+                
+                json.data.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.DistrictName;
+                    opt.dataset.id = d.DistrictID;
+                    opt.textContent = d.DistrictName;
+                    if (d.DistrictID.toString() === oldDistrictId) {
+                        opt.selected = true;
+                    }
+                    districtSelect.appendChild(opt);
+                });
+                
+                // Trigger change if old value exists
+                if (oldDistrictId) {
+                    districtSelect.dispatchEvent(new Event('change'));
+                }
+            } catch (error) {
+                console.error('❌ Failed to load districts:', error);
+                districtSelect.innerHTML = '<option value="">❌ Lỗi tải quận/huyện</option>';
+            }
+            
             updateFullAddress();
         });
 
         // District change -> load Wards
-        districtSelect.addEventListener('change', function () {
+        districtSelect.addEventListener('change', async function () {
             const selectedOption = this.options[this.selectedIndex];
             const districtId = selectedOption?.dataset?.id || '';
-            const provinceId = provinceIdInput.value;
-
-            districtIdInput.value = districtId;
-
+            
+            ghnDistrictIdInput.value = districtId;
+            
             // Reset ward
             wardSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
             wardSelect.disabled = true;
-            wardIdInput.value = '';
-
-            if (!districtId || !provinceId) return;
-
-            // Find district data
-            const province = dvhcvnData.find(p => p.level1_id === provinceId);
-            const district = province?.level2s?.find(d => d.level2_id === districtId);
-            if (!district || !district.level3s) return;
-
-            // Populate wards
-            wardSelect.disabled = false;
-            district.level3s.forEach(ward => {
-                const opt = document.createElement('option');
-                opt.value = ward.name;
-                opt.dataset.id = ward.level3_id;
-                opt.textContent = ward.name;
-                if (ward.level3_id === oldWardId) {
-                    opt.selected = true;
-                }
-                wardSelect.appendChild(opt);
-            });
-
+            ghnWardCodeInput.value = '';
+            
+            if (!districtId) {
+                updateFullAddress();
+                return;
+            }
+            
+            // Load wards from GHN API
+            wardSelect.innerHTML = '<option value="">⏳ Đang tải...</option>';
+            try {
+                const response = await fetch(`/api/ghn/wards?district_id=${districtId}`);
+                const json = await response.json();
+                
+                if (!json.success) throw new Error(json.error);
+                
+                wardSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+                wardSelect.disabled = false;
+                
+                json.data.forEach(w => {
+                    const opt = document.createElement('option');
+                    opt.value = w.WardName;
+                    opt.dataset.code = w.WardCode;
+                    opt.textContent = w.WardName;
+                    if (w.WardCode === oldWardCode) {
+                        opt.selected = true;
+                    }
+                    wardSelect.appendChild(opt);
+                });
+            } catch (error) {
+                console.error('❌ Failed to load wards:', error);
+                wardSelect.innerHTML = '<option value="">❌ Lỗi tải phường/xã</option>';
+            }
+            
             updateFullAddress();
         });
 
         // Ward change
         wardSelect.addEventListener('change', function () {
             const selectedOption = this.options[this.selectedIndex];
-            wardIdInput.value = selectedOption?.dataset?.id || '';
+            ghnWardCodeInput.value = selectedOption?.dataset?.code || '';
             updateFullAddress();
         });
 

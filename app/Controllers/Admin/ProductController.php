@@ -93,7 +93,7 @@ class ProductController extends AdminBaseController
             exit;
         }
 
-        $product = $this->productModel->find($id);
+        $product = $this->productModel->find((int) $id);
         $categories = $this->categoryModel->getAll();
 
         if (!$product) {
@@ -136,7 +136,7 @@ class ProductController extends AdminBaseController
             $data['image'] = $this->uploadImage($_FILES['image']);
         }
 
-        $result = $this->productModel->update($id, $data);
+        $result = $this->productModel->update((int) $id, $data);
 
         if ($result) {
             $_SESSION['success'] = 'Cập nhật thành công!';
@@ -156,7 +156,7 @@ class ProductController extends AdminBaseController
         $id = $_POST['id'] ?? null;
 
         if ($id) {
-            $this->productModel->delete($id);
+            $this->productModel->delete((int) $id);
             $_SESSION['success'] = 'Đã xóa sản phẩm!';
         }
 
