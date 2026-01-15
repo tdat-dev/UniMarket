@@ -32,7 +32,7 @@
                                 class="flex-1 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 py-2 rounded-lg text-sm font-medium transition cursor-pointer">
                                 Nạp tiền
                             </button> -->
-                            <button onclick="alert('Tính năng rút tiền đang bảo trì.')"
+                            <button onclick="ZDialog.warning('Thông báo', 'Tính năng rút tiền đang bảo trì.')"
                                 class="w-full bg-transparent hover:bg-white/5 border border-white/20 py-2 rounded-lg text-sm font-medium transition cursor-pointer">
                                 Rút tiền
                             </button>

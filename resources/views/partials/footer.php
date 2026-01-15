@@ -92,6 +92,9 @@
 <!-- Socket.IO Client Library -->
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
+<!-- Zoldify Custom Dialog System -->
+<script src="/js/zoldify-dialog.js?v=<?= time() ?>"></script>
+
 <!-- Chat Socket Client -->
 <script src="/js/chat-socket.js?v=<?= time() ?>"></script>
 

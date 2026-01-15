@@ -1,4 +1,7 @@
-<?php include __DIR__ . '/../partials/head.php'; ?>
+<?php
+use App\Helpers\ImageHelper;
+include __DIR__ . '/../partials/head.php';
+?>
 <?php
 if (!isset($_SESSION['user'])) {
     header('Location: /login');
@@ -104,7 +107,7 @@ if (!isset($_SESSION['user'])) {
                                     <div class="flex gap-4">
                                         <div
                                             class="w-16 h-16 bg-gray-100 rounded-md flex-shrink-0 overflow-hidden border border-gray-200">
-                                            <img src="/uploads/<?= htmlspecialchars($item['product_image'] ?? 'default.png') ?>"
+                                            <img src="<?= ImageHelper::url('uploads/' . ($item['product_image'] ?? '')) ?>"
                                                 class="w-full h-full object-cover">
                                         </div>
                                         <div>
