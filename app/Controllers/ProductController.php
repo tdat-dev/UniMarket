@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Category;
 use App\Models\Follow;
 use App\Models\Notification;
+use App\Models\UserAddress;
 
 /**
  * Product Controller
@@ -20,6 +21,21 @@ use App\Models\Notification;
 class ProductController extends BaseController
 {
     private const ITEMS_PER_PAGE = 20;
+
+    /**
+     * Debug log to file (for staging debugging)
+     */
+    private function debugLog(string $message): void
+    {
+        $logDir = __DIR__ . '/../../storage/logs';
+        if (!is_dir($logDir)) {
+            mkdir($logDir, 0755, true);
+        }
+
+        $logFile = $logDir . '/upload.log';
+        $timestamp = date('Y-m-d H:i:s');
+        file_put_contents($logFile, "[{$timestamp}] {$message}\n", FILE_APPEND);
+    }
 
     /**
      * List all products with filtering and pagination
@@ -126,7 +142,7 @@ class ProductController extends BaseController
 
         // Stats
         $activeProductCount = $productModel->countActiveByUserId($product['user_id']);
-        
+
         $reviewModel = new \App\Models\Review();
         $stats = $reviewModel->getSellerStats($product['user_id']);
 
@@ -145,9 +161,27 @@ class ProductController extends BaseController
      */
     public function create(): void
     {
+        $user = $this->requireAuth();
+
         $categoryModel = new Category();
+        $addressModel = new UserAddress();
+
+        // Lấy danh sách địa chỉ của seller
+        $addresses = $addressModel->getByUserId((int) $user['id']);
+
+        // Kiểm tra có địa chỉ với GHN codes không
+        $hasValidGHNAddress = false;
+        foreach ($addresses as $addr) {
+            if (!empty($addr['ghn_district_id']) && !empty($addr['ghn_ward_code'])) {
+                $hasValidGHNAddress = true;
+                break;
+            }
+        }
+
         $this->view('products/create', [
-            'categories' => $categoryModel->getTree()
+            'categories' => $categoryModel->getTree(),
+            'addresses' => $addresses,
+            'hasValidGHNAddress' => $hasValidGHNAddress
         ]);
     }
 
@@ -175,7 +209,15 @@ class ProductController extends BaseController
             return;
         }
 
+        // Debug: Log $_FILES data
+        $this->debugLog("=== START UPLOAD DEBUG ===");
+        $this->debugLog("FILES data: " . json_encode($_FILES['images'] ?? 'NO FILES'));
+
         $uploadedImages = $this->handleImageUpload();
+
+        $this->debugLog("Upload result: " . json_encode($uploadedImages));
+        $this->debugLog("=== END UPLOAD DEBUG ===");
+
         $mainImage = $uploadedImages[0] ?? 'default_product.png';
 
         $productData = [
@@ -288,6 +330,7 @@ class ProductController extends BaseController
      * Handle image upload
      * 
      * @return array<string> Uploaded image paths
+     * @throws \RuntimeException Nếu upload thất bại
      */
     private function handleImageUpload(): array
     {
@@ -299,24 +342,89 @@ class ProductController extends BaseController
 
         $rootDir = __DIR__ . '/../../public/';
         $uploadDir = 'uploads/products/';
+        $fullUploadPath = $rootDir . $uploadDir;
 
-        if (!is_dir($rootDir . $uploadDir)) {
-            mkdir($rootDir . $uploadDir, 0777, true);
-        }
-
-        $fileCount = count($_FILES['images']['name']);
-        for ($i = 0; $i < $fileCount; $i++) {
-            if ($_FILES['images']['error'][$i] === UPLOAD_ERR_OK) {
-                $fileTmp = $_FILES['images']['tmp_name'][$i];
-                $fileName = time() . '_' . $i . '_' . basename($_FILES['images']['name'][$i]);
-
-                if (move_uploaded_file($fileTmp, $rootDir . $uploadDir . $fileName)) {
-                    $uploadedImages[] = 'products/' . $fileName;
-                }
+        // Tạo thư mục nếu chưa có
+        if (!is_dir($fullUploadPath)) {
+            if (!mkdir($fullUploadPath, 0755, true)) {
+                error_log("[ProductController] FAILED to create upload directory: {$fullUploadPath}");
+                throw new \RuntimeException('Không thể tạo thư mục upload. Vui lòng liên hệ admin.');
             }
         }
 
+        // Kiểm tra quyền ghi
+        if (!is_writable($fullUploadPath)) {
+            error_log("[ProductController] Upload directory NOT WRITABLE: {$fullUploadPath}");
+            throw new \RuntimeException('Thư mục upload không có quyền ghi. Vui lòng liên hệ admin.');
+        }
+
+        $fileCount = count($_FILES['images']['name']);
+        $uploadErrors = [];
+
+        for ($i = 0; $i < $fileCount; $i++) {
+            $errorCode = $_FILES['images']['error'][$i];
+
+            if ($errorCode === UPLOAD_ERR_OK) {
+                $fileTmp = $_FILES['images']['tmp_name'][$i];
+                $originalName = basename($_FILES['images']['name'][$i]);
+                $fileName = time() . '_' . $i . '_' . $this->sanitizeFileName($originalName);
+                $targetPath = $fullUploadPath . $fileName;
+
+                if (move_uploaded_file($fileTmp, $targetPath)) {
+                    $uploadedImages[] = 'products/' . $fileName;
+                    error_log("[ProductController] Successfully uploaded: {$fileName}");
+                } else {
+                    $uploadErrors[] = "Không thể lưu file: {$originalName}";
+                    error_log("[ProductController] FAILED move_uploaded_file: {$originalName} -> {$targetPath}");
+                }
+            } else {
+                $errorMessage = $this->getUploadErrorMessage($errorCode);
+                $uploadErrors[] = $errorMessage;
+                error_log("[ProductController] Upload error code {$errorCode}: {$errorMessage}");
+            }
+        }
+
+        // Log kết quả
+        error_log("[ProductController] Upload completed: " . count($uploadedImages) . " files, " . count($uploadErrors) . " errors");
+
         return $uploadedImages;
+    }
+
+    /**
+     * Sanitize filename để tránh lỗi ký tự đặc biệt
+     */
+    private function sanitizeFileName(string $filename): string
+    {
+        // Remove dấu tiếng Việt
+        $filename = preg_replace('/[áàảãạăắằẳẵặâấầẩẫậ]/u', 'a', $filename);
+        $filename = preg_replace('/[éèẻẽẹêếềểễệ]/u', 'e', $filename);
+        $filename = preg_replace('/[íìỉĩị]/u', 'i', $filename);
+        $filename = preg_replace('/[óòỏõọôốồổỗộơớờởỡợ]/u', 'o', $filename);
+        $filename = preg_replace('/[úùủũụưứừửữự]/u', 'u', $filename);
+        $filename = preg_replace('/[ýỳỷỹỵ]/u', 'y', $filename);
+        $filename = preg_replace('/[đ]/u', 'd', $filename);
+
+        // Remove ký tự đặc biệt, chỉ giữ alphanumeric, -, _, .
+        $filename = preg_replace('/[^a-zA-Z0-9\-_\.]/', '_', $filename);
+
+        return strtolower($filename);
+    }
+
+    /**
+     * Get human-readable error message for upload error codes
+     */
+    private function getUploadErrorMessage(int $errorCode): string
+    {
+        return match ($errorCode) {
+            UPLOAD_ERR_INI_SIZE => 'File quá lớn (vượt quá giới hạn server)',
+            UPLOAD_ERR_FORM_SIZE => 'File quá lớn (vượt quá giới hạn form)',
+            UPLOAD_ERR_PARTIAL => 'File chỉ được upload một phần',
+            UPLOAD_ERR_NO_FILE => 'Không có file nào được upload',
+            UPLOAD_ERR_NO_TMP_DIR => 'Thiếu thư mục tạm (lỗi server)',
+            UPLOAD_ERR_CANT_WRITE => 'Không thể ghi file (lỗi permission)',
+            UPLOAD_ERR_EXTENSION => 'Upload bị chặn bởi PHP extension',
+            default => 'Lỗi upload không xác định (code: ' . $errorCode . ')',
+        };
     }
 
     /**

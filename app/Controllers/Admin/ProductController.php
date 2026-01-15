@@ -93,7 +93,7 @@ class ProductController extends AdminBaseController
             exit;
         }
 
-        $product = $this->productModel->find($id);
+        $product = $this->productModel->find((int) $id);
         $categories = $this->categoryModel->getAll();
 
         if (!$product) {
@@ -136,7 +136,7 @@ class ProductController extends AdminBaseController
             $data['image'] = $this->uploadImage($_FILES['image']);
         }
 
-        $result = $this->productModel->update($id, $data);
+        $result = $this->productModel->update((int) $id, $data);
 
         if ($result) {
             $_SESSION['success'] = 'Cập nhật thành công!';
@@ -156,8 +156,18 @@ class ProductController extends AdminBaseController
         $id = $_POST['id'] ?? null;
 
         if ($id) {
-            $this->productModel->delete($id);
-            $_SESSION['success'] = 'Đã xóa sản phẩm!';
+            $productId = (int) $id;
+
+            // Kiểm tra sản phẩm có đơn hàng không
+            if ($this->productModel->hasAnyOrder($productId)) {
+                // Có đơn hàng → Soft delete (ẩn sản phẩm)
+                $this->productModel->hideProduct($productId);
+                $_SESSION['success'] = 'Sản phẩm đã được ẩn (không thể xóa vĩnh viễn vì có lịch sử đơn hàng)';
+            } else {
+                // Không có đơn hàng → Hard delete (xóa thật)
+                $this->productModel->delete($productId);
+                $_SESSION['success'] = 'Đã xóa sản phẩm!';
+            }
         }
 
         header('Location: /admin/products');

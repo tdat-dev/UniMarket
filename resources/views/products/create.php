@@ -98,6 +98,92 @@ include __DIR__ . '/../partials/header.php';
                     </div>
                 </div>
 
+                <!-- SECTION 1.5: PICKUP ADDRESS -->
+                <div class="p-8 border-b border-slate-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-location-dot text-indigo-500"></i> Địa chỉ lấy hàng
+                            <span class="text-red-500">*</span>
+                        </h2>
+                        <a href="/addresses" class="text-sm text-indigo-600 hover:underline">Quản lý địa chỉ</a>
+                    </div>
+                    <p class="text-sm text-slate-400 mb-4">Shipper GHN sẽ đến địa chỉ này để lấy hàng khi có đơn.</p>
+
+                    <?php if (!empty($addresses)): ?>
+                        <?php if (empty($hasValidGHNAddress)): ?>
+                            <!-- Warning: No valid GHN address -->
+                            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                                <div class="flex items-start gap-3">
+                                    <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5"></i>
+                                    <div>
+                                        <p class="text-sm font-medium text-amber-800">Chưa có địa chỉ hợp lệ cho GHN</p>
+                                        <p class="text-xs text-amber-600 mt-1">Vui lòng cập nhật địa chỉ với thông tin Tỉnh/Quận/Phường để shipper có thể đến lấy hàng.</p>
+                                        <a href="/addresses/edit?id=<?= $addresses[0]['id'] ?? '' ?>" 
+                                           class="inline-flex items-center gap-1 mt-2 text-xs text-amber-700 hover:underline font-medium">
+                                            <i class="fa-solid fa-pen-to-square"></i> Cập nhật ngay
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <!-- Address Selection -->
+                        <div class="space-y-3">
+                            <?php foreach ($addresses as $index => $addr): 
+                                $hasGHN = !empty($addr['ghn_district_id']) && !empty($addr['ghn_ward_code']);
+                            ?>
+                                <label class="address-option flex items-start gap-3 p-4 border rounded-xl cursor-pointer hover:border-indigo-400 transition-all <?= $addr['is_default'] ? 'border-indigo-500 bg-indigo-50/50' : 'border-slate-200' ?> <?= !$hasGHN ? 'opacity-60' : '' ?>">
+                                    <input type="radio" name="pickup_address_id" value="<?= $addr['id'] ?>" 
+                                           class="mt-1 text-indigo-600 focus:ring-indigo-500"
+                                           <?= $addr['is_default'] ? 'checked' : '' ?>
+                                           <?= !$hasGHN ? 'disabled' : '' ?>>
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="font-semibold text-slate-800"><?= htmlspecialchars($addr['recipient_name']) ?></span>
+                                            <span class="text-slate-300">|</span>
+                                            <span class="text-slate-600 text-sm"><?= htmlspecialchars($addr['phone_number']) ?></span>
+                                            <?php if ($addr['is_default']): ?>
+                                                <span class="px-2 py-0.5 text-xs bg-indigo-600 text-white rounded-full">Mặc định</span>
+                                            <?php endif; ?>
+                                            <?php if (!$hasGHN): ?>
+                                                <span class="px-2 py-0.5 text-xs bg-amber-100 text-amber-700 rounded-full">Chưa có mã GHN</span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="text-xs text-slate-400 mb-1"><?= htmlspecialchars($addr['label']) ?></div>
+                                        <div class="text-sm text-slate-600"><?= htmlspecialchars($addr['full_address'] ?: $addr['street_address']) ?></div>
+                                    </div>
+                                    <?php if (!$hasGHN): ?>
+                                        <a href="/addresses/edit?id=<?= $addr['id'] ?>" 
+                                           class="text-xs text-indigo-600 hover:underline whitespace-nowrap"
+                                           onclick="event.stopPropagation()">Cập nhật</a>
+                                    <?php endif; ?>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
+
+                        <!-- Add new address link -->
+                        <div class="mt-4 pt-4 border-t border-slate-100">
+                            <a href="/addresses/create?redirect_to=<?= urlencode('/products/create') ?>" 
+                               class="inline-flex items-center gap-2 text-sm text-indigo-600 hover:underline font-medium">
+                                <i class="fa-solid fa-plus"></i> Thêm địa chỉ mới
+                            </a>
+                        </div>
+                    <?php else: ?>
+                        <!-- No addresses -->
+                        <div class="text-center py-8 bg-slate-50/50 rounded-xl border-2 border-dashed border-slate-200">
+                            <div class="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
+                                <i class="fa-solid fa-location-dot text-2xl text-slate-400"></i>
+                            </div>
+                            <p class="text-slate-600 font-medium mb-2">Bạn chưa có địa chỉ lấy hàng</p>
+                            <p class="text-sm text-slate-400 mb-4">Vui lòng thêm địa chỉ để shipper GHN có thể đến lấy hàng.</p>
+                            <a href="/addresses/create?redirect_to=<?= urlencode('/products/create') ?>" 
+                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium">
+                                <i class="fa-solid fa-plus"></i> Thêm địa chỉ ngay
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
                 <!-- SECTION 2: BASIC INFO -->
                 <div class="p-8 border-b border-slate-100 bg-slate-50/30">
                     <h2 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
@@ -317,23 +403,21 @@ include __DIR__ . '/../partials/header.php';
                         class="w-full p-4 border border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none text-sm text-slate-700 leading-relaxed placeholder-slate-400 transition-all shadow-sm resize-y"
                         placeholder="Mô tả kỹ về sản phẩm (Xuất xứ, thời gian đã sử dụng, lý do bán...)..."></textarea>
                 </div>
+
+                <!-- Action Buttons (inside container) -->
+                <div class="p-8 border-t border-slate-100 flex items-center justify-end gap-4">
+                    <button type="button" onclick="history.back()"
+                        class="px-6 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all">
+                        Hủy bỏ
+                    </button>
+                    <button type="submit"
+                        class="px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center gap-2">
+                        <span>Đăng bán ngay</span>
+                        <i class="fa-solid fa-arrow-right text-sm"></i>
+                    </button>
+                </div>
             </div>
-    </div>
-
-    <!-- Action Buttons Area -->
-    <div class="mt-8 flex items-center justify-end gap-4 pb-12">
-        <button type="button" onclick="history.back()"
-            class="px-6 py-3 rounded-xl text-slate-500 font-semibold hover:bg-slate-100 hover:text-slate-700 transition-all">
-            Hủy bỏ
-        </button>
-        <button type="submit"
-            class="px-10 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center gap-2">
-            <span>Đăng bán ngay</span>
-            <i class="fa-solid fa-arrow-right text-sm"></i>
-        </button>
-    </div>
-
-    </form>
+        </form>
     </div>
 </main>
 

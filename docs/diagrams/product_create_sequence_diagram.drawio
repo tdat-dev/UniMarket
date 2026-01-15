@@ -1,351 +1,285 @@
-<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.0.0 Chrome/120.0.6099.109 Electron/28.1.0 Safari/537.36" version="24.0.0">
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.3.0 Chrome/140.0.7339.249 Electron/38.7.2 Safari/537.36" version="29.3.0">
   <diagram name="Product Create Sequence Diagram" id="product-create-seq">
-    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+    <mxGraphModel dx="946" dy="606" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        
-        <!-- ==================== ACTORS/COMPONENTS ==================== -->
-        <!-- User Actor -->
-        <mxCell id="user-actor" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
-          <mxGeometry x="80" y="40" width="30" height="60" as="geometry" />
+        <mxCell id="user-actor" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" value="User" vertex="1">
+          <mxGeometry height="60" width="30" x="80" y="40" as="geometry" />
         </mxCell>
-        
-        <!-- Post Product Page (View) -->
-        <mxCell id="view-box" value="Post Product&#xa;Page (View)" style="html=1;whiteSpace=wrap;strokeWidth=2;" vertex="1" parent="1">
-          <mxGeometry x="180" y="50" width="100" height="40" as="geometry" />
+        <mxCell id="view-box" parent="1" style="html=1;whiteSpace=wrap;strokeWidth=2;" value="Post Product&#xa;Page (View)" vertex="1">
+          <mxGeometry height="40" width="100" x="180" y="50" as="geometry" />
         </mxCell>
-        
-        <!-- Auth Middleware -->
-        <mxCell id="auth-box" value="Auth Middleware" style="html=1;whiteSpace=wrap;strokeWidth=2;" vertex="1" parent="1">
-          <mxGeometry x="320" y="50" width="100" height="40" as="geometry" />
+        <mxCell id="auth-box" parent="1" style="html=1;whiteSpace=wrap;strokeWidth=2;" value="Auth Middleware" vertex="1">
+          <mxGeometry height="40" width="100" x="320" y="50" as="geometry" />
         </mxCell>
-        
-        <!-- ProductController -->
-        <mxCell id="ctrl-box" value="ProductController" style="html=1;whiteSpace=wrap;strokeWidth=2;" vertex="1" parent="1">
-          <mxGeometry x="460" y="50" width="100" height="40" as="geometry" />
+        <mxCell id="ctrl-box" parent="1" style="html=1;whiteSpace=wrap;strokeWidth=2;" value="ProductController" vertex="1">
+          <mxGeometry height="40" width="100" x="460" y="50" as="geometry" />
         </mxCell>
-        
-        <!-- ProductModel -->
-        <mxCell id="model-box" value="ProductModel" style="html=1;whiteSpace=wrap;strokeWidth=2;" vertex="1" parent="1">
-          <mxGeometry x="600" y="50" width="100" height="40" as="geometry" />
+        <mxCell id="model-box" parent="1" style="html=1;whiteSpace=wrap;strokeWidth=2;" value="ProductModel" vertex="1">
+          <mxGeometry height="40" width="100" x="600" y="50" as="geometry" />
         </mxCell>
-        
-        <!-- File Storage -->
-        <mxCell id="file-box" value="File Storage" style="html=1;whiteSpace=wrap;strokeWidth=2;" vertex="1" parent="1">
-          <mxGeometry x="740" y="50" width="100" height="40" as="geometry" />
+        <mxCell id="file-box" parent="1" style="html=1;whiteSpace=wrap;strokeWidth=2;" value="File Storage" vertex="1">
+          <mxGeometry height="40" width="100" x="740" y="50" as="geometry" />
         </mxCell>
-        
-        <!-- Database -->
-        <mxCell id="db-box" value="Database" style="html=1;whiteSpace=wrap;strokeWidth=2;" vertex="1" parent="1">
-          <mxGeometry x="880" y="50" width="100" height="40" as="geometry" />
+        <mxCell id="db-box" parent="1" style="html=1;whiteSpace=wrap;strokeWidth=2;" value="Database" vertex="1">
+          <mxGeometry height="40" width="100" x="880" y="50" as="geometry" />
         </mxCell>
-        
-        <!-- ==================== LIFELINES ==================== -->
-        <mxCell id="user-line" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;" edge="1" parent="1">
+        <mxCell id="user-line" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="95" y="100" as="sourcePoint" />
             <mxPoint x="95" y="1000" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        
-        <mxCell id="view-line" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;" edge="1" parent="1">
+        <mxCell id="view-line" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="230" y="90" as="sourcePoint" />
             <mxPoint x="230" y="1000" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        
-        <mxCell id="auth-line" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;" edge="1" parent="1">
+        <mxCell id="auth-line" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="370" y="90" as="sourcePoint" />
             <mxPoint x="370" y="1000" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        
-        <mxCell id="ctrl-line" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;" edge="1" parent="1">
+        <mxCell id="ctrl-line" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="510" y="90" as="sourcePoint" />
             <mxPoint x="510" y="1000" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        
-        <mxCell id="model-line" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;" edge="1" parent="1">
+        <mxCell id="model-line" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="650" y="90" as="sourcePoint" />
             <mxPoint x="650" y="1000" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        
-        <mxCell id="file-line" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;" edge="1" parent="1">
+        <mxCell id="file-line" edge="1" parent="1" source="jeUVQ5HX4uaRnZIi9OsY-3" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="790" y="90" as="sourcePoint" />
             <mxPoint x="790" y="1000" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        
-        <mxCell id="db-line" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;" edge="1" parent="1">
+        <mxCell id="db-line" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="930" y="90" as="sourcePoint" />
             <mxPoint x="930" y="1000" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        
-        <!-- ==================== PHASE 1: OPEN POST PRODUCT ==================== -->
-        <!-- User opens page -->
-        <mxCell id="msg1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="msg1" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="100" y="130" as="sourcePoint" />
             <mxPoint x="225" y="130" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg1-label" value="Open Post Product" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="105" y="110" width="115" height="20" as="geometry" />
+        <mxCell id="msg1-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" value="Open Post Product" vertex="1">
+          <mxGeometry height="20" width="115" x="105" y="110" as="geometry" />
         </mxCell>
-        
-        <!-- View to Auth Middleware -->
-        <mxCell id="msg2" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="msg2" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="235" y="160" as="sourcePoint" />
             <mxPoint x="365" y="160" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg2-label" value="Check login status" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="250" y="140" width="105" height="20" as="geometry" />
+        <mxCell id="msg2-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" value="Check login status" vertex="1">
+          <mxGeometry height="20" width="105" x="250" y="140" as="geometry" />
         </mxCell>
-        
-        <!-- ==================== ALT FRAME: AUTH CHECK ==================== -->
-        <mxCell id="alt-frame-1" value="alt" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;width=30;height=20;" vertex="1" parent="1">
-          <mxGeometry x="70" y="180" width="880" height="120" as="geometry" />
+        <mxCell id="alt-frame-1" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;width=30;height=20;" value="alt" vertex="1">
+          <mxGeometry height="120" width="880" x="70" y="180" as="geometry" />
         </mxCell>
-        <mxCell id="alt-condition-1" value="[User not logged in]" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="80" y="200" width="130" height="20" as="geometry" />
+        <mxCell id="alt-condition-1" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1;" value="[User not logged in]" vertex="1">
+          <mxGeometry height="20" width="130" x="80" y="200" as="geometry" />
         </mxCell>
-        
-        <!-- Redirect to login -->
-        <mxCell id="msg3" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="msg3" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="365" y="230" as="sourcePoint" />
             <mxPoint x="100" y="230" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg3-label" value="Redirect to Login page" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="170" y="210" width="130" height="20" as="geometry" />
+        <mxCell id="msg3-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" value="Redirect to Login page" vertex="1">
+          <mxGeometry height="20" width="130" x="170" y="210" as="geometry" />
         </mxCell>
-        
-        <!-- Divider -->
-        <mxCell id="alt-divider-1" style="endArrow=none;dashed=1;html=1;strokeWidth=1;strokeColor=#666666;" edge="1" parent="1">
+        <mxCell id="alt-divider-1" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;strokeWidth=1;strokeColor=#666666;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="70" y="260" as="sourcePoint" />
             <mxPoint x="950" y="260" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="alt-condition-2" value="[User logged in]" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="80" y="265" width="110" height="20" as="geometry" />
+        <mxCell id="alt-condition-2" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1;" value="[User logged in]" vertex="1">
+          <mxGeometry height="20" width="110" x="80" y="265" as="geometry" />
         </mxCell>
-        
-        <!-- Allow access -->
-        <mxCell id="msg4" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="msg4" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="365" y="285" as="sourcePoint" />
             <mxPoint x="235" y="285" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg4-label" value="Allow access" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="265" y="265" width="80" height="20" as="geometry" />
+        <mxCell id="msg4-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" value="Allow access" vertex="1">
+          <mxGeometry height="20" width="80" x="265" y="265" as="geometry" />
         </mxCell>
-        
-        <!-- ==================== PHASE 2: RENDER FORM ==================== -->
-        <!-- Render form -->
-        <mxCell id="msg5" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="msg5" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="505" y="330" as="sourcePoint" />
             <mxPoint x="235" y="330" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg5-label" value="Render Post Product form" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="305" y="310" width="150" height="20" as="geometry" />
+        <mxCell id="msg5-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" value="Render Post Product form" vertex="1">
+          <mxGeometry height="20" width="150" x="305" y="310" as="geometry" />
         </mxCell>
-        
-        <!-- ==================== PHASE 3: FILL AND SUBMIT ==================== -->
-        <!-- User fills form -->
-        <mxCell id="msg6" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="msg6" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="100" y="370" as="sourcePoint" />
             <mxPoint x="225" y="370" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg6-label" value="Fill product information" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="100" y="350" width="130" height="20" as="geometry" />
+        <mxCell id="msg6-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" value="Fill product information" vertex="1">
+          <mxGeometry height="20" width="130" x="100" y="350" as="geometry" />
         </mxCell>
-        
-        <!-- User clicks submit -->
-        <mxCell id="msg7" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="msg7" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="100" y="400" as="sourcePoint" />
             <mxPoint x="225" y="400" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg7-label" value="Click Submit" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="115" y="380" width="80" height="20" as="geometry" />
+        <mxCell id="msg7-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" value="Click Submit" vertex="1">
+          <mxGeometry height="20" width="80" x="115" y="380" as="geometry" />
         </mxCell>
-        
-        <!-- View to Controller -->
-        <mxCell id="msg8" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="msg8" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="235" y="430" as="sourcePoint" />
             <mxPoint x="505" y="430" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg8-label" value="POST /products/store (form data)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="295" y="410" width="180" height="20" as="geometry" />
+        <mxCell id="msg8-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" value="POST /products/store (form data)" vertex="1">
+          <mxGeometry height="20" width="180" x="295" y="410" as="geometry" />
         </mxCell>
-        
-        <!-- Controller Activation -->
-        <mxCell id="ctrl-act1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#E6E6E6;" vertex="1" parent="1">
-          <mxGeometry x="505" y="430" width="10" height="60" as="geometry" />
+        <mxCell id="ctrl-act1" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#E6E6E6;" vertex="1">
+          <mxGeometry height="60" width="10" x="505" y="430" as="geometry" />
         </mxCell>
-        
-        <!-- Validate note -->
-        <mxCell id="validate-note" value="Validate input data" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;" vertex="1" parent="1">
-          <mxGeometry x="520" y="445" width="110" height="25" as="geometry" />
+        <mxCell id="alt-frame-2" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;width=30;height=20;" value="alt" vertex="1">
+          <mxGeometry height="130" width="880" x="70" y="510" as="geometry" />
         </mxCell>
-        
-        <!-- ==================== ALT FRAME: VALIDATION ==================== -->
-        <mxCell id="alt-frame-2" value="alt" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;width=30;height=20;" vertex="1" parent="1">
-          <mxGeometry x="70" y="510" width="880" height="130" as="geometry" />
+        <mxCell id="alt-validation-1" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1;" value="[Data invalid]" vertex="1">
+          <mxGeometry height="20" width="100" x="80" y="530" as="geometry" />
         </mxCell>
-        <mxCell id="alt-validation-1" value="[Data invalid]" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="80" y="530" width="100" height="20" as="geometry" />
-        </mxCell>
-        
-        <!-- Return errors -->
-        <mxCell id="msg9" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="msg9" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="505" y="560" as="sourcePoint" />
             <mxPoint x="100" y="560" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg9-label" value="Return validation errors" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="240" y="540" width="140" height="20" as="geometry" />
+        <mxCell id="msg9-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" value="Return validation errors" vertex="1">
+          <mxGeometry height="20" width="140" x="240" y="540" as="geometry" />
         </mxCell>
-        
-        <!-- Show error -->
-        <mxCell id="msg10" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="msg10" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="225" y="585" as="sourcePoint" />
             <mxPoint x="100" y="585" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg10-label" value="Show error messages" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="105" y="565" width="120" height="20" as="geometry" />
+        <mxCell id="msg10-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" value="Show error messages" vertex="1">
+          <mxGeometry height="20" width="120" x="105" y="565" as="geometry" />
         </mxCell>
-        
-        <!-- Divider -->
-        <mxCell id="alt-divider-2" style="endArrow=none;dashed=1;html=1;strokeWidth=1;strokeColor=#666666;" edge="1" parent="1">
+        <mxCell id="alt-divider-2" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;strokeWidth=1;strokeColor=#666666;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="70" y="610" as="sourcePoint" />
             <mxPoint x="950" y="610" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="alt-validation-2" value="[Data valid]" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="80" y="615" width="90" height="20" as="geometry" />
+        <mxCell id="alt-validation-2" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1;" value="[Data valid]" vertex="1">
+          <mxGeometry height="20" width="90" x="80" y="615" as="geometry" />
         </mxCell>
-        
-        <!-- ==================== PHASE 4: UPLOAD & SAVE ==================== -->
-        <!-- Upload images -->
-        <mxCell id="msg11" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="msg11" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="515" y="670" as="sourcePoint" />
             <mxPoint x="785" y="670" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg11-label" value="Upload product images" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="580" y="650" width="130" height="20" as="geometry" />
+        <mxCell id="msg11-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" value="Upload product images" vertex="1">
+          <mxGeometry height="20" width="130" x="580" y="650" as="geometry" />
         </mxCell>
-        
-        <!-- File Storage Activation -->
-        <mxCell id="file-act1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#E6E6E6;" vertex="1" parent="1">
-          <mxGeometry x="785" y="670" width="10" height="40" as="geometry" />
-        </mxCell>
-        
-        <!-- Return image path -->
-        <mxCell id="msg12" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="msg12" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="785" y="705" as="sourcePoint" />
             <mxPoint x="515" y="705" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg12-label" value="Image path" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="615" y="705" width="70" height="20" as="geometry" />
+        <mxCell id="msg12-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" value="Image path" vertex="1">
+          <mxGeometry height="20" width="70" x="615" y="705" as="geometry" />
         </mxCell>
-        
-        <!-- Controller to Model -->
-        <mxCell id="msg13" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="msg13" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="515" y="745" as="sourcePoint" />
             <mxPoint x="645" y="745" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg13-label" value="Save product data" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="535" y="725" width="110" height="20" as="geometry" />
+        <mxCell id="msg13-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" value="Save product data" vertex="1">
+          <mxGeometry height="20" width="110" x="535" y="725" as="geometry" />
         </mxCell>
-        
-        <!-- Model Activation -->
-        <mxCell id="model-act1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#E6E6E6;" vertex="1" parent="1">
-          <mxGeometry x="645" y="745" width="10" height="80" as="geometry" />
+        <mxCell id="model-act1" parent="1" style="html=1;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#E6E6E6;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;" vertex="1">
+          <mxGeometry height="80" width="10" x="645" y="745" as="geometry" />
         </mxCell>
-        
-        <!-- Model to Database -->
-        <mxCell id="msg14" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="msg14" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="655" y="775" as="sourcePoint" />
             <mxPoint x="925" y="775" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg14-label" value="INSERT product" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="745" y="755" width="100" height="20" as="geometry" />
+        <mxCell id="msg14-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" value="INSERT product" vertex="1">
+          <mxGeometry height="20" width="100" x="745" y="755" as="geometry" />
         </mxCell>
-        
-        <!-- Database Activation -->
-        <mxCell id="db-act1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#E6E6E6;" vertex="1" parent="1">
-          <mxGeometry x="925" y="775" width="10" height="30" as="geometry" />
+        <mxCell id="db-act1" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#E6E6E6;" vertex="1">
+          <mxGeometry height="30" width="10" x="925" y="775" as="geometry" />
         </mxCell>
-        
-        <!-- Database return -->
-        <mxCell id="msg15" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="msg15" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="925" y="800" as="sourcePoint" />
             <mxPoint x="655" y="800" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg15-label" value="Success" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="760" y="800" width="60" height="20" as="geometry" />
+        <mxCell id="msg15-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" value="Success" vertex="1">
+          <mxGeometry height="20" width="60" x="760" y="800" as="geometry" />
         </mxCell>
-        
-        <!-- ==================== PHASE 5: REDIRECT ==================== -->
-        <!-- Redirect -->
-        <mxCell id="msg16" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="msg16" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="505" y="870" as="sourcePoint" />
             <mxPoint x="225" y="870" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg16-label" value="Redirect to My Products page" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="285" y="850" width="175" height="20" as="geometry" />
+        <mxCell id="msg16-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" value="Redirect to My Products page" vertex="1">
+          <mxGeometry height="20" width="175" x="285" y="850" as="geometry" />
         </mxCell>
-        
-        <!-- Show success -->
-        <mxCell id="msg17" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="msg17" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="225" y="900" as="sourcePoint" />
             <mxPoint x="100" y="900" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg17-label" value="Show success message" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="105" y="880" width="130" height="20" as="geometry" />
+        <mxCell id="msg17-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" value="Show success message" vertex="1">
+          <mxGeometry height="20" width="130" x="105" y="880" as="geometry" />
         </mxCell>
-        
+        <mxCell id="jeUVQ5HX4uaRnZIi9OsY-1" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="60" width="10" x="505" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="jeUVQ5HX4uaRnZIi9OsY-2" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="80" width="10" x="645" y="745" as="geometry" />
+        </mxCell>
+        <mxCell id="jeUVQ5HX4uaRnZIi9OsY-4" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 4;strokeWidth=1;" target="jeUVQ5HX4uaRnZIi9OsY-3" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="790" y="90" as="sourcePoint" />
+            <mxPoint x="790" y="1000" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="jeUVQ5HX4uaRnZIi9OsY-3" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="80" width="10" x="785" y="650" as="geometry" />
+        </mxCell>
+        <mxCell id="jeUVQ5HX4uaRnZIi9OsY-5" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="35" width="10" x="925" y="775" as="geometry" />
+        </mxCell>
+        <mxCell id="jeUVQ5HX4uaRnZIi9OsY-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 11px;&quot;&gt;Validate input data&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="120" x="515" y="440" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>

@@ -145,9 +145,6 @@
             <mxPoint x="685" y="565" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="note1" parent="1" style="text;html=1;fillColor=#d5e8d4;strokeColor=#82b366;rounded=1;" value="Create session" vertex="1">
-          <mxGeometry height="25" width="90" x="335" y="620" as="geometry" />
-        </mxCell>
         <mxCell id="m13" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;" value="Redirect to Home">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="320" y="680" as="sourcePoint" />
@@ -159,6 +156,9 @@
             <mxPoint x="195" y="710" as="sourcePoint" />
             <mxPoint x="100" y="710" as="targetPoint" />
           </mxGeometry>
+        </mxCell>
+        <mxCell id="OM32oaqhjBySzyuPeiuW-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;text-align: left; text-wrap-mode: nowrap;&quot;&gt;Create session&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="100" x="340" y="620" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
