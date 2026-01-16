@@ -15,6 +15,8 @@
                     <li><a href="#" class="hover:text-gray-800 transition-colors">Liên Hệ
                             <?= $siteSettings['general']['site_name'] ?? 'Zoldify' ?></a></li>
                     <li><a href="#" class="hover:text-gray-800 transition-colors">Chính Sách Bảo Hành</a></li>
+                    <li><a href="/privacy" class="hover:text-gray-800 transition-colors">Chính Sách Bảo Mật</a></li>
+                    <li><a href="/terms" class="hover:text-gray-800 transition-colors">Điều Khoản Sử Dụng</a></li>
                 </ul>
             </div>
 
@@ -89,6 +91,9 @@
 
 <!-- Socket.IO Client Library -->
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+<!-- Zoldify Custom Dialog System -->
+<script src="/js/zoldify-dialog.js?v=<?= time() ?>"></script>
 
 <!-- Chat Socket Client -->
 <script src="/js/chat-socket.js?v=<?= time() ?>"></script>

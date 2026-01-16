@@ -64,9 +64,12 @@ try {
     echo "\n";
 
     // Test 4: Calculate Fee
+    // Truyền from_district_id để bypass địa chỉ shop mặc định (mô hình C2C)
     echo "4. Testing calculateFee()...\n";
     $fee = $ghn->calculateFee([
-        'to_district_id' => 1444,
+        'from_district_id' => 1488,     // Hai Bà Trưng, Hà Nội (seller)
+        'from_ward_code' => '1A0320',   // Phường Vĩnh Tuy
+        'to_district_id' => 1444,       // Quận 10, HCM (buyer)
         'to_ward_code' => '20308',
         'weight' => 500,
         'service_type_id' => 2,
@@ -76,13 +79,21 @@ try {
     echo "\n";
 
     // Test 5: Create Test Order (Sandbox only!)
+    // Cần truyền from address vì mô hình C2C (seller -> buyer trực tiếp)
     echo "5. Testing createOrder() [SANDBOX]...\n";
     $orderResult = $ghn->createOrder([
+        // From (seller - Hà Nội)
+        'from_name' => 'Shop Zoldify Test',
+        'from_phone' => '0926531052',
+        'from_address' => '57 Ngo 454 Minh Khai, Vinh Tuy, Hai Ba Trung',
+        'from_district_id' => 1488,     // Hai Bà Trưng
+        'from_ward_code' => '1A0320',   // Vĩnh Tuy
+        // To (buyer - HCM)
         'to_name' => 'Nguyen Van Test',
         'to_phone' => '0987654321',
-        'to_address' => '72 Thanh Thai, Phuong 14, Quan 10, TPHCM',
-        'to_ward_code' => '20308',
-        'to_district_id' => 1444,
+        'to_address' => '72 Thanh Thai, Phuong 8, Quan 10, TPHCM',
+        'to_ward_code' => '20308',      // Phường 8
+        'to_district_id' => 1444,       // Quận 10
         'weight' => 500,
         'cod_amount' => 100000,
         'content' => 'Test order from Zoldify',

@@ -129,8 +129,9 @@
         </tbody>
     </table>
     <script>
-        function toggleLock(userId, message) {
-            if (confirm(message)) {
+        async function toggleLock(userId, message) {
+            const confirmed = await ZDialog.confirm('Xác nhận', message);
+            if (confirmed) {
                 var form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '/admin/users/toggle-lock';

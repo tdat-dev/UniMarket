@@ -320,13 +320,48 @@ class Product extends BaseModel
             return $this->getPaginated($limit, $offset);
         }
 
-        // Tokenize: tách từ khóa thành các từ riêng
+        // Thử FULLTEXT search trước (nhanh hơn 10-100x)
+        $fulltextResult = $this->searchWithFulltext($keyword, $limit, $offset);
+        if ($fulltextResult !== null) {
+            return $fulltextResult;
+        }
+
+        // Fallback: LIKE search (chậm hơn nhưng luôn hoạt động)
+        return $this->searchWithLike($keyword, $limit, $offset);
+    }
+
+    /**
+     * FULLTEXT search - Cực nhanh cho text search
+     * 
+     * @return array|null Null nếu FULLTEXT không available
+     */
+    private function searchWithFulltext(string $keyword, int $limit, int $offset): ?array
+    {
+        try {
+            // MATCH AGAINST với BOOLEAN MODE cho phép +word (phải có), -word (không có)
+            $sql = "SELECT p.*, 
+                        {$this->getSoldCountSubquery()} AS sold_count,
+                        MATCH(p.name, p.description) AGAINST(? IN NATURAL LANGUAGE MODE) AS relevance_score
+                    FROM {$this->table} p
+                    WHERE p.status = ? 
+                    AND MATCH(p.name, p.description) AGAINST(? IN NATURAL LANGUAGE MODE)
+                    ORDER BY relevance_score DESC, sold_count DESC
+                    LIMIT ? OFFSET ?";
+
+            return $this->db->fetchAll($sql, [$keyword, self::STATUS_ACTIVE, $keyword, $limit, $offset]);
+        } catch (\Exception $e) {
+            // FULLTEXT index không tồn tại → fallback về LIKE
+            return null;
+        }
+    }
+
+    /**
+     * LIKE search - Chậm hơn nhưng luôn hoạt động
+     */
+    private function searchWithLike(string $keyword, int $limit, int $offset): array
+    {
         $tokens = $this->tokenizeKeyword($keyword);
-
-        // Build relevance score
         $relevanceScore = $this->buildRelevanceScore($keyword, $tokens);
-
-        // Build search conditions (OR cho mỗi token)
         $searchConditions = $this->buildSearchConditions($tokens);
 
         $sql = "SELECT p.*, 
@@ -517,7 +552,8 @@ class Product extends BaseModel
     /**
      * Build relevance score SQL
      * 
-     * Scoring:
+     * Scoring (ưu tiên từ cao xuống thấp):
+     * - Phrase match in name (cụm từ nguyên vẹn): 200 points
      * - Exact match in name: 100 points
      * - Word starts with keyword in name: 50 points
      * - Contains keyword in name: 20 points
@@ -526,9 +562,13 @@ class Product extends BaseModel
     private function buildRelevanceScore(string $keyword, array $tokens): string
     {
         $scores = [];
+        $escapedKeyword = $this->escapeString($keyword);
 
-        // Exact match (full keyword)
-        $scores[] = "CASE WHEN LOWER(p.name) = LOWER('{$this->escapeString($keyword)}') THEN 100 ELSE 0 END";
+        // Phrase match - cụm từ nguyên vẹn trong tên (ưu tiên cao nhất)
+        $scores[] = "CASE WHEN LOWER(p.name) LIKE '%{$escapedKeyword}%' THEN 200 ELSE 0 END";
+
+        // Exact match (full keyword = tên sản phẩm)
+        $scores[] = "CASE WHEN LOWER(p.name) = LOWER('{$escapedKeyword}') THEN 100 ELSE 0 END";
 
         // Each token contributes to score
         foreach ($tokens as $token) {
@@ -547,7 +587,9 @@ class Product extends BaseModel
     /**
      * Build search conditions (WHERE clause)
      * 
-     * Tìm trong name HOẶC description, match BẤT KỲ token nào
+     * Tìm trong name HOẶC description
+     * Yêu cầu TẤT CẢ tokens phải match (AND logic)
+     * + Bonus: ưu tiên exact phrase match
      * 
      * @return array{sql: string, params: array}
      */
@@ -560,16 +602,25 @@ class Product extends BaseModel
         $conditions = [];
         $params = [];
 
+        // Điều kiện 1: Exact phrase match (tìm cụm từ nguyên vẹn)
+        $fullKeyword = implode(' ', $tokens);
+        $phraseCondition = "(LOWER(p.name) LIKE ? OR LOWER(p.description) LIKE ?)";
+
+        // Điều kiện 2: TẤT CẢ tokens phải match (AND logic)
+        $tokenConditions = [];
         foreach ($tokens as $token) {
-            // Search in name OR description
-            $conditions[] = "(LOWER(p.name) LIKE ? OR LOWER(p.description) LIKE ?)";
+            // Mỗi token phải xuất hiện trong name HOẶC description
+            $tokenConditions[] = "(LOWER(p.name) LIKE ? OR LOWER(p.description) LIKE ?)";
             $params[] = '%' . mb_strtolower($token) . '%';
             $params[] = '%' . mb_strtolower($token) . '%';
         }
 
-        // Dùng OR để match bất kỳ token nào
+        // Dùng AND: tất cả tokens phải match
+        // Ví dụ: "ba lô" → (name LIKE '%ba%' OR desc LIKE '%ba%') AND (name LIKE '%lô%' OR desc LIKE '%lô%')
+        $allTokensCondition = implode(' AND ', $tokenConditions);
+
         return [
-            'sql' => implode(' OR ', $conditions),
+            'sql' => $allTokensCondition,
             'params' => $params,
         ];
     }

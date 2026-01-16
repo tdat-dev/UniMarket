@@ -412,21 +412,24 @@ class ProfileController extends BaseController
         }
 
         // Create New Order
-        $newOrderId = $orderModel->create([
+        $newOrderId = $orderModel->createOrder([
             'buyer_id' => $userId,
             'seller_id' => $oldOrder['seller_id'],
             'total_amount' => $totalAmount,
-            'status' => 'pending'
+            'status' => 'pending',
+            'payment_method' => $oldOrder['payment_method'] ?? 'cod',
+            'shipping_address_id' => $oldOrder['shipping_address_id'] ?? null,
+            'shipping_note' => $oldOrder['shipping_note'] ?? null
         ]);
 
         // Create Items and Decrease Stock
         foreach ($itemsToBuy as $newItem) {
-            $orderItemModel->create([
-                'order_id' => $newOrderId,
-                'product_id' => $newItem['product_id'],
-                'quantity' => $newItem['quantity'],
-                'price' => $newItem['price']
-            ]);
+            $orderItemModel->addItem(
+                $newOrderId,
+                (int)$newItem['product_id'],
+                (int)$newItem['quantity'],
+                (float)$newItem['price']
+            );
 
             // Deduct from database (available products)
             $productModel->decreaseQuantity($newItem['product_id'], $newItem['quantity']);

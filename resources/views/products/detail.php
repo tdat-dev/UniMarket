@@ -1,5 +1,6 @@
 <?php
 use App\Helpers\SlugHelper;
+use App\Helpers\ImageHelper;
 
 include __DIR__ . '/../partials/head.php';
 include __DIR__ . '/../partials/header.php';
@@ -42,7 +43,7 @@ include __DIR__ . '/../partials/header.php';
                     ?>
                     <div
                         class="relative w-full aspect-square bg-gray-100 rounded-sm overflow-hidden border border-gray-200">
-                        <img id="main-product-image" src="/uploads/<?= htmlspecialchars($mainImagePath) ?>"
+                        <img id="main-product-image" src="<?= ImageHelper::url('uploads/' . $mainImagePath) ?>"
                             alt="<?= htmlspecialchars($product['name'] ?? '') ?>"
                             class="w-full h-full object-contain cursor-zoom-in" onclick="openLightbox(0)">
                     </div>
@@ -51,9 +52,9 @@ include __DIR__ . '/../partials/header.php';
                         <div class="flex gap-2 mt-4 overflow-x-auto">
                             <?php foreach ($productImages as $index => $image): ?>
                                 <div class="product-thumbnail w-20 h-20 border border-gray-200 hover:border-[#2C67C8] cursor-pointer rounded-sm overflow-hidden flex-shrink-0 <?= $index === 0 ? 'border-[#2C67C8]' : '' ?>"
-                                    data-image="/uploads/<?= htmlspecialchars($image['image_path']) ?>"
+                                    data-image="<?= ImageHelper::url('uploads/' . $image['image_path']) ?>"
                                     data-index="<?= $index ?>">
-                                    <img src="/uploads/<?= htmlspecialchars($image['image_path']) ?>"
+                                    <img src="<?= ImageHelper::url('uploads/' . $image['image_path']) ?>"
                                         class="w-full h-full object-cover">
                                 </div>
                             <?php endforeach; ?>
@@ -248,7 +249,7 @@ include __DIR__ . '/../partials/header.php';
                             <a href="<?= SlugHelper::productUrl($item['name'], (int)($item['user_id'] ?? 0), (int)$item['id']) ?>" class="block">
                                 <!-- Image -->
                                 <div class="relative pt-[100%] overflow-hidden bg-gray-100">
-                                    <img src="/public/uploads/<?= htmlspecialchars($item['image'] ?? '') ?>"
+                                    <img src="<?= ImageHelper::url('uploads/' . ($item['image'] ?? '')) ?>"
                                         alt="<?= htmlspecialchars($item['name'] ?? '') ?>"
                                         class="absolute top-0 left-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
 
@@ -437,7 +438,7 @@ include __DIR__ . '/../partials/header.php';
 
     // ===== LIGHTBOX FUNCTIONS =====
     const productImages = <?= json_encode(array_map(function ($img) {
-        return '/uploads/' . $img['image_path'];
+        return \App\Helpers\ImageHelper::url('uploads/' . $img['image_path']);
     }, $productImages ?? [])) ?>;
 
     let currentImageIndex = 0;

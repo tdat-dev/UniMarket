@@ -21,6 +21,8 @@ use App\Controllers\AddressController;
 // ======================= HOME & SUPPORT =======================
 $router->get('/', [HomeController::class, 'index']);
 $router->get('support', [HomeController::class, 'support']);
+$router->get('privacy', [HomeController::class, 'privacy']);
+$router->get('terms', [HomeController::class, 'terms']);
 
 // ======================= AUTHENTICATION =======================
 $router->get('login', [AuthController::class, 'login']);
@@ -126,3 +128,9 @@ $router->get('addresses/edit', [AddressController::class, 'edit']);
 $router->post('addresses/update', [AddressController::class, 'update']);
 $router->post('addresses/delete', [AddressController::class, 'delete']);
 $router->post('addresses/set-default', [AddressController::class, 'setDefault']);
+
+// GHN Address Lookup API
+$router->get('api/ghn/provinces', [AddressController::class, 'getProvinces']);
+$router->get('api/ghn/districts', [AddressController::class, 'getDistricts']);
+$router->get('api/ghn/wards', [AddressController::class, 'getWards']);
+

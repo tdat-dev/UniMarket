@@ -7,6 +7,7 @@ namespace App\Controllers;
 use App\Models\Product;
 use App\Models\Cart;
 use App\Middleware\VerificationMiddleware;
+use App\Helpers\SlugHelper;
 
 /**
  * Cart Controller
@@ -64,7 +65,10 @@ class CartController extends BaseController
 
         // "Add to Cart" flow
         $this->cartModel->addItem($userId, $productId, $quantity);
-        $this->redirect("/product-detail?id={$productId}&added=1");
+
+        // Redirect về trang product với thông báo đã thêm vào giỏ
+        $productUrl = SlugHelper::productUrl($product['name'] ?? '', $productId);
+        $this->redirect($productUrl . '?added=1');
     }
 
     /**

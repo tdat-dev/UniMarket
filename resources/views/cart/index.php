@@ -1,5 +1,6 @@
 <?php
 use App\Helpers\SlugHelper;
+use App\Helpers\ImageHelper;
 
 include __DIR__ . '/../partials/head.php';
 include __DIR__ . '/../partials/header.php';
@@ -52,15 +53,15 @@ include __DIR__ . '/../partials/header.php';
                             $grandTotal += $itemTotal;
                             ?>
                             <div class="cart-item grid grid-cols-12 gap-4 p-4 border-b last:border-0 items-center hover:bg-gray-50/50 transition-colors"
-                                data-id="<?= $item['id'] ?>" data-price="<?= $item['price'] ?>">
+                                data-id="<?= $item['product_id'] ?>" data-price="<?= $item['price'] ?>">
                                 <div class="col-span-1 flex justify-center">
-                                    <input type="checkbox" name="selected_products[]" value="<?= $item['id'] ?>"
+                                    <input type="checkbox" name="selected_products[]" value="<?= $item['product_id'] ?>"
                                         class="item-checkbox w-4 h-4 text-[#EE4D2D] border-gray-300 rounded focus:ring-[#EE4D2D]"
                                         checked>
                                 </div>
                                 <div class="col-span-5 flex gap-3">
                                     <div class="w-20 h-20 border rounded-sm overflow-hidden flex-shrink-0">
-                                        <img src="/uploads/<?= htmlspecialchars($item['image'] ?? '') ?>"
+                                        <img src="<?= ImageHelper::url('uploads/' . ($item['image'] ?? '')) ?>"
                                             class="w-full h-full object-cover">
                                     </div>
                                     <div class="flex flex-col justify-center">
@@ -78,7 +79,7 @@ include __DIR__ . '/../partials/header.php';
                                     <div class="flex items-center border border-gray-300 rounded-sm">
                                         <button type="button"
                                             class="w-8 h-8 flex items-center justify-center bg-gray-50 hover:bg-gray-200 text-gray-600 focus:outline-none"
-                                            onclick="updateQuantity(<?= $item['id'] ?>, -1)">
+                                            onclick="updateQuantity(<?= $item['product_id'] ?>, -1)">
                                             <i class="fa-solid fa-minus text-xs"></i>
                                         </button>
                                         <input type="text" value="<?= $item['cart_quantity'] ?>"
@@ -86,13 +87,20 @@ include __DIR__ . '/../partials/header.php';
                                             readonly>
                                         <button type="button"
                                             class="w-8 h-8 flex items-center justify-center bg-gray-50 hover:bg-gray-200 text-gray-600 focus:outline-none"
-                                            onclick="updateQuantity(<?= $item['id'] ?>, 1)">
+                                            onclick="updateQuantity(<?= $item['product_id'] ?>, 1)">
                                             <i class="fa-solid fa-plus text-xs"></i>
                                         </button>
                                     </div>
                                 </div>
-                                <div class="col-span-2 text-center text-sm font-bold text-[#EE4D2D] item-total">
-                                    <?= number_format($itemTotal, 0, ',', '.') ?>đ
+                                <div class="col-span-2 flex justify-center items-center gap-3">
+                                    <span class="text-sm font-bold text-[#EE4D2D] item-total">
+                                        <?= number_format($itemTotal, 0, ',', '.') ?>đ
+                                    </span>
+                                    <button type="button"
+                                        class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                                        onclick="removeFromCart(<?= $item['product_id'] ?>)" title="Xóa khỏi giỏ hàng">
+                                        <i class="fa-solid fa-trash-can text-sm"></i>
+                                    </button>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -129,6 +137,100 @@ include __DIR__ . '/../partials/header.php';
             </form>
 
             <script>
+                const CART_STORAGE_KEY = 'zoldify_cart_selection';
+
+                // =============================================
+                // LocalStorage Functions - Lưu trạng thái checkbox
+                // =============================================
+
+                /**
+                 * Lưu trạng thái checkbox vào localStorage
+                 */
+                function saveCheckboxState() {
+                    const uncheckedIds = [];
+                    document.querySelectorAll('.item-checkbox:not(:checked)').forEach(cb => {
+                        uncheckedIds.push(cb.value);
+                    });
+                    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(uncheckedIds));
+                }
+
+                /**
+                 * Khôi phục trạng thái checkbox từ localStorage
+                 */
+                function restoreCheckboxState() {
+                    const saved = localStorage.getItem(CART_STORAGE_KEY);
+                    if (!saved) return;
+
+                    try {
+                        const uncheckedIds = JSON.parse(saved);
+                        document.querySelectorAll('.item-checkbox').forEach(cb => {
+                            if (uncheckedIds.includes(cb.value)) {
+                                cb.checked = false;
+                            }
+                        });
+                        // Cập nhật check-all checkbox
+                        updateCheckAllState();
+                    } catch (e) {
+                        console.error('Error restoring cart state:', e);
+                    }
+                }
+
+                /**
+                 * Xóa trạng thái đã lưu (khi checkout thành công)
+                 */
+                function clearCheckboxState() {
+                    localStorage.removeItem(CART_STORAGE_KEY);
+                }
+
+                /**
+                 * Cập nhật trạng thái của checkbox "Chọn tất cả"
+                 */
+                function updateCheckAllState() {
+                    const allCheckboxes = document.querySelectorAll('.item-checkbox');
+                    const checkedCheckboxes = document.querySelectorAll('.item-checkbox:checked');
+                    const checkAll = document.getElementById('check-all');
+
+                    if (checkAll) {
+                        checkAll.checked = allCheckboxes.length === checkedCheckboxes.length;
+                    }
+                }
+
+                // =============================================
+                // Cart Functions
+                // =============================================
+
+                /**
+                 * Xóa sản phẩm khỏi giỏ hàng
+                 */
+                /**
+                 * Xóa sản phẩm khỏi giỏ hàng
+                 */
+                async function removeFromCart(productId) {
+                    const confirmed = await ZDialog.confirm('Xác nhận', 'Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?');
+                    if (!confirmed) {
+                        return;
+                    }
+
+                    const row = document.querySelector(`.cart-item[data-id="${productId}"]`);
+                    if (!row) return;
+
+                    fetch('/cart/update', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ product_id: productId, quantity: 0 })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                row.remove();
+                                saveCheckboxState();
+                                recalculateTotal();
+                                checkEmptyCart();
+                            }
+                        })
+                        .catch(err => console.error(err));
+                }
+
                 function updateQuantity(productId, change) {
                     const row = document.querySelector(`.cart-item[data-id="${productId}"]`);
                     if (!row) return;
@@ -137,10 +239,7 @@ include __DIR__ . '/../partials/header.php';
                     let currentQty = parseInt(input.value);
                     let newQty = currentQty + change;
 
-                    if (newQty < 0) return; // Prevention, though logic handles 0
-
-                    // If newQty is 0, we can confirm with user? Or just remove. 
-                    // User said: "bấm trừ xuống số 0 sẽ loại bỏ sản phẩm" -> Implies immediate action.
+                    if (newQty < 0) return;
 
                     fetch('/cart/update', {
                         method: 'POST',
@@ -151,14 +250,11 @@ include __DIR__ . '/../partials/header.php';
                         .then(data => {
                             if (data.success) {
                                 if (newQty <= 0) {
-                                    // Remove row
                                     row.remove();
                                     recalculateTotal();
                                     checkEmptyCart();
                                 } else {
-                                    // Update input
                                     input.value = newQty;
-                                    // Update item total
                                     const price = parseInt(row.dataset.price);
                                     const itemTotal = price * newQty;
                                     row.querySelector('.item-total').textContent = new Intl.NumberFormat('vi-VN').format(itemTotal) + 'đ';
@@ -188,35 +284,50 @@ include __DIR__ . '/../partials/header.php';
                     document.getElementById('summary-total').textContent = formattedTotal;
                     document.getElementById('btn-buy').textContent = `MUA HÀNG (${count})`;
 
-                    // Disable button if count is 0
                     document.getElementById('btn-buy').disabled = count === 0;
                 }
 
                 function checkEmptyCart() {
                     const rows = document.querySelectorAll('.cart-item');
                     if (rows.length === 0) {
-                        location.reload(); // Reload to show empty state
+                        clearCheckboxState(); // Xóa state khi giỏ trống
+                        location.reload();
                     }
                 }
 
-                // Checkbox logic
+                // =============================================
+                // Event Listeners
+                // =============================================
+
+                // Check-all checkbox
                 document.getElementById('check-all').addEventListener('change', function (e) {
                     const isChecked = e.target.checked;
                     document.querySelectorAll('.item-checkbox').forEach(cb => {
                         cb.checked = isChecked;
                     });
+                    saveCheckboxState(); // Lưu trạng thái
                     recalculateTotal();
                 });
 
+                // Individual checkboxes
                 document.querySelectorAll('.item-checkbox').forEach(cb => {
-                    cb.addEventListener('change', recalculateTotal);
+                    cb.addEventListener('change', function () {
+                        saveCheckboxState(); // Lưu trạng thái khi thay đổi
+                        updateCheckAllState();
+                        recalculateTotal();
+                    });
                 });
 
-                // Initial Check All state
-                const allCheckboxes = document.querySelectorAll('.item-checkbox');
-                if (allCheckboxes.length > 0) {
-                    document.getElementById('check-all').checked = true;
-                }
+                // Xóa state khi submit form checkout
+                document.getElementById('cart-form').addEventListener('submit', function () {
+                    clearCheckboxState();
+                });
+
+                // =============================================
+                // Initialization - Khởi tạo khi load trang
+                // =============================================
+                restoreCheckboxState(); // Khôi phục trạng thái từ localStorage
+                recalculateTotal(); // Tính lại tổng dựa trên checkbox hiện tại
             </script>
         <?php endif; ?>
     </div>

@@ -70,7 +70,7 @@
         <mxCell id="db-box" parent="1" style="html=1;whiteSpace=wrap;" value="&lt;u&gt;DB : Database&lt;/u&gt;" vertex="1">
           <mxGeometry height="50" width="100" x="1290" y="30" as="geometry" />
         </mxCell>
-        <mxCell id="frame1" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 1: Hiển thị trang thanh toán" vertex="1">
+        <mxCell id="frame1" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 1: Display the payment page" vertex="1">
           <mxGeometry height="260" width="1380" x="40" y="100" as="geometry" />
         </mxCell>
         <mxCell id="msg1" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="1 : selectProducts() + clickCheckout()">
@@ -87,9 +87,6 @@
         </mxCell>
         <mxCell id="ctrl-act1" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
           <mxGeometry height="170" width="10" x="435" y="165" as="geometry" />
-        </mxCell>
-        <mxCell id="note-prg" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 11px; background-color: rgb(18, 18, 18);&quot;&gt;3 : saveToSession($_POST) + redirect(&#39;/checkout&#39;)&lt;/span&gt;" vertex="1">
-          <mxGeometry height="30" width="200" x="450" y="180" as="geometry" />
         </mxCell>
         <mxCell id="msg3" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="4 : getByUserId($userId)">
           <mxGeometry relative="1" width="80" as="geometry">
@@ -127,10 +124,10 @@
             <mxPoint x="115" y="340" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="frame2" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 2: Xác nhận đặt hàng" vertex="1">
+        <mxCell id="frame2" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 2: Order Confirmation" vertex="1">
           <mxGeometry height="180" width="1380" x="40" y="380" as="geometry" />
         </mxCell>
-        <mxCell id="msg9" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="10 : selectPaymentMethod(COD/PayOS) + confirmOrder()">
+        <mxCell id="msg9" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="">
           <mxGeometry relative="1" width="80" as="geometry">
             <mxPoint x="115" y="420" as="sourcePoint" />
             <mxPoint x="255" y="420" as="targetPoint" />
@@ -157,10 +154,7 @@
             <mxPoint x="445" y="500" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="note-group" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 11px; background-color: rgb(18, 18, 18);&quot;&gt;14 : groupBySeller() - Create separate orders per seller&lt;/span&gt;" vertex="1">
-          <mxGeometry height="30" width="220" x="450" y="520" as="geometry" />
-        </mxCell>
-        <mxCell id="frame3" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 3: Tạo đơn hàng (loop foreach seller)" vertex="1">
+        <mxCell id="frame3" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 3: Create orders (loop for each seller)" vertex="1">
           <mxGeometry height="280" width="1380" x="40" y="580" as="geometry" />
         </mxCell>
         <mxCell id="ctrl-act3" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
@@ -214,7 +208,7 @@
             <mxPoint x="1335" y="805" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="frame4a" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 4a: COD - Hiển thị thành công" vertex="1">
+        <mxCell id="frame4a" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 4a: COD - Successful" vertex="1">
           <mxGeometry height="120" width="1380" x="40" y="880" as="geometry" />
         </mxCell>
         <mxCell id="alt-cod" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#999999;dashed=1;" value="alt [payment_method = COD]" vertex="1">
@@ -232,7 +226,7 @@
             <mxPoint x="115" y="960" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="frame4b" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 4b: PayOS - Chuyển hướng thanh toán" vertex="1">
+        <mxCell id="frame4b" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 4b: PayOS - Payment Redirection" vertex="1">
           <mxGeometry height="180" width="1380" x="40" y="1020" as="geometry" />
         </mxCell>
         <mxCell id="alt-payos" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#999999;dashed=1;" value="alt [payment_method = PayOS]" vertex="1">
@@ -244,20 +238,14 @@
             <mxPoint x="1155" y="1080" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="note-payos" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 11px; background-color: rgb(18, 18, 18);&quot;&gt;25 : createPaymentLink() via PayOS API&lt;/span&gt;" vertex="1">
-          <mxGeometry height="30" width="160" x="1170" y="1095" as="geometry" />
-        </mxCell>
         <mxCell id="msg23" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" value="26 : redirect(PayOS Checkout URL)">
           <mxGeometry relative="1" width="80" as="geometry">
             <mxPoint x="1155" y="1150" as="sourcePoint" />
             <mxPoint x="115" y="1150" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="frame5" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 5: Thông báo cho người bán (async)" vertex="1">
+        <mxCell id="frame5" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=none;strokeColor=#666666;" value="Phase 5: Notify the seller (async)" vertex="1">
           <mxGeometry height="100" width="1380" x="40" y="1220" as="geometry" />
-        </mxCell>
-        <mxCell id="note-notif" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 11px; background-color: rgb(18, 18, 18);&quot;&gt;27 : Notification.create(seller_id, &#39;Bạn có đơn hàng mới #&#39; + orderId)&lt;/span&gt;" vertex="1">
-          <mxGeometry height="30" width="280" x="560" y="1260" as="geometry" />
         </mxCell>
         <mxCell id="Bekr0cM-YlQn5jcja_Dc-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;u&gt;PaymentController&lt;/u&gt;" vertex="1">
           <mxGeometry height="50" width="120" x="1100" y="30" as="geometry" />
