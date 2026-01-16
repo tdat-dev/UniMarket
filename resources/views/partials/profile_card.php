@@ -40,11 +40,11 @@
         <!-- Stats / Actions -->
         <div class="mt-4 md:mt-0 flex items-center gap-6">
             <div class="text-center">
-                <span class="block text-lg font-bold text-gray-800"><?= $orderCount ?></span>
+                <span class="block text-lg font-bold text-gray-800"><?= $orderCount ?? 0 ?></span>
                 <span class="text-xs text-gray-500 uppercase tracking-wide">Đơn hàng</span>
             </div>
             <div class="text-center">
-                <span class="block text-lg font-bold text-gray-800"><?= $reviewCount ?></span>
+                <span class="block text-lg font-bold text-gray-800"><?= $reviewCount ?? 0 ?></span>
                 <span class="text-xs text-gray-500 uppercase tracking-wide">Đánh giá</span>
             </div>
             <div class="text-center">
