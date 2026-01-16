@@ -52,6 +52,9 @@
         </div>
     </div>
 
+    <!-- Zoldify Custom Dialog System -->
+    <script src="/js/zoldify-dialog.js?v=<?= time() ?>"></script>
+
     <!-- Scripts -->
     <?= $scripts ?? '' ?>
 </body>

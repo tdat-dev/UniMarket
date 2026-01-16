@@ -27,7 +27,7 @@ include __DIR__ . '/../partials/header.php';
                 <div class="mt-4 flex gap-3">
                     <button
                         class="text-xs px-3 py-1.5 bg-white border border-gray-200 rounded-md text-gray-600 hover:text-[#2C67C8] hover:border-[#2C67C8] transition-all flex items-center shadow-sm"
-                        onclick="navigator.clipboard.writeText('0355494014').then(() => alert('Đã sao chép số điện thoại!'))">
+                        onclick="navigator.clipboard.writeText('0355494014').then(() => ZDialog.toast('Đã sao chép số điện thoại!', 'success'))">
                         <i class="fa-regular fa-copy mr-1.5"></i> Sao chép
                     </button>
                 </div>

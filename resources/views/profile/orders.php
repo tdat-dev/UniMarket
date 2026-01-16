@@ -1,4 +1,7 @@
-<?php include __DIR__ . '/../partials/head.php'; ?>
+<?php
+use App\Helpers\ImageHelper;
+include __DIR__ . '/../partials/head.php';
+?>
 <?php
 if (!isset($_SESSION['user'])) {
     header('Location: /login');
@@ -46,13 +49,47 @@ if (!isset($_SESSION['user'])) {
             </div>
 
             <!-- Search & Filter -->
-            <div class="p-4 bg-gray-50 border-b border-gray-100 flex flex-wrap gap-4">
+            <div class="p-4 bg-gray-50 border-b border-gray-100 flex flex-wrap gap-4 items-center justify-between">
                 <div class="relative flex-1 min-w-[250px]">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                     <input type="text" placeholder="Tìm đơn hàng..."
                         class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                 </div>
             </div>
+
+            <?php 
+            // Hiển thị thông báo lỗi nếu có
+            $error = $_GET['error'] ?? null;
+            $success = $_GET['success'] ?? null;
+            
+            $errorMessages = [
+                'invalid_order' => 'Đơn hàng không hợp lệ.',
+                'unauthorized' => 'Bạn không có quyền thực hiện thao tác này.',
+                'product_unavailable' => 'Một số sản phẩm đã ngừng bán hoặc không còn tồn tại.',
+                'out_of_stock' => 'Một số sản phẩm đã hết hàng.',
+                'no_items' => 'Không có sản phẩm nào để mua lại.',
+                'cannot_cancel' => 'Không thể hủy đơn hàng ở trạng thái này.'
+            ];
+            
+            $successMessages = [
+                'rebuy' => 'Đã tạo đơn mua lại thành công!',
+                'cancelled' => 'Đã hủy đơn hàng thành công.'
+            ];
+            ?>
+            
+            <?php if ($error && isset($errorMessages[$error])): ?>
+                <div class="mx-4 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+                    <i class="fa-solid fa-circle-exclamation text-red-500"></i>
+                    <span class="text-red-700 text-sm"><?= $errorMessages[$error] ?></span>
+                </div>
+            <?php endif; ?>
+            
+            <?php if ($success && isset($successMessages[$success])): ?>
+                <div class="mx-4 mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+                    <i class="fa-solid fa-circle-check text-green-500"></i>
+                    <span class="text-green-700 text-sm"><?= $successMessages[$success] ?></span>
+                </div>
+            <?php endif; ?>
 
             <!-- Orders List -->
             <div class="divide-y divide-gray-100">
@@ -98,29 +135,7 @@ if (!isset($_SESSION['user'])) {
                                 </div>
                             </div>
 
-                            <div class="flex flex-col gap-3">
-                                <!-- DEBUG: Items count = <?= count($order['items'] ?? []) ?> -->
-                                <?php foreach ($order['items'] ?? [] as $item): ?>
-                                    <div class="flex gap-4">
-                                        <div
-                                            class="w-16 h-16 bg-gray-100 rounded-md flex-shrink-0 overflow-hidden border border-gray-200">
-                                            <img src="/uploads/<?= htmlspecialchars($item['product_image'] ?? 'default.png') ?>"
-                                                class="w-full h-full object-cover">
-                                        </div>
-                                        <div>
-                                            <h4 class="text-sm font-medium text-gray-900">
-                                                <?= htmlspecialchars($item['product_name']) ?>
-                                            </h4>
-                                            <p class="text-xs text-gray-500">x <?= $item['quantity'] ?></p>
-                                            <p class="text-xs font-medium text-gray-700 mt-1">
-                                                <?= number_format($item['price_at_purchase'] ?? 0, 0, ',', '.') ?>đ
-                                            </p>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-
-                            <div class="mt-4 flex flex-wrap justify-end items-center gap-2 border-t pt-4 border-gray-50">
+                            <div class="flex flex-wrap justify-end items-center gap-2">
                                 <?php if ($order['status'] == 'pending' || $order['status'] == 'pending_payment'): ?>
                                     <button type="button" onclick="initiateCancel(<?= $order['id'] ?>)"
                                         class="px-4 py-2 border border-red-500 text-red-600 text-sm font-medium rounded-md hover:bg-red-50 whitespace-nowrap">Hủy

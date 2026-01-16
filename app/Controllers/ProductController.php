@@ -10,7 +10,9 @@ use App\Models\User;
 use App\Models\Category;
 use App\Models\Follow;
 use App\Models\Notification;
+use App\Models\Report;
 use App\Models\UserAddress;
+
 
 /**
  * Product Controller
@@ -512,5 +514,57 @@ class ProductController extends BaseController
     {
         http_response_code(404);
         $this->view('errors/404', ['message' => $message]);
+    }
+
+    /**
+     * Handle report product
+     */
+    public function report(): void
+    {
+        // Check login
+        if (empty($_SESSION['user'])) {
+            $this->redirect('/login');
+            return;
+        }
+
+        $productId = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
+        $reason = $_POST['reason'] ?? '';
+        $description = $_POST['description'] ?? '';
+        $reporterId = $_SESSION['user']['id'];
+
+        if (!$productId || !$reason) {
+            $this->redirectWithParams($_SERVER['HTTP_REFERER'] ?? '/', ['error' => 'missing_data']);
+            return;
+        }
+
+        try {
+            $reportModel = new Report();
+            
+            // Combine reason and description since DB doesn't have description column
+            $fullReason = $reason;
+            if (!empty($description)) {
+                $fullReason .= " (" . $description . ")";
+            }
+
+            $reportModel->create([
+                'product_id' => $productId,
+                'reporter_id' => $reporterId,
+                'reason' => $fullReason,
+                'status' => Report::STATUS_PENDING
+            ]);
+
+            $this->redirectWithParams($_SERVER['HTTP_REFERER'] ?? "/products/$productId", ['success' => 'report_sent']);
+
+        } catch (\Exception $e) {
+            $this->redirectWithParams($_SERVER['HTTP_REFERER'] ?? "/products/$productId", ['error' => 'server_error']);
+        }
+    }
+
+    private function redirectWithParams(string $url, array $params): void
+    {
+        $sep = (strpos($url, '?') !== false) ? '&' : '?';
+        $query = http_build_query($params);
+        header("Location: " . $url . $sep . $query);
+        exit;
     }
 }

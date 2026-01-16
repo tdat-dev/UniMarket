@@ -317,7 +317,8 @@ class CheckoutController extends BaseController
         $createdOrderIds = [];
 
         foreach ($ordersBySeller as $orderData) {
-            $orderStatus = ($paymentMethod === 'payos') ? Order::STATUS_PENDING : Order::STATUS_PENDING;
+            // COD: Đã xác nhận thanh toán tiền mặt | PayOS: Chờ thanh toán online
+            $orderStatus = ($paymentMethod === 'cod') ? Order::STATUS_PAID : Order::STATUS_PENDING;
 
             // Create order
             $orderId = $orderModel->createOrder([

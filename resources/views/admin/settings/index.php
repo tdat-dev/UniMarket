@@ -321,11 +321,22 @@
                                     <i class="fa-solid fa-toggle-on mr-2"></i>TẮT bảo trì
                                 </button>
                             <?php else: ?>
-                                <button type="submit"
-                                    class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                                    onclick="return confirm('Bạn có chắc muốn BẬT chế độ bảo trì? Người dùng sẽ không thể truy cập website!')">
+                                <button type="button" id="enableMaintenanceBtn"
+                                    class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
                                     <i class="fa-solid fa-toggle-off mr-2"></i>BẬT bảo trì
                                 </button>
+                                <script>
+                                    document.getElementById('enableMaintenanceBtn').addEventListener('click', async function () {
+                                        const confirmed = await ZDialog.confirm(
+                                            'Xác nhận bảo trì',
+                                            'Bạn có chắc muốn BẬT chế độ bảo trì? Người dùng sẽ không thể truy cập website!',
+                                            { confirmText: 'BẬT bảo trì', cancelText: 'Hủy' }
+                                        );
+                                        if (confirmed) {
+                                            this.closest('form').submit();
+                                        }
+                                    });
+                                </script>
                             <?php endif; ?>
                         </form>
                     </div>

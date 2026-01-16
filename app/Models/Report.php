@@ -19,7 +19,7 @@ class Report extends BaseModel
     /** @var array<string> */
     protected array $fillable = [
         'product_id',
-        'user_id',
+        'reporter_id',
         'reason',
         'description',
         'status',
@@ -73,7 +73,7 @@ class Report extends BaseModel
                 FROM {$this->table} r
                 JOIN products p ON r.product_id = p.id
                 LEFT JOIN users seller ON p.user_id = seller.id
-                LEFT JOIN users reporter ON r.user_id = reporter.id
+                LEFT JOIN users reporter ON r.reporter_id = reporter.id
                 LEFT JOIN categories c ON p.category_id = c.id
                 WHERE r.id = ?";
 

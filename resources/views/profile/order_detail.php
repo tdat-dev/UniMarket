@@ -1,4 +1,7 @@
-<?php include __DIR__ . '/../partials/head.php'; ?>
+<?php
+use App\Helpers\ImageHelper;
+include __DIR__ . '/../partials/head.php';
+?>
 <?php include __DIR__ . '/../partials/header.php'; ?>
 
 <main class="bg-gray-50 min-h-screen pb-20 md:py-8">
@@ -43,7 +46,7 @@
                             <div class="p-4 flex gap-4 hover:bg-gray-50 transition">
                                 <div
                                     class="w-20 h-20 bg-gray-100 rounded-md flex-shrink-0 overflow-hidden border border-gray-200">
-                                    <img src="/uploads/<?= htmlspecialchars($item['product_image'] ?? 'default.png') ?>"
+                                    <img src="<?= ImageHelper::url('uploads/' . ($item['product_image'] ?? '')) ?>"
                                         class="w-full h-full object-cover">
                                 </div>
                                 <div class="flex-1">

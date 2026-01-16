@@ -1,31 +1,11 @@
-<?php
-// Query để lấy số liệu thống kê động
-use App\Models\Order;
-use App\Models\Review;
-
-$userId = $_SESSION['user']['id'] ?? 0;
-$orderCount = 0;
-$reviewCount = 0;
-
-if ($userId > 0) {
-    // Đếm số đơn hàng (buyer)
-    $orderModel = new Order();
-    $orders = $orderModel->getByBuyerId((int)$userId);
-    $orderCount = count($orders);
-    
-    // Đếm số đánh giá đã viết
-    $reviewModel = new Review();
-    $reviews = $reviewModel->getByUserId((int)$userId);
-    $reviewCount = count($reviews);
-}
-?>
+<?php use App\Helpers\ImageHelper; ?>
 <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 relative z-10">
     <div class="px-6 py-6 md:flex md:items-center md:justify-between">
         <div class="flex items-center gap-4">
             <div class="relative flex-shrink-0">
                 <?php
                 $avatarUrl = !empty($_SESSION['user']['avatar'])
-                    ? '/uploads/avatars/' . $_SESSION['user']['avatar']
+                    ? ImageHelper::url('uploads/avatars/' . $_SESSION['user']['avatar'])
                     : 'https://ui-avatars.com/api/?name=' . urlencode($_SESSION['user']['full_name']) . '&background=random&size=128';
                 ?>
                 <img id="avatar-preview" class="h-32 w-32 rounded-full ring-4 ring-white bg-white object-cover"
@@ -47,8 +27,8 @@ if ($userId > 0) {
             <div class="mb-2 min-w-0 flex-1">
                 <h1 class="text-2xl font-bold text-gray-900 truncate flex items-center gap-2">
                     <?= htmlspecialchars($_SESSION['user']['full_name']) ?>
-                    <button type="button" onclick="document.getElementById('profile-fullname').focus()" 
-                            class="text-gray-400 hover:text-blue-600 focus:outline-none" title="Sửa tên">
+                    <button type="button" onclick="document.getElementById('profile-fullname').focus()"
+                        class="text-gray-400 hover:text-blue-600 focus:outline-none" title="Sửa tên">
                         <i class="fa-solid fa-pen-to-square text-lg"></i>
                     </button>
                 </h1>
@@ -60,16 +40,17 @@ if ($userId > 0) {
         <!-- Stats / Actions -->
         <div class="mt-4 md:mt-0 flex items-center gap-6">
             <div class="text-center">
-                <span class="block text-lg font-bold text-gray-800"><?= $orderCount ?></span>
+                <span class="block text-lg font-bold text-gray-800"><?= $orderCount ?? 0 ?></span>
                 <span class="text-xs text-gray-500 uppercase tracking-wide">Đơn hàng</span>
             </div>
             <div class="text-center">
-                <span class="block text-lg font-bold text-gray-800"><?= $reviewCount ?></span>
+                <span class="block text-lg font-bold text-gray-800"><?= $reviewCount ?? 0 ?></span>
                 <span class="text-xs text-gray-500 uppercase tracking-wide">Đánh giá</span>
             </div>
             <div class="text-center">
-                <span
-                    class="block text-lg font-bold text-gray-800"><?= number_format($_SESSION['user']['balance'] ?? 0, 0, ',', '.') ?>đ</span>
+                <span class="block text-lg font-bold text-gray-800">
+                    <?= number_format($_SESSION['user']['balance'] ?? 0, 0, ',', '.') ?>đ
+                </span>
                 <span class="text-xs text-gray-500 uppercase tracking-wide">Số dư</span>
             </div>
         </div>
@@ -106,7 +87,7 @@ if ($userId > 0) {
                 class="<?= ($activeTab ?? '') == 'change_password' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' ?> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
                 <i class="fa-solid fa-key"></i> Đổi mật khẩu
             </a>
-            
+
         </nav>
     </div>
 </div>

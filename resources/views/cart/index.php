@@ -1,5 +1,6 @@
 <?php
 use App\Helpers\SlugHelper;
+use App\Helpers\ImageHelper;
 
 include __DIR__ . '/../partials/head.php';
 include __DIR__ . '/../partials/header.php';
@@ -60,7 +61,7 @@ include __DIR__ . '/../partials/header.php';
                                 </div>
                                 <div class="col-span-5 flex gap-3">
                                     <div class="w-20 h-20 border rounded-sm overflow-hidden flex-shrink-0">
-                                        <img src="/uploads/<?= htmlspecialchars($item['image'] ?? '') ?>"
+                                        <img src="<?= ImageHelper::url('uploads/' . ($item['image'] ?? '')) ?>"
                                             class="w-full h-full object-cover">
                                     </div>
                                     <div class="flex flex-col justify-center">
@@ -201,8 +202,12 @@ include __DIR__ . '/../partials/header.php';
                 /**
                  * Xóa sản phẩm khỏi giỏ hàng
                  */
-                function removeFromCart(productId) {
-                    if (!confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?')) {
+                /**
+                 * Xóa sản phẩm khỏi giỏ hàng
+                 */
+                async function removeFromCart(productId) {
+                    const confirmed = await ZDialog.confirm('Xác nhận', 'Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?');
+                    if (!confirmed) {
                         return;
                     }
 

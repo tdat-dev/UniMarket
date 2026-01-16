@@ -1,4 +1,7 @@
-<?php include __DIR__ . '/../partials/head.php'; ?>
+<?php
+use App\Helpers\ImageHelper;
+include __DIR__ . '/../partials/head.php';
+?>
 <?php
 // Fake seller check 
 if (!isset($_SESSION['user'])) {
@@ -108,24 +111,7 @@ if (!isset($_SESSION['user'])) {
                                 </div>
                             </div>
 
-                            <div class="flex flex-col gap-3">
-                                <?php foreach ($order['items'] ?? [] as $item): ?>
-                                    <div class="flex gap-4">
-                                        <div class="w-12 h-12 bg-gray-200 rounded-md flex-shrink-0 overflow-hidden">
-                                            <img src="/uploads/<?= htmlspecialchars($item['product_image'] ?? 'default.png') ?>"
-                                                class="w-full h-full object-cover">
-                                        </div>
-                                        <div>
-                                            <h4 class="text-sm font-medium text-gray-900">
-                                                <?= htmlspecialchars($item['product_name']) ?>
-                                            </h4>
-                                            <p class="text-xs text-gray-500">x <?= $item['quantity'] ?></p>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-
-                            <div class="mt-4 flex justify-end gap-3">
+                            <div class="flex justify-end gap-3">
                                 <!-- Status Actions -->
                                 <form action="/shop/orders/update" method="POST" class="inline-flex gap-2">
                                     <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
