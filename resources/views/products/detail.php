@@ -177,6 +177,13 @@ include __DIR__ . '/../partials/header.php';
                             <i class="fa-solid fa-globe text-[#2C67C8] text-base"></i>
                             <span>Nền tảng mua bán đồ cũ vì môi trường</span>
                         </div>
+                        
+                        <div class="col-span-2 pt-2">
+                             <button onclick="document.getElementById('reportModal').classList.remove('hidden')" class="flex items-center gap-4 hover:text-red-500 transition-colors">
+                                <i class="fa-solid fa-flag text-base"></i>
+                                <span>Báo cáo sản phẩm</span>
+                            </button>
+                        </div>
                     </div>
 
                 </div>
@@ -291,10 +298,67 @@ include __DIR__ . '/../partials/header.php';
     </div>
 </main>
 
+<!-- Report Modal -->
+<div id="reportModal" class="fixed inset-0 z-50 hidden bg-black/50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+        <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+            <h3 class="font-medium text-gray-800">Báo cáo sản phẩm</h3>
+            <button onclick="document.getElementById('reportModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+        <form action="/report/product" method="POST" class="p-6">
+            <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Lý do báo cáo</label>
+                    <select name="reason" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm p-2 border">
+                        <option value="">-- Chọn lý do --</option>
+                        <option value="Hàng giả/Hàng nhái">Hàng giả/Hàng nhái</option>
+                        <option value="Sản phẩm bị cấm">Sản phẩm bị cấm</option>
+                        <option value="Lừa đảo">Lừa đảo</option>
+                        <option value="Spam/Trùng lặp">Spam/Trùng lặp</option>
+                        <option value="Sai danh mục">Sai danh mục</option>
+                        <option value="Hình ảnh phản cảm">Hình ảnh phản cảm</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả chi tiết</label>
+                    <textarea name="description" rows="4" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm p-2 border" placeholder="Vui lòng cung cấp thêm thông tin..."></textarea>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3">
+                <button type="button" onclick="document.getElementById('reportModal').classList.add('hidden')" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 text-sm font-medium hover:bg-gray-50">
+                    Hủy bỏ
+                </button>
+                <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700">
+                    Gửi báo cáo
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     const isLoggedIn = <?= isset($_SESSION['user']['id']) ? 'true' : 'false' ?>;
 
     document.addEventListener('DOMContentLoaded', function () {
+        // Handle report messages
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('success') === 'report_sent') {
+            alert('Cảm ơn bạn! Báo cáo vi phạm đã được gửi và sẽ được xem xét.');
+            const newUrl = window.location.pathname;
+            window.history.replaceState(null, null, newUrl);
+        } else if (urlParams.get('error') === 'missing_data') {
+            alert('Vui lòng chọn lý do báo cáo.');
+        } else if (urlParams.get('error') === 'server_error') {
+            alert('Có lỗi xảy ra, vui lòng thử lại sau.');
+        }
+
         const btnDecrease = document.getElementById('btn-decrease');
         const btnIncrease = document.getElementById('btn-increase');
         const inputQuantity = document.getElementById('input-quantity');

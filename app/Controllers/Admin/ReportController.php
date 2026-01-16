@@ -23,7 +23,7 @@ class ReportController extends AdminBaseController
     // GET: /admin/reports
     public function index()
     {
-        $reports = $this->reportModel->getAll();
+        $reports = $this->reportModel->getAllWithProduct();
         return $this->view('reports/index', [
             'title' => 'Báo Cáo Vi Phạm',
             'reports' => $reports
@@ -38,7 +38,7 @@ class ReportController extends AdminBaseController
             return $this->redirect('/admin/reports');
         }
 
-        $report = $this->reportModel->findById($id);
+        $report = $this->reportModel->findWithDetails((int)$id);
         return $this->view('reports/show', [
             'title' => 'Chi Tiết Báo Cáo',
             'report' => $report
@@ -48,8 +48,8 @@ class ReportController extends AdminBaseController
     // POST: /admin/reports/hide-product
     public function hideProduct()
     {
-        $reportId = $_POST['report_id'];
-        $productId = $_POST['product_id'];
+        $reportId = (int)$_POST['report_id'];
+        $productId = (int)$_POST['product_id'];
 
         $this->productModel->hideProduct($productId);
         $this->reportModel->markResolved($reportId);
