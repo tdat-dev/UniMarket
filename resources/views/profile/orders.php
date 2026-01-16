@@ -134,27 +134,6 @@ if (!isset($_SESSION['user'])) {
                                 </div>
                             </div>
 
-                            <div class="flex flex-col gap-3">
-                                <!-- DEBUG: Items count = <?= count($order['items'] ?? []) ?> -->
-                                <?php foreach ($order['items'] ?? [] as $item): ?>
-                                    <div class="flex gap-4">
-                                        <div
-                                            class="w-16 h-16 bg-gray-100 rounded-md flex-shrink-0 overflow-hidden border border-gray-200">
-                                            <img src="<?= ImageHelper::url('uploads/' . ($item['product_image'] ?? '')) ?>"
-                                                class="w-full h-full object-cover">
-                                        </div>
-                                        <div>
-                                            <h4 class="text-sm font-medium text-gray-900">
-                                                <?= htmlspecialchars($item['product_name']) ?>
-                                            </h4>
-                                            <p class="text-xs text-gray-500">x <?= $item['quantity'] ?></p>
-                                            <p class="text-xs font-medium text-gray-700 mt-1">
-                                                <?= number_format($item['price_at_purchase'] ?? 0, 0, ',', '.') ?>đ
-                                            </p>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
 
                             <div class="mt-4 flex flex-wrap justify-end items-center gap-2 border-t pt-4 border-gray-50">
                                 <?php if ($order['status'] == 'pending' || $order['status'] == 'pending_payment'): ?>
