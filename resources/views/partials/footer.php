@@ -98,6 +98,9 @@
 <!-- Chat Socket Client -->
 <script src="/js/chat-socket.js?v=<?= time() ?>"></script>
 
+<!-- Notification Toast (popup thông báo tin nhắn mới) -->
+<script src="/js/notification-toast.js?v=<?= time() ?>"></script>
+
 <!-- Khởi tạo kết nối nếu user đã đăng nhập -->
 <?php if (isset($_SESSION['user']['id'])): ?>
     <script>

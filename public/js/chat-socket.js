@@ -263,10 +263,21 @@ class ChatSocket {
         // Nếu đang ở trang chat với người gửi -> đánh dấu đã đọc
         if (this.currentChatUserId == message.sender_id) {
             this.markAsRead([message.id]);
+        } else {
+            // Không đang chat với người gửi -> hiển thị notification toast
+            if (window.notificationToast) {
+                window.notificationToast.show({
+                    senderId: message.sender_id,
+                    senderName: message.sender_name || 'Người dùng',
+                    senderAvatar: message.sender_avatar || null,
+                    message: message.content || '[File đính kèm]',
+                    messageId: message.id
+                });
+            } else {
+                // Fallback: phát âm thanh nếu không có toast
+                this._playNotificationSound();
+            }
         }
-
-        // Phát âm thanh thông báo
-        this._playNotificationSound();
     }
 
     /**
