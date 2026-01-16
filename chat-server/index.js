@@ -135,6 +135,15 @@ io.on('connection', (socket) => {
     });
 
     /**
+     * Event: get_online_users
+     * Client yêu cầu lấy lại danh sách user online
+     */
+    socket.on('get_online_users', () => {
+        logger.debug(`[GET_ONLINE] Socket ${socket.id} requested online users list`);
+        socket.emit('online_users', Array.from(onlineUsers.keys()));
+    });
+
+    /**
      * Event: send_message
      * Khi user gửi tin nhắn (có thể kèm attachment)
      */
