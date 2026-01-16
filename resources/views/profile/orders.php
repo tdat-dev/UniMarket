@@ -49,11 +49,12 @@ if (!isset($_SESSION['user'])) {
             </div>
 
             <!-- Search & Filter -->
-            <div class="p-4 bg-gray-50 border-b border-gray-100 flex flex-wrap gap-4">
+            <div class="p-4 bg-gray-50 border-b border-gray-100 flex flex-wrap gap-4 items-center justify-between">
                 <div class="relative flex-1 min-w-[250px]">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                     <input type="text" placeholder="Tìm đơn hàng..."
                         class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                </div>
             </div>
 
             <?php 
@@ -134,8 +135,7 @@ if (!isset($_SESSION['user'])) {
                                 </div>
                             </div>
 
-
-                            <div class="mt-4 flex flex-wrap justify-end items-center gap-2 border-t pt-4 border-gray-50">
+                            <div class="flex flex-wrap justify-end items-center gap-2">
                                 <?php if ($order['status'] == 'pending' || $order['status'] == 'pending_payment'): ?>
                                     <button type="button" onclick="initiateCancel(<?= $order['id'] ?>)"
                                         class="px-4 py-2 border border-red-500 text-red-600 text-sm font-medium rounded-md hover:bg-red-50 whitespace-nowrap">Hủy
