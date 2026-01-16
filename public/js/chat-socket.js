@@ -13,6 +13,39 @@ class ChatSocket {
         this.typingTimeout = null;
         this.onlineUserIds = []; // Danh sách user online
         this.lastSeenMap = new Map(); // Lưu last_seen của từng user khi họ offline
+        
+        // Load lastSeenMap từ localStorage (persist giữa các lần navigate)
+        this._loadLastSeenFromStorage();
+    }
+    
+    /**
+     * Load lastSeenMap từ localStorage
+     */
+    _loadLastSeenFromStorage() {
+        try {
+            const stored = localStorage.getItem('chat_lastSeenMap');
+            if (stored) {
+                const data = JSON.parse(stored);
+                // Chuyển object trờ lại Map
+                this.lastSeenMap = new Map(Object.entries(data));
+                console.log('[ChatSocket] Loaded lastSeenMap from storage:', this.lastSeenMap.size, 'users');
+            }
+        } catch (e) {
+            console.warn('[ChatSocket] Failed to load lastSeenMap:', e);
+        }
+    }
+    
+    /**
+     * Save lastSeenMap vào localStorage
+     */
+    _saveLastSeenToStorage() {
+        try {
+            // Chuyển Map thành object để lưu JSON
+            const data = Object.fromEntries(this.lastSeenMap);
+            localStorage.setItem('chat_lastSeenMap', JSON.stringify(data));
+        } catch (e) {
+            console.warn('[ChatSocket] Failed to save lastSeenMap:', e);
+        }
     }
 
     /**
@@ -118,6 +151,8 @@ class ChatSocket {
                 // Lưu last_seen để hiển thị "X phút trước"
                 if (data.last_seen) {
                     this.lastSeenMap.set(userId, data.last_seen);
+                    // Lưu vào localStorage để persist giữa các lần navigate
+                    this._saveLastSeenToStorage();
                 }
                 this._updateOnlineStatus(this.onlineUserIds);
              }
