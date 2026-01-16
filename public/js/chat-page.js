@@ -292,80 +292,32 @@
     }
     
 // ============ ONLINE STATUS ============
-    // ============ ONLINE STATUS ============
     function setupOnlineStatus() {
-        // Retry mechanism: đợi socket sẵn sàng
-        const maxRetries = 10;
-        let retryCount = 0;
+        // Cập nhật ngay lập tức từ chatSocket nếu có data
+        syncOnlineUsers();
         
-        function trySetup() {
-            // Kiểm tra socket đã sẵn sàng chưa
-            if (!window.chatSocket || !window.chatSocket.socket) {
-                if (retryCount < maxRetries) {
-                    retryCount++;
-                    console.log('[OnlineStatus] Waiting for socket... retry', retryCount);
-                    setTimeout(trySetup, 500);
-                }
-                return;
-            }
+        // Polling: Kiểm tra và cập nhật mỗi 1 giây
+        // Lý do dùng polling: chat-socket.js đã lắng nghe socket events và cập nhật onlineUserIds
+        // Ta chỉ cần đọc từ đó thay vì đăng ký thêm listeners (gây conflict)
+        setInterval(() => {
+            syncOnlineUsers();
+        }, 1000);
+    }
+    
+    /**
+     * Đồng bộ danh sách online từ chatSocket và cập nhật UI
+     */
+    function syncOnlineUsers() {
+        if (window.chatSocket && window.chatSocket.onlineUserIds) {
+            const newOnlineList = window.chatSocket.onlineUserIds;
             
-            const socket = window.chatSocket.socket;
-            
-            // Lấy data từ chatSocket nếu đã có
-            if (window.chatSocket.getOnlineUsers) {
-                const currentOnline = window.chatSocket.getOnlineUsers();
-                if (currentOnline && currentOnline.length > 0) {
-                    console.log('[OnlineStatus] Got existing online users:', currentOnline);
-                    onlineUsersList = currentOnline.map(id => id.toString());
-                    updatePartnerOnlineStatus();
-                }
-            }
-            
-            // Lắng nghe danh sách user online
-            socket.on('online_users', (userIds) => {
-                console.log('[OnlineStatus] Received online_users:', userIds);
-                onlineUsersList = userIds.map(id => id.toString());
+            // Chỉ update UI nếu danh sách thay đổi
+            if (JSON.stringify(newOnlineList) !== JSON.stringify(onlineUsersList)) {
+                console.log('[OnlineStatus] Synced online users:', newOnlineList);
+                onlineUsersList = [...newOnlineList];
                 updatePartnerOnlineStatus();
-            });
-            
-            // Lắng nghe khi user online
-            socket.on('user_online', (data) => {
-                console.log('[OnlineStatus] User online:', data);
-                if (data.user_id && !onlineUsersList.includes(data.user_id.toString())) {
-                    onlineUsersList.push(data.user_id.toString());
-                }
-                if (data.user_id == activePartnerId) {
-                    updatePartnerOnlineStatus();
-                }
-            });
-            
-            // Lắng nghe khi user offline
-            socket.on('user_offline', (data) => {
-                console.log('[OnlineStatus] User offline:', data);
-                onlineUsersList = onlineUsersList.filter(id => id != data.user_id?.toString());
-                if (data.user_id == activePartnerId) {
-                    updatePartnerOnlineStatus(data.last_seen);
-                }
-            });
-            
-            // Nếu socket đã connected, request lại danh sách online users
-            if (socket.connected) {
-                console.log('[OnlineStatus] Socket already connected, requesting online users...');
-                socket.emit('get_online_users');
             }
-            
-            // Khi socket connect/reconnect, request lại
-            socket.on('connect', () => {
-                console.log('[OnlineStatus] Socket connected, requesting online users...');
-                socket.emit('get_online_users');
-            });
         }
-        
-        // Bắt đầu setup
-        trySetup();
-        
-        // Fallback: Hiển thị từ last_seen ngay lập tức
-        updatePartnerOnlineStatus();
     }
 
 /**
