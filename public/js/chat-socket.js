@@ -12,6 +12,7 @@ class ChatSocket {
         this.messageCallbacks = [];
         this.typingTimeout = null;
         this.onlineUserIds = []; // Danh sách user online
+        this.lastSeenMap = new Map(); // Lưu last_seen của từng user khi họ offline
     }
 
     /**
@@ -112,10 +113,22 @@ class ChatSocket {
         // User offline
         this.socket.on('user_offline', (data) => {
              if (data.user_id) {
-                this.onlineUserIds = this.onlineUserIds.filter(id => id !== data.user_id.toString());
+                const userId = data.user_id.toString();
+                this.onlineUserIds = this.onlineUserIds.filter(id => id !== userId);
+                // Lưu last_seen để hiển thị "X phút trước"
+                if (data.last_seen) {
+                    this.lastSeenMap.set(userId, data.last_seen);
+                }
                 this._updateOnlineStatus(this.onlineUserIds);
              }
         });
+        
+        // Cập nhật thời gian offline mỗi phút (realtime counting)
+        setInterval(() => {
+            if (this.onlineUserIds) {
+                this._updateOnlineStatus(this.onlineUserIds);
+            }
+        }, 60000); // Mỗi 60 giây
 
         // User đang nhập
         this.socket.on('user_typing', (data) => {
@@ -250,10 +263,21 @@ class ChatSocket {
         // Nếu đang ở trang chat với người gửi -> đánh dấu đã đọc
         if (this.currentChatUserId == message.sender_id) {
             this.markAsRead([message.id]);
+        } else {
+            // Không đang chat với người gửi -> hiển thị notification toast
+            if (window.notificationToast) {
+                window.notificationToast.show({
+                    senderId: message.sender_id,
+                    senderName: message.sender_name || 'Người dùng',
+                    senderAvatar: message.sender_avatar || null,
+                    message: message.content || '[File đính kèm]',
+                    messageId: message.id
+                });
+            } else {
+                // Fallback: phát âm thanh nếu không có toast
+                this._playNotificationSound();
+            }
         }
-
-        // Phát âm thanh thông báo
-        this._playNotificationSound();
     }
 
     /**
@@ -267,21 +291,74 @@ class ChatSocket {
      * Cập nhật trạng thái online
      */
     _updateOnlineStatus(onlineUserIds) {
-        // Cập nhật UI hiển thị trạng thái online
-        document.querySelectorAll('[data-user-id]').forEach(el => {
-            const userId = el.getAttribute('data-user-id');
-            const statusDot = el.querySelector('.online-status');
-            
-            if (statusDot) {
-                if (onlineUserIds.includes(userId)) {
-                    statusDot.classList.add('online');
-                    statusDot.classList.remove('offline');
-                } else {
-                    statusDot.classList.add('offline');
-                    statusDot.classList.remove('online');
-                }
+        // Cập nhật sidebar: các .partner-status-dot có data-partner-id
+        document.querySelectorAll('.partner-status-dot[data-partner-id]').forEach(dot => {
+            const partnerId = dot.getAttribute('data-partner-id');
+            if (onlineUserIds.includes(partnerId)) {
+                dot.classList.remove('bg-gray-400');
+                dot.classList.add('bg-green-500');
+            } else {
+                dot.classList.remove('bg-green-500');
+                dot.classList.add('bg-gray-400');
             }
         });
+        
+        // Cập nhật chat header: .status-dot và .status-text
+        const chatContainer = document.getElementById('chat-container');
+        if (!chatContainer) return;
+        
+        const partnerId = chatContainer.dataset.partnerId;
+        if (!partnerId) return;
+        
+        const isOnline = onlineUserIds.includes(partnerId);
+        const statusDot = document.querySelector('.status-dot');
+        const statusText = document.querySelector('.status-text');
+        
+        if (statusDot) {
+            if (isOnline) {
+                statusDot.className = 'status-dot absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white';
+            } else {
+                statusDot.className = 'status-dot absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-gray-400 ring-2 ring-white';
+            }
+        }
+        
+        if (statusText) {
+            if (isOnline) {
+                statusText.className = 'status-text text-xs text-green-600 font-medium flex items-center gap-1';
+                statusText.textContent = 'Đang hoạt động';
+            } else {
+                statusText.className = 'status-text text-xs text-gray-500 font-medium flex items-center gap-1';
+                // Ưu tiên lấy last_seen từ lastSeenMap (realtime khi user vừa offline)
+                // Fallback về data attribute (load lúc ban đầu từ PHP)
+                let lastSeen = this.lastSeenMap.get(partnerId);
+                if (!lastSeen) {
+                    const lastSeenEl = document.querySelector('[data-partner-last-seen]');
+                    lastSeen = lastSeenEl?.dataset.partnerLastSeen;
+                }
+                statusText.textContent = this._formatLastSeen(lastSeen);
+            }
+        }
+    }
+    
+    /**
+     * Format thời gian "X phút/giờ/ngày trước"
+     */
+    _formatLastSeen(dateString) {
+        // Nếu không có dateString, mặc định hiển thị "Vừa mới truy cập"
+        if (!dateString) return 'Vừa mới truy cập';
+        
+        const lastSeen = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - lastSeen;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+        
+        if (diffMins < 1) return 'Vừa mới truy cập';
+        if (diffMins < 60) return `Hoạt động ${diffMins} phút trước`;
+        if (diffHours < 24) return `Hoạt động ${diffHours} giờ trước`;
+        if (diffDays < 7) return `Hoạt động ${diffDays} ngày trước`;
+        return `Hoạt động ${lastSeen.toLocaleDateString('vi-VN')}`;
     }
 
     /**

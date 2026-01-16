@@ -157,7 +157,14 @@ io.on('connection', (socket) => {
         }
 
         try {
-            // 1. Lưu tin nhắn vào Database
+            // 1. Lấy thông tin sender để gửi kèm notification
+            const [senderRows] = await dbPool.execute(
+                'SELECT full_name, avatar FROM users WHERE id = ?',
+                [sender_id]
+            );
+            const senderInfo = senderRows[0] || { full_name: 'Người dùng', avatar: null };
+            
+            // 2. Lưu tin nhắn vào Database
             const messageContent = content || (attachment ? '[File đính kèm]' : '');
             const hasAttachment = attachment ? 1 : 0;
             
@@ -169,7 +176,7 @@ io.on('connection', (socket) => {
             const messageId = result.insertId;
             const timestamp = new Date().toISOString();
 
-            // 2. Nếu có attachment, lưu vào bảng message_attachments
+            // 3. Nếu có attachment, lưu vào bảng message_attachments
             if (attachment) {
                 await dbPool.execute(
                     'INSERT INTO message_attachments (message_id, file_name, file_path, file_type, file_size) VALUES (?, ?, ?, ?, ?)',
@@ -177,10 +184,12 @@ io.on('connection', (socket) => {
                 );
             }
 
-            // 3. Tạo object tin nhắn để gửi đi
+            // 4. Tạo object tin nhắn để gửi đi (bao gồm sender info cho notification)
             const messageData = {
                 id: messageId,
                 sender_id: sender_id,
+                sender_name: senderInfo.full_name,
+                sender_avatar: senderInfo.avatar,
                 receiver_id: receiver_id,
                 content: messageContent,
                 is_read: false,
@@ -189,10 +198,10 @@ io.on('connection', (socket) => {
                 created_at: timestamp
             };
 
-            // 4. Gửi tin nhắn đến người nhận (nếu online)
+            // 5. Gửi tin nhắn đến người nhận (nếu online)
             io.to(`user_${receiver_id}`).emit('new_message', messageData);
             
-            // 5. Gửi xác nhận lại cho người gửi
+            // 6. Gửi xác nhận lại cho người gửi
             socket.emit('message_sent', messageData);
 
             const logContent = content ? content.substring(0, 30) : '[Attachment]';
