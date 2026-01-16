@@ -59,12 +59,20 @@
             if (window.chatSocket && window.chatSocket.isConnected) {
                 window.chatSocket.sendMessage(activePartnerId, content);
                 
-                // Optimistic update - thêm vào UI ngay
-                appendMessage({
+                // Tạo message object đầy đủ cho optimistic update
+                const optimisticMessage = {
                     content: content,
                     sender_id: currentUserId,
+                    receiver_id: activePartnerId, // QUAN TRỌNG: thêm receiver_id!
                     created_at: new Date().toISOString()
-                }, true);
+                };
+                
+                // Optimistic update - thêm vào UI ngay
+                appendMessage(optimisticMessage, true);
+                
+                // Cập nhật sidebar ngay lập tức (optimistic)
+                updateSidebarWithNewMessage(optimisticMessage, 'sent');
+                console.log('[ChatPage] Optimistic sidebar update for:', activePartnerId);
                 
                 // Clear input
                 messageInput.value = '';
@@ -214,11 +222,98 @@
     
     // ============ NHẬN TIN NHẮN MỚI ============
     function handleNewMessage(message, type) {
-        console.log('[ChatPage] New message:', message, type);
+        console.log('[ChatPage] New message callback:', message, type);
         
+        // Với tin nhắn 'sent': đã được optimistic update xử lý ở form submit
+        // Chỉ cập nhật sidebar cho tin nhắn 'received' (từ người khác)
+        if (type === 'received') {
+            updateSidebarWithNewMessage(message, type);
+        }
+        
+        // Append message vào chat area
         if (message.sender_id == activePartnerId || message.receiver_id == activePartnerId) {
-            if (type === 'sent') return; // Đã append rồi
+            if (type === 'sent') return; // Đã append rồi qua optimistic update
             appendMessage(message, false);
+        }
+    }
+    
+    /**
+     * Cập nhật sidebar khi có tin nhắn mới
+     * - Di chuyển conversation lên đầu
+     * - Cập nhật preview tin nhắn
+     * - Cập nhật thời gian
+     */
+    function updateSidebarWithNewMessage(message, type) {
+        const partnerId = type === 'sent' ? message.receiver_id : message.sender_id;
+        const sidebar = document.getElementById('chat-sidebar');
+        if (!sidebar) {
+            console.log('[Sidebar] Sidebar not found');
+            return;
+        }
+        
+        const conversationList = sidebar.querySelector('.overflow-y-auto');
+        if (!conversationList) {
+            console.log('[Sidebar] Conversation list not found');
+            return;
+        }
+        
+        // Tìm conversation hiện có - dùng class chat-conversation-link để tìm chính xác hơn
+        // Tìm tất cả link rồi lọc theo partner_id trong data attribute hoặc href
+        let existingLink = null;
+        const allLinks = conversationList.querySelectorAll('a.chat-conversation-link');
+        allLinks.forEach(link => {
+            if (link.getAttribute('href') === `/chat?user_id=${partnerId}`) {
+                existingLink = link;
+            }
+        });
+        
+        console.log('[Sidebar] Looking for partner:', partnerId, 'Found:', !!existingLink);
+        
+        // Format thời gian
+        const now = new Date();
+        const timeStr = now.getHours().toString().padStart(2, '0') + ':' + 
+                        now.getMinutes().toString().padStart(2, '0');
+        
+        // Nội dung preview
+        const previewContent = type === 'sent' ? `Bạn: ${message.content}` : message.content;
+        const truncatedContent = previewContent.length > 30 ? previewContent.substring(0, 30) + '...' : previewContent;
+        
+        if (existingLink) {
+            // Tìm span thời gian - nằm trong div có class text-[10px] và text-gray-400
+            const timeEl = existingLink.querySelector('span.text-\\[10px\\]');
+            // Fallback: tìm span có pattern HH:MM
+            let timeElFallback = null;
+            if (!timeEl) {
+                existingLink.querySelectorAll('span').forEach(span => {
+                    if (/^\d{2}:\d{2}$/.test(span.textContent.trim())) {
+                        timeElFallback = span;
+                    }
+                });
+            }
+            
+            // Tìm preview text - là thẻ <p> trong conversation item
+            const previewEl = existingLink.querySelector('p');
+            
+            const actualTimeEl = timeEl || timeElFallback;
+            console.log('[Sidebar] TimeEl found:', !!actualTimeEl, 'PreviewEl found:', !!previewEl);
+            
+            if (actualTimeEl) actualTimeEl.textContent = timeStr;
+            if (previewEl) {
+                previewEl.textContent = truncatedContent;
+                // Highlight nếu là tin nhắn nhận (chưa đọc) và không phải conversation đang active
+                if (type !== 'sent' && partnerId != activePartnerId) {
+                    previewEl.classList.add('font-bold');
+                } else {
+                    // Xóa bold nếu là tin mình gửi hoặc đang active conversation này
+                    previewEl.classList.remove('font-bold');
+                }
+            }
+            
+            // Di chuyển lên đầu danh sách
+            conversationList.insertBefore(existingLink, conversationList.firstChild);
+            console.log('[Sidebar] Moved to top, updated preview:', truncatedContent);
+        } else {
+            console.log('[Sidebar] Conversation not found, might need page reload for new conversation');
         }
     }
     
