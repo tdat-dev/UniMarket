@@ -80,7 +80,7 @@ include __DIR__ . '/../partials/header.php';
         <div class="bg-white rounded-sm shadow-sm p-5">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-[#2C67C8] font-medium uppercase text-base">TÌM KIẾM HÀNG ĐẦU</h2>
-                <a href="#" class="text-[#2C67C8] text-sm flex items-center gap-1">
+                <a href="/products" class="text-[#2C67C8] text-sm flex items-center gap-1">
                     Xem Tất Cả <i class="fa-solid fa-chevron-right text-xs"></i>
                 </a>
             </div>
