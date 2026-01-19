@@ -336,7 +336,7 @@ class ShopController extends BaseController
     {
         $user = $this->requireAuth();
         $userId = (int) $user['id'];
-        $orderId = (int) $this->input('id', 0);
+        $orderId = (int) $this->query('id', 0);
 
         if ($orderId <= 0) {
             $this->redirect('/shop/orders');
