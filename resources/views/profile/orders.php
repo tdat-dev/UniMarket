@@ -136,6 +136,40 @@ if (!isset($_SESSION['user'])) {
                                 </div>
                             </div>
 
+                            <!-- Product Images -->
+                            <?php if (!empty($order['items'])): ?>
+                                <div class="flex items-center gap-3 mb-4">
+                                    <?php
+                                    $displayItems = array_slice($order['items'], 0, 3);
+                                    $remainingCount = count($order['items']) - 3;
+                                    ?>
+                                    <?php foreach ($displayItems as $item): ?>
+                                        <a href="/products/<?= $item['product_id'] ?>" class="block">
+                                            <img src="<?= ImageHelper::url($item['product_image'] ?? 'default_product.png') ?>"
+                                                alt="<?= htmlspecialchars($item['product_name'] ?? 'Sản phẩm') ?>"
+                                                class="w-16 h-16 object-cover rounded-lg border border-gray-200 hover:border-blue-400 transition">
+                                        </a>
+                                    <?php endforeach; ?>
+                                    <?php if ($remainingCount > 0): ?>
+                                        <a href="/profile/orders/detail?id=<?= $order['id'] ?>"
+                                            class="w-16 h-16 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center text-gray-500 text-sm font-medium hover:bg-gray-100 transition">
+                                            +<?= $remainingCount ?>
+                                        </a>
+                                    <?php endif; ?>
+
+                                    <!-- Product name for single item -->
+                                    <?php if (count($order['items']) === 1): ?>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-gray-800 truncate">
+                                                <?= htmlspecialchars($order['items'][0]['product_name'] ?? '') ?>
+                                            </p>
+                                            <p class="text-xs text-gray-500">
+                                                x<?= $order['items'][0]['quantity'] ?? 1 ?>
+                                            </p>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
                             <div class="flex flex-wrap justify-end items-center gap-2">
                                 <?php if ($order['status'] == 'pending' || $order['status'] == 'pending_payment'): ?>
                                     <button type="button" onclick="initiateCancel(<?= $order['id'] ?>)"

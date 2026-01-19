@@ -32,6 +32,10 @@ class UserAddress extends BaseModel
         'longitude',
         'here_place_id',
         'is_default',
+        // GHN address codes (required for shipping)
+        'ghn_province_id',
+        'ghn_district_id',
+        'ghn_ward_code',
     ];
 
     // =========================================================================
