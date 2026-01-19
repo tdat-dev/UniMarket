@@ -76,7 +76,7 @@ class OrderController extends AdminBaseController
             exit;
         }
 
-        $result = $this->orderModel->updateStatus($id, $status);
+        $result = $this->orderModel->updateStatus((int)$id, $status);
 
         if ($result) {
             $_SESSION['success'] = 'Cập nhật trạng thái thành công!';
