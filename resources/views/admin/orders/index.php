@@ -109,7 +109,7 @@
                         </span>
                     </td>
                     <td class="py-4 px-6 text-sm text-gray-500">
-                        <?= date('d/m/Y H:i', strtotime($order['created_at'])) ?>
+                        <?= \App\Helpers\TimeHelper::formatDatetime($order['created_at']) ?>
                     </td>
                     <td class="py-4 px-6">
                         <div class="flex items-center justify-center gap-2">

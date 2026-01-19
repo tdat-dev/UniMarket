@@ -1,5 +1,6 @@
 <?php
 use App\Helpers\ImageHelper;
+use App\Helpers\TimeHelper;
 include __DIR__ . '/../partials/head.php';
 ?>
 <?php
@@ -57,11 +58,11 @@ if (!isset($_SESSION['user'])) {
                 </div>
             </div>
 
-            <?php 
+            <?php
             // Hiển thị thông báo lỗi nếu có
             $error = $_GET['error'] ?? null;
             $success = $_GET['success'] ?? null;
-            
+
             $errorMessages = [
                 'invalid_order' => 'Đơn hàng không hợp lệ.',
                 'unauthorized' => 'Bạn không có quyền thực hiện thao tác này.',
@@ -70,20 +71,20 @@ if (!isset($_SESSION['user'])) {
                 'no_items' => 'Không có sản phẩm nào để mua lại.',
                 'cannot_cancel' => 'Không thể hủy đơn hàng ở trạng thái này.'
             ];
-            
+
             $successMessages = [
                 'rebuy' => 'Đã tạo đơn mua lại thành công!',
                 'cancelled' => 'Đã hủy đơn hàng thành công.'
             ];
             ?>
-            
+
             <?php if ($error && isset($errorMessages[$error])): ?>
                 <div class="mx-4 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
                     <i class="fa-solid fa-circle-exclamation text-red-500"></i>
                     <span class="text-red-700 text-sm"><?= $errorMessages[$error] ?></span>
                 </div>
             <?php endif; ?>
-            
+
             <?php if ($success && isset($successMessages[$success])): ?>
                 <div class="mx-4 mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
                     <i class="fa-solid fa-circle-check text-green-500"></i>
@@ -108,7 +109,7 @@ if (!isset($_SESSION['user'])) {
                                 <div class="flex gap-3 items-center">
                                     <span class="font-bold text-blue-600">#ORD-<?= $order['id'] ?></span>
                                     <span
-                                        class="text-xs text-gray-500"><?= date('d/m/Y H:i', strtotime($order['created_at'])) ?></span>
+                                        class="text-xs text-gray-500"><?= TimeHelper::formatDatetime($order['created_at']) ?></span>
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-medium 
                                         <?= $order['status'] == 'pending' ? 'bg-yellow-100 text-yellow-800' : '' ?>
                                         <?= $order['status'] == 'pending_payment' ? 'bg-orange-100 text-orange-800' : '' ?>

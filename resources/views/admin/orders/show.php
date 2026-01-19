@@ -1,4 +1,7 @@
-<?php use App\Helpers\ImageHelper; ?>
+<?php
+use App\Helpers\ImageHelper;
+use App\Helpers\TimeHelper;
+?>
 <!-- Page Header -->
 <div class="flex items-center gap-4 mb-6">
     <a href="/admin/orders" class="p-2 hover:bg-gray-100 rounded-lg transition">
@@ -6,7 +9,7 @@
     </a>
     <div>
         <h1 class="text-2xl font-bold text-gray-800">Chi tiết đơn hàng #<?= $order['id'] ?></h1>
-        <p class="text-gray-500 text-sm mt-1">Ngày tạo: <?= date('d/m/Y H:i', strtotime($order['created_at'])) ?></p>
+        <p class="text-gray-500 text-sm mt-1">Ngày tạo: <?= TimeHelper::formatDatetime($order['created_at']) ?></p>
     </div>
 </div>
 

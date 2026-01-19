@@ -1,4 +1,5 @@
 <?php
+use App\Helpers\TimeHelper;
 include __DIR__ . '/../partials/head.php';
 include __DIR__ . '/../partials/header.php';
 ?>
@@ -58,7 +59,7 @@ include __DIR__ . '/../partials/header.php';
                                                 <?= htmlspecialchars($partnerName) ?>
                                             </h4>
                                             <span class="text-[10px] text-gray-400">
-                                                <?= $lastMessageAt ? date('H:i', strtotime($lastMessageAt)) : '' ?>
+                                                <?= $lastMessageAt ? TimeHelper::formatTime($lastMessageAt) : '' ?>
                                             </span>
                                         </div>
                                         <p
@@ -155,7 +156,7 @@ include __DIR__ . '/../partials/header.php';
                                             <!-- Time -->
                                             <span
                                                 class="text-[10px] text-gray-400 mt-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity select-none">
-                                                <?= date('H:i', strtotime($msg['created_at'])) ?>
+                                                <?= TimeHelper::formatTime($msg['created_at']) ?>
                                             </span>
                                         </div>
                                     </div>

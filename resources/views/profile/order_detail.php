@@ -1,5 +1,6 @@
 <?php
 use App\Helpers\ImageHelper;
+use App\Helpers\TimeHelper;
 include __DIR__ . '/../partials/head.php';
 ?>
 <?php include __DIR__ . '/../partials/header.php'; ?>
@@ -79,7 +80,8 @@ include __DIR__ . '/../partials/head.php';
                                 class="absolute -left-[21px] top-1 w-4 h-4 rounded-full bg-blue-500 border-2 border-white ring-2 ring-blue-100">
                             </div>
                             <div class="text-sm font-bold text-gray-900">Đơn hàng được tạo</div>
-                            <div class="text-xs text-gray-500"><?= date('H:i d/m/Y', strtotime($order['created_at'])) ?>
+                            <div class="text-xs text-gray-500">
+                                <?= TimeHelper::format($order['created_at'], 'H:i d/m/Y') ?>
                             </div>
                         </div>
                         <?php if ($order['status'] == 'cancelled'): ?>
