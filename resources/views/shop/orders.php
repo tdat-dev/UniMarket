@@ -1,5 +1,6 @@
 <?php
 use App\Helpers\ImageHelper;
+use App\Helpers\TimeHelper;
 include __DIR__ . '/../partials/head.php';
 ?>
 <?php
@@ -79,8 +80,8 @@ if (!isset($_SESSION['user'])) {
                             <div class="flex flex-wrap justify-between items-start mb-4 gap-2">
                                 <div class="flex gap-3 items-center">
                                     <span class="font-bold text-blue-600">#ORD-<?= $order['id'] ?></span>
-                                    <span 
-                                        class="text-xs text-gray-500"><?= date('d/m/Y H:i', strtotime($order['created_at'])) ?></span>
+                                    <span
+                                        class="text-xs text-gray-500"><?= TimeHelper::formatDatetime($order['created_at']) ?></span>
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-medium 
                                         <?= $order['status'] == 'pending' ? 'bg-yellow-100 text-yellow-800' : '' ?>
                                         <?= $order['status'] == 'pending_payment' ? 'bg-orange-100 text-orange-800' : '' ?>
@@ -89,7 +90,7 @@ if (!isset($_SESSION['user'])) {
                                         <?= $order['status'] == 'completed' ? 'bg-green-100 text-green-800' : '' ?>
                                         <?= $order['status'] == 'cancelled' ? 'bg-red-100 text-red-800' : '' ?>
                                      ">
-                                        <?= match($order['status']) {
+                                        <?= match ($order['status']) {
                                             'pending' => 'Chờ xác nhận',
                                             'pending_payment' => 'Chờ thanh toán',
                                             'paid' => 'Đã thanh toán',

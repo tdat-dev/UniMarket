@@ -62,9 +62,10 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                                         </div>
                                         <div>
                                             <p class="text-sm text-gray-800 line-clamp-2">
-                                                <?= htmlspecialchars($notif['content']) ?></p>
+                                                <?= htmlspecialchars($notif['content']) ?>
+                                            </p>
                                             <span
-                                                class="text-xs text-gray-400 mt-1 block"><?= date('H:i d/m', strtotime($notif['created_at'])) ?></span>
+                                                class="text-xs text-gray-400 mt-1 block"><?= \App\Helpers\TimeHelper::format($notif['created_at'], 'H:i d/m') ?></span>
                                         </div>
                                     </div>
                                 </a>
