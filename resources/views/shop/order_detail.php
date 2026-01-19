@@ -1,0 +1,185 @@
+<?php
+use App\Helpers\ImageHelper;
+include __DIR__ . '/../partials/head.php';
+?>
+<?php include __DIR__ . '/../partials/header.php'; ?>
+
+<main class="bg-gray-50 min-h-screen pb-20 md:py-8">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Breadcrumb -->
+        <nav class="flex mb-6 text-sm text-gray-500">
+            <a href="/" class="hover:text-blue-600">Trang chủ</a>
+            <span class="mx-2">/</span>
+            <a href="/shop/orders" class="hover:text-blue-600">Đơn bán hàng</a>
+            <span class="mx-2">/</span>
+            <span class="text-gray-900 font-medium">Chi tiết đơn hàng #ORD-<?= $order['id'] ?></span>
+        </nav>
+
+        <div class="flex flex-col md:flex-row gap-6">
+            <!-- Left Column: Order Items -->
+            <div class="flex-1">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
+                    <div class="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                        <h2 class="font-bold text-gray-800">Sản phẩm (<?= count($order['items']) ?>)</h2>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium 
+                            <?= $order['status'] == 'pending' ? 'bg-yellow-100 text-yellow-800' : '' ?>
+                            <?= $order['status'] == 'pending_payment' ? 'bg-orange-100 text-orange-800' : '' ?>
+                            <?= $order['status'] == 'shipping' ? 'bg-blue-100 text-blue-800' : '' ?>
+                            <?= $order['status'] == 'completed' ? 'bg-green-100 text-green-800' : '' ?>
+                            <?= $order['status'] == 'cancelled' ? 'bg-red-100 text-red-800' : '' ?>
+                        ">
+                            <?php
+                            $statusMap = [
+                                'pending' => 'Chờ xác nhận',
+                                'pending_payment' => 'Chờ thanh toán',
+                                'paid' => 'Đã thanh toán',
+                                'shipping' => 'Đang giao',
+                                'completed' => 'Hoàn thành',
+                                'cancelled' => 'Đã huỷ'
+                            ];
+                            echo $statusMap[$order['status']] ?? ucfirst($order['status']);
+                            ?>
+                        </span>
+                    </div>
+                    <div class="divide-y divide-gray-100">
+                        <?php foreach ($order['items'] as $item): ?>
+                            <div class="p-4 flex gap-4 hover:bg-gray-50 transition">
+                                <div
+                                    class="w-20 h-20 bg-gray-100 rounded-md flex-shrink-0 overflow-hidden border border-gray-200">
+                                    <img src="<?= ImageHelper::url('uploads/' . ($item['product_image'] ?? '')) ?>"
+                                        class="w-full h-full object-cover">
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-start">
+                                        <h4 class="font-medium text-gray-900 line-clamp-2">
+                                            <?= htmlspecialchars($item['product_name']) ?>
+                                        </h4>
+                                        <span
+                                            class="font-bold text-gray-900 ml-4"><?= number_format($item['price_at_purchase'] * $item['quantity'], 0, ',', '.') ?>đ</span>
+                                    </div>
+                                    <p class="text-sm text-gray-500 mt-1">Mã sản phẩm: SKU-<?= $item['product_id'] ?></p>
+                                    <div class="flex justify-between items-center mt-2">
+                                        <span class="text-sm text-gray-500">x<?= $item['quantity'] ?></span>
+                                        <!-- Backend data -->
+                                        <span
+                                            class="text-xs text-gray-400 line-through"><?= number_format(($item['price_at_purchase'] * 1.2), 0, ',', '.') ?>đ</span>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <!-- Timeline / Status History (Optional Demo) -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h3 class="font-bold text-gray-800 mb-4">Trạng thái đơn hàng</h3>
+                    <div class="relative pl-4 border-l-2 border-gray-200 space-y-6">
+                        <div class="relative">
+                            <div
+                                class="absolute -left-[21px] top-1 w-4 h-4 rounded-full bg-blue-500 border-2 border-white ring-2 ring-blue-100">
+                            </div>
+                            <div class="text-sm font-bold text-gray-900">Đơn hàng được tạo</div>
+                            <div class="text-xs text-gray-500"><?= date('H:i d/m/Y', strtotime($order['created_at'])) ?>
+                            </div>
+                        </div>
+                        <?php if ($order['status'] == 'cancelled'): ?>
+                            <div class="relative">
+                                <div
+                                    class="absolute -left-[21px] top-1 w-4 h-4 rounded-full bg-red-500 border-2 border-white ring-2 ring-red-100">
+                                </div>
+                                <div class="text-sm font-bold text-gray-900">Đã bị huỷ</div>
+                                <div class="text-xs text-gray-500">Lý do: <?= $order['cancel_reason'] ?? 'Không có lý do' ?>
+                                </div>
+                            </div>
+                        <?php elseif ($order['status'] == 'shipping'): ?>
+                            <div class="relative">
+                                <div
+                                    class="absolute -left-[21px] top-1 w-4 h-4 rounded-full bg-blue-500 border-2 border-white ring-2 ring-blue-100">
+                                </div>
+                                <div class="text-sm font-bold text-gray-900">Đang giao hàng</div>
+                                <div class="text-xs text-gray-500">Đơn hàng đang được vận chuyển đến khách hàng</div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Info & Summary -->
+            <div class="w-full md:w-80 flex-shrink-0 flex flex-col gap-6">
+                
+                <!-- Helper Actions for Shop -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                    <h3 class="font-bold text-gray-800 mb-3 pb-3 border-b border-gray-100">Thao tác</h3>
+                     <form action="/shop/orders/update" method="POST" class="flex flex-col gap-2">
+                        <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
+
+                        <?php if ($order['status'] == 'pending' || $order['status'] == 'paid'): ?>
+                            <button type="submit" name="status" value="shipping"
+                                class="w-full px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 shadow-sm text-center">
+                                Xác nhận & Giao ngay
+                            </button>
+                            <button type="submit" name="status" value="cancelled"
+                                class="w-full px-3 py-2 border border-red-300 text-red-700 text-sm font-medium rounded-md hover:bg-red-50 text-center">
+                                Hủy đơn hàng
+                            </button>
+                        <?php elseif ($order['status'] == 'shipping'): ?>
+                            <div class="p-3 bg-blue-50 text-blue-800 text-sm rounded-md mb-2">
+                                Đơn hàng đang được giao
+                            </div>
+                            <button type="submit" name="status" value="completed"
+                                class="w-full px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 shadow-sm text-center">
+                                Xác nhận đã giao xong
+                            </button>
+                        <?php endif; ?>
+                    </form>
+                </div>
+
+                <!-- Receiver Info -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                    <h3 class="font-bold text-gray-800 mb-3 pb-3 border-b border-gray-100">Thông tin khách hàng</h3>
+                    <div class="flex flex-col gap-2 text-sm">
+                        <span
+                            class="font-bold text-gray-900"><?= htmlspecialchars($buyer['full_name'] ?? 'Khách hàng') ?></span>
+                        <span
+                            class="text-gray-500"><?= htmlspecialchars($buyer['phone_number'] ?? 'Chưa cập nhật SĐT') ?></span>
+                        <span
+                            class="text-gray-600 block mt-1"><?= htmlspecialchars($buyer['address'] ?? 'Chưa cập nhật địa chỉ') ?></span>
+                    </div>
+                </div>
+
+                <!-- Payment Info -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                    <h3 class="font-bold text-gray-800 mb-3 pb-3 border-b border-gray-100">Chi tiết thanh toán</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between text-gray-600">
+                            <span>Tổng tiền hàng</span>
+                            <span><?= number_format($order['total_amount'], 0, ',', '.') ?>đ</span>
+                        </div>
+                        <div class="flex justify-between text-gray-600">
+                            <span>Phí vận chuyển</span>
+                            <span>0đ</span>
+                        </div>
+                        <div class="flex justify-between text-gray-600">
+                            <span>Chiết khấu</span>
+                            <span>0đ</span>
+                        </div>
+                        <div class="border-t border-gray-100 pt-2 flex justify-between items-center">
+                            <span class="font-bold text-gray-900">Tổng thu</span>
+                            <span
+                                class="font-bold text-xl text-green-600"><?= number_format($order['total_amount'], 0, ',', '.') ?>đ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <a href="/shop/orders"
+                        class="block w-full text-center py-2.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium rounded-md transition text-sm shadow-sm">
+                        <i class="fa-solid fa-arrow-left mr-2"></i> Quay lại
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<?php include __DIR__ . '/../partials/footer.php'; ?>

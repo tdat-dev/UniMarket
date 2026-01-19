@@ -94,6 +94,7 @@ $router->post('shop/follow', [ShopController::class, 'toggleFollow']);
 // Shop management (Đơn hàng người khác mua của shop mình)
 $router->get('shop/orders', [ShopController::class, 'orders']);
 $router->post('shop/orders/update', [ShopController::class, 'updateOrderStatus']);
+$router->get('shop/orders/detail', [ShopController::class, 'orderDetail']);
 
 $router->get('chat', [ChatController::class, 'index']);
 $router->post('chat/send', [ChatController::class, 'send']);
