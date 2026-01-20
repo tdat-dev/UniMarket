@@ -117,6 +117,15 @@ class ProfileController extends BaseController
 
                 // Update session
                 $_SESSION['user']['avatar'] = $newFilename;
+
+                header('Location: ' . $_SERVER['HTTP_REFERER'] . '?success=avatar_updated');
+                exit;
+            } else {
+                // Log error for debugging
+                error_log("Avatar upload failed for user {$_SESSION['user']['id']}. Upload dir: {$uploadDir}, Path: {$uploadPath}, is_writable: " . (is_writable($uploadDir) ? 'yes' : 'no'));
+
+                header('Location: ' . $_SERVER['HTTP_REFERER'] . '?error=upload_failed');
+                exit;
             }
         }
 
@@ -426,9 +435,9 @@ class ProfileController extends BaseController
         foreach ($itemsToBuy as $newItem) {
             $orderItemModel->addItem(
                 $newOrderId,
-                (int)$newItem['product_id'],
-                (int)$newItem['quantity'],
-                (float)$newItem['price']
+                (int) $newItem['product_id'],
+                (int) $newItem['quantity'],
+                (float) $newItem['price']
             );
 
             // Deduct from database (available products)
