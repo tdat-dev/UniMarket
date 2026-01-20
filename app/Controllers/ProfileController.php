@@ -300,7 +300,6 @@ class ProfileController extends BaseController
         $reviewModel->create([
             'reviewer_id' => $userId,
             'product_id' => $productId,
-            'order_id' => $orderId,
             'rating' => $rating,
             'comment' => $comment
         ]);
