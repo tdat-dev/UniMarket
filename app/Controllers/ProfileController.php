@@ -531,8 +531,21 @@ class ProfileController extends BaseController
         // Cập nhật order: status = received, received_at = now, escrow_release_at = now + trial days
         $orderModel->confirmReceived($orderId, $trialDays);
 
-        // Schedule escrow release
+        // Khởi tạo Escrow
         $escrowService = new \App\Services\EscrowService();
+
+        // Nếu là đơn COD → Tạo escrow hold tại thời điểm nhận hàng
+        // (Đơn PayOS đã tạo escrow ngay khi thanh toán thành công)
+        if (($order['payment_method'] ?? 'cod') === 'cod') {
+            $escrowService->holdCODFunds(
+                $orderId,
+                (float) $order['total_amount'],
+                (int) $order['seller_id'],
+                'good' // Default condition cho đồ cũ
+            );
+        }
+
+        // Schedule escrow release (áp dụng cho cả COD và PayOS)
         $escrowService->scheduleRelease($orderId, $trialDays);
 
         $_SESSION['success'] = "Cảm ơn bạn đã xác nhận! Bạn có {$trialDays} ngày để kiểm tra hàng.";

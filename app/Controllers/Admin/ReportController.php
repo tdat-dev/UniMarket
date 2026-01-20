@@ -13,11 +13,10 @@ class ReportController extends AdminBaseController
 
     public function __construct()
     {
+        parent::__construct();
+
         $this->reportModel = new Report();
         $this->productModel = new Product();
-
-        // nếu có middleware
-        // $this->middleware('admin');
     }
 
     // GET: /admin/reports
@@ -38,7 +37,7 @@ class ReportController extends AdminBaseController
             return $this->redirect('/admin/reports');
         }
 
-        $report = $this->reportModel->findWithDetails((int)$id);
+        $report = $this->reportModel->findWithDetails((int) $id);
         return $this->view('reports/show', [
             'title' => 'Chi Tiết Báo Cáo',
             'report' => $report
@@ -48,8 +47,8 @@ class ReportController extends AdminBaseController
     // POST: /admin/reports/hide-product
     public function hideProduct()
     {
-        $reportId = (int)$_POST['report_id'];
-        $productId = (int)$_POST['product_id'];
+        $reportId = (int) $_POST['report_id'];
+        $productId = (int) $_POST['product_id'];
 
         $this->productModel->hideProduct($productId);
         $this->reportModel->markResolved($reportId);

@@ -215,7 +215,9 @@ class AddressController extends BaseController
                 $_SESSION['error'] = 'Không thể cập nhật địa chỉ';
             }
 
-            $this->redirect('/addresses');
+            // Redirect về trang trước nếu có (ví dụ: checkout)
+            $redirectTo = $this->input('redirect_to');
+            $this->redirect($redirectTo ?? '/addresses');
         } catch (\Exception $e) {
             $_SESSION['error'] = 'Có lỗi xảy ra, vui lòng thử lại';
             $this->redirect("/addresses/edit?id={$addressId}");
