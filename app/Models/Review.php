@@ -81,6 +81,19 @@ class Review extends BaseModel
         return $this->db->fetchOne($sql, [$userId, $productId]) !== null;
     }
 
+    /**
+     * Lấy review của user cho một sản phẩm cụ thể
+     * 
+     * @param int $userId
+     * @param int $productId
+     * @return array<string, mixed>|null
+     */
+    public function getByUserAndProduct(int $userId, int $productId): ?array
+    {
+        $sql = "SELECT * FROM {$this->table} WHERE reviewer_id = ? AND product_id = ? LIMIT 1";
+        return $this->db->fetchOne($sql, [$userId, $productId]);
+    }
+
     // =========================================================================
     // STATISTICS
     // =========================================================================
