@@ -642,8 +642,8 @@ class Product extends BaseModel
     private function buildSmartSortClause(string $sort, bool $hasKeyword = false): string
     {
         return match ($sort) {
-            'relevance' => $hasKeyword ? " ORDER BY relevance_score DESC, view_count DESC" : " ORDER BY view_count DESC",
-            'popular' => " ORDER BY view_count DESC",
+            'relevance' => $hasKeyword ? " ORDER BY relevance_score DESC, sold_count DESC" : " ORDER BY sold_count DESC",
+            'popular' => " ORDER BY sold_count DESC",
             'best_selling' => " ORDER BY sold_count DESC",
             'price_asc' => " ORDER BY p.price ASC",
             'price_desc' => " ORDER BY p.price DESC",
@@ -664,11 +664,14 @@ class Product extends BaseModel
 
     /**
      * Tăng lượt xem sản phẩm
+     * Note: Tạm thời disabled vì cột view_count chưa được thêm vào database
      */
     public function incrementViews(int $id): bool
     {
-        $sql = "UPDATE {$this->table} SET view_count = view_count + 1 WHERE id = ?";
-        return $this->db->execute($sql, [$id]) !== false;
+        // TODO: Thêm cột view_count vào bảng products trước khi bật lại
+        // $sql = "UPDATE {$this->table} SET view_count = view_count + 1 WHERE id = ?";
+        // return $this->db->execute($sql, [$id]) !== false;
+        return true;
     }
 
     // =========================================================================

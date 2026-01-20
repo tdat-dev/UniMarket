@@ -307,9 +307,9 @@ class ProfileController extends BaseController
 
     // Redirect về trang chi tiết đơn hàng nếu có order_id
     if ($orderId) {
-        header('Location: /profile/order-detail?id=' . $orderId . '&reviewed=1');
+        header('Location: /profile/orders/detail?id=' . $orderId . '&reviewed=1');
     } else {
-        header('Location: /reviews?tab=reviewed');
+        header('Location: /profile/orders');
     }
     exit;
 }
