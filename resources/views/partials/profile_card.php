@@ -67,10 +67,7 @@
                 class="<?= ($activeTab ?? '') == 'wallet' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' ?> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
                 <i class="fa-solid fa-wallet"></i> Ví & Giao dịch
             </a>
-            <a href="/reviews"
-                class="<?= ($activeTab ?? '') == 'reviews' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' ?> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
-                <i class="fa-regular fa-star"></i> Đánh giá
-            </a>
+
             <a href="/profile/orders"
                 class="<?= ($activeTab ?? '') == 'orders' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' ?> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
                 <i class="fa-solid fa-bag-shopping"></i> Đơn mua
