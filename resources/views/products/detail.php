@@ -194,9 +194,14 @@ include __DIR__ . '/../partials/header.php';
         <div class="bg-white rounded-sm shadow-sm p-4">
             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <div class="relative">
-                    <img src="https://ui-avatars.com/api/?name=<?= urlencode($seller['full_name']) ?>&background=random&size=128"
+                    <?php
+                    $sellerAvatarUrl = !empty($seller['avatar'])
+                        ? ImageHelper::url('uploads/avatars/' . $seller['avatar'])
+                        : 'https://ui-avatars.com/api/?name=' . urlencode($seller['full_name']) . '&background=random&size=128';
+                    ?>
+                    <img src="<?= htmlspecialchars($sellerAvatarUrl) ?>"
                         alt="<?= htmlspecialchars($seller['full_name']) ?>"
-                        class="w-16 h-16 rounded-full border border-gray-200">
+                        class="w-16 h-16 rounded-full border border-gray-200 object-cover">
                     <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white">
                     </div>
                 </div>
