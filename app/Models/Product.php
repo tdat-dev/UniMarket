@@ -30,7 +30,10 @@ class Product extends BaseModel
         'quantity',
         'status',
         'condition',
+        'view_count',
     ];
+
+
 
     /** @var array<string> Product statuses */
     public const STATUS_ACTIVE = 'active';
@@ -639,8 +642,9 @@ class Product extends BaseModel
     private function buildSmartSortClause(string $sort, bool $hasKeyword = false): string
     {
         return match ($sort) {
-            'relevance' => $hasKeyword ? " ORDER BY relevance_score DESC, sold_count DESC" : " ORDER BY sold_count DESC",
-            'popular', 'best_selling' => " ORDER BY sold_count DESC",
+            'relevance' => $hasKeyword ? " ORDER BY relevance_score DESC, view_count DESC" : " ORDER BY view_count DESC",
+            'popular' => " ORDER BY view_count DESC",
+            'best_selling' => " ORDER BY sold_count DESC",
             'price_asc' => " ORDER BY p.price ASC",
             'price_desc' => " ORDER BY p.price DESC",
             'newest' => " ORDER BY p.created_at DESC",
@@ -656,6 +660,15 @@ class Product extends BaseModel
         $sql = "SELECT COUNT(*) as total FROM products WHERE user_id = :user_id AND status = 'active'";
         $result = $this->db->fetchOne($sql, ['user_id' => (int) $userId]);
         return $result['total'] ?? 0;
+    }
+
+    /**
+     * Tăng lượt xem sản phẩm
+     */
+    public function incrementViews(int $id): bool
+    {
+        $sql = "UPDATE {$this->table} SET view_count = view_count + 1 WHERE id = ?";
+        return $this->db->execute($sql, [$id]) !== false;
     }
 
     // =========================================================================

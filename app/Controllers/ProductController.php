@@ -136,6 +136,9 @@ class ProductController extends BaseController
             exit;
         }
 
+        // Tăng lượt xem
+        $productModel->incrementViews((int) $id);
+
         $userModel = new User();
         $seller = $userModel->find($product['user_id']);
 

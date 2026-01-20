@@ -134,9 +134,9 @@ if (!isset($_SESSION['user'])) {
                                     <?php endif; ?>
                                 </form>
 
-                                <button
-                                    class="px-3 py-1.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">Chi
-                                    tiết</button>
+                                <a href="/shop/orders/detail?id=<?= $order['id'] ?>"
+                                    class="px-3 py-1.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 flex items-center justify-center">Chi
+                                    tiết</a>
                             </div>
                         </div>
                     <?php endforeach; ?>

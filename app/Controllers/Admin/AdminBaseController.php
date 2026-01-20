@@ -57,4 +57,16 @@ class AdminBaseController
             echo $content;
         }
     }
+
+    /**
+     * Redirect to URL
+     * 
+     * @param string $url
+     * @return void
+     */
+    protected function redirect(string $url)
+    {
+        header("Location: " . $url);
+        exit;
+    }
 }
