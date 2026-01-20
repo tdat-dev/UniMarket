@@ -320,11 +320,16 @@ class CheckoutController extends BaseController
             // COD: Chờ seller xác nhận | PayOS: Chờ thanh toán online
             $orderStatus = ($paymentMethod === 'cod') ? Order::STATUS_PENDING : 'pending_payment';
 
-            // Create order
+            // Tính phí sàn và số tiền seller nhận
+            $fees = $escrowService->calculateFees($orderData['total']);
+
+            // Create order với platform_fee và seller_amount
             $orderId = $orderModel->createOrder([
                 'buyer_id' => $buyerId,
                 'seller_id' => $orderData['seller_id'],
                 'total_amount' => $orderData['total'],
+                'platform_fee' => $fees['platform_fee'],
+                'seller_amount' => $fees['seller_amount'],
                 'status' => $orderStatus,
                 'payment_method' => $paymentMethod,
             ]);

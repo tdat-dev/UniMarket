@@ -281,10 +281,10 @@ include __DIR__ . '/../partials/header.php';
                                         <div class="text-[10px] text-gray-400">Còn <?= $item['quantity'] ?? 0 ?></div>
                                     </div>
 
-                                    <!-- Location -->
+                                    <!-- Location - Tạm ẩn vì chưa có dữ liệu địa chỉ trong related products -->
+                                    <!-- TODO: Thêm seller location vào related products query -->
                                     <div class="flex items-center justify-between pt-2">
-                                        <span class="text-[10px] text-gray-400 font-light truncate w-full">TP. Hồ Chí
-                                            Minh</span>
+                                        <span class="text-[10px] text-gray-400 font-light truncate w-full">&nbsp;</span>
                                     </div>
                                 </div>
                             </a>

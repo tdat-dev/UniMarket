@@ -47,12 +47,56 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // --- PRICE FORMATTING ---
+    // --- PRICE FORMATTING & CALCULATOR ---
     const displayPrice = document.getElementById('displayPrice');
     const realPrice = document.getElementById('realPrice');
+    const feeCalculator = document.getElementById('feeCalculator');
+    const displayPriceLabel = document.getElementById('displayPriceLabel');
+    const totalFeeAmount = document.getElementById('totalFeeAmount');
+    const feeAmount = document.getElementById('feeAmount');
+    const paymentFeeAmount = document.getElementById('paymentFeeAmount');
+    const taxAmount = document.getElementById('taxAmount');
+    const sellerReceive = document.getElementById('sellerReceive');
+
+    // Toggle Details
+    window.toggleFeeDetails = function() {
+        const details = document.getElementById('feeDetails');
+        if(details) details.classList.toggle('hidden');
+    }
+
+    function updateFeeCalculator(price) {
+        if (!feeCalculator) return;
+        
+        const feePercent = 5;
+        const paymentFeePercent = 2.5; 
+        const taxPercent = 1.5; 
+        
+        const fee = Math.round(price * feePercent / 100);
+        const paymentFee = Math.round(price * paymentFeePercent / 100);
+        const tax = Math.round(price * taxPercent / 100);
+        const totalFee = fee + paymentFee + tax;
+        
+        const receive = price - totalFee;
+
+        if(displayPriceLabel) displayPriceLabel.textContent = price.toLocaleString('vi-VN') + 'đ';
+        
+        // Summary
+        if(totalFeeAmount) totalFeeAmount.textContent = '-' + totalFee.toLocaleString('vi-VN') + 'đ';
+        
+        // Details
+        if(feeAmount) feeAmount.textContent = '-' + fee.toLocaleString('vi-VN') + 'đ';
+        if(paymentFeeAmount) paymentFeeAmount.textContent = '-' + paymentFee.toLocaleString('vi-VN') + 'đ';
+        if(taxAmount) taxAmount.textContent = '-' + tax.toLocaleString('vi-VN') + 'đ';
+        
+        if(sellerReceive) sellerReceive.textContent = receive.toLocaleString('vi-VN') + 'đ';
+        
+        feeCalculator.classList.remove('hidden');
+    }
 
     window.setPrice = function (val) {
         realPrice.value = val;
         displayPrice.value = new Intl.NumberFormat('vi-VN').format(val);
+        updateFeeCalculator(val);
     }
 
     displayPrice.addEventListener('input', function (e) {
@@ -60,10 +104,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (rawValue === '') {
             this.value = '';
             realPrice.value = '';
+            if(feeCalculator) feeCalculator.classList.add('hidden');
         } else {
             let numberValue = parseInt(rawValue, 10);
             this.value = new Intl.NumberFormat('vi-VN').format(numberValue);
             realPrice.value = numberValue;
+            updateFeeCalculator(numberValue);
         }
     });
 
@@ -73,30 +119,48 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // --- IMAGE LOGIC ---
+    const uploadContainer = document.getElementById('uploadContainer');
+    const imgCount = document.getElementById('imgCount');
+
     function updateFileInput() {
         const dt = new DataTransfer();
         selectedFiles.forEach(f => dt.items.add(f.file));
         inputImage.files = dt.files;
-        if (selectedFiles.length < 2) imgError.classList.remove('hidden'); 
-        else imgError.classList.add('hidden');
+        
+        // Update count
+        if (imgCount) imgCount.textContent = selectedFiles.length;
     }
 
     function renderPreview() {
-        miniPreviewGrid.innerHTML = '';
+        // Clear old previews (keep the last element which is the upload button)
+        const uploadBtn = uploadContainer.lastElementChild;
+        while (uploadContainer.firstElementChild !== uploadBtn) {
+            uploadContainer.removeChild(uploadContainer.firstElementChild);
+        }
+
         selectedFiles.forEach((fileData, index) => {
             const div = document.createElement('div');
-            div.className = 'relative aspect-square rounded-xl overflow-hidden group shadow-sm border border-slate-100 cursor-pointer';
+            // Shopee style: square, fixed size matching upload button
+            div.className = 'relative w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden group border border-slate-200 shadow-sm flex-shrink-0';
             div.innerHTML = `
-            <img src="${fileData.dataUrl}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-            <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-2 backdrop-blur-[2px]">
-                <button type="button" onclick="removeImage(${index})" class="w-8 h-8 rounded-full bg-white/20 hover:bg-red-500 text-white flex items-center justify-center transition-colors backdrop-blur-md">
-                    <i class="fa-solid fa-trash-can text-sm"></i>
+            <img src="${fileData.dataUrl}" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center gap-1">
+                ${index === 0 ? '<span class="text-[10px] text-white font-bold bg-red-500 px-1.5 rounded-sm mb-1">Ảnh bìa</span>' : ''}
+                <button type="button" onclick="removeImage(${index})" class="text-white hover:text-red-400">
+                    <i class="fa-solid fa-trash-can"></i>
                 </button>
-                <span class="text-white text-[10px] font-medium tracking-wide">XÓA ẢNH</span>
             </div>
         `;
-            miniPreviewGrid.appendChild(div);
+            // Insert before upload button
+            uploadContainer.insertBefore(div, uploadBtn);
         });
+        
+        // Hide upload button if max files reached
+        if (selectedFiles.length >= 9) {
+            uploadBtn.classList.add('hidden');
+        } else {
+            uploadBtn.classList.remove('hidden');
+        }
     }
 
     window.removeImage = function (index) {
