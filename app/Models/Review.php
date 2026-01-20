@@ -20,7 +20,6 @@ class Review extends BaseModel
     protected array $fillable = [
         'reviewer_id',
         'product_id',
-        'order_id',
         'rating',
         'comment',
     ];
