@@ -47,7 +47,7 @@ class EscrowService
             'fair' => (int) ($_ENV['ESCROW_TRIAL_DAYS_FAIR'] ?? 2),
         ];
 
-        $this->platformFeePercent = (float) ($_ENV['PLATFORM_FEE_PERCENT'] ?? 0);
+        $this->platformFeePercent = (float) ($_ENV['PLATFORM_FEE_PERCENT'] ?? 5);
 
         $this->escrowModel = new EscrowHold();
         $this->walletModel = new Wallet();
@@ -318,6 +318,101 @@ class EscrowService
      */
     public function calculatePlatformFee(float $amount): float
     {
-        return $amount * ($this->platformFeePercent / 100);
+        return round($amount * ($this->platformFeePercent / 100), 2);
+    }
+
+    /**
+     * Tính toán phí sàn và số tiền seller nhận
+     * 
+     * Dùng khi tạo đơn hàng để lưu vào order record.
+     * 
+     * @param float $totalAmount Tổng tiền đơn hàng
+     * @return array{platform_fee: float, seller_amount: float, fee_percent: float}
+     */
+    public function calculateFees(float $totalAmount): array
+    {
+        $platformFee = $this->calculatePlatformFee($totalAmount);
+        $sellerAmount = round($totalAmount - $platformFee, 2);
+
+        return [
+            'platform_fee' => $platformFee,
+            'seller_amount' => $sellerAmount,
+            'fee_percent' => $this->platformFeePercent,
+        ];
+    }
+
+    /**
+     * Giữ tiền COD khi buyer xác nhận nhận hàng
+     * 
+     * Khác với holdFunds() (cho PayOS được gọi sau payment), 
+     * holdCODFunds() được gọi khi buyer xác nhận "Đã nhận hàng" với đơn COD.
+     * 
+     * Flow: Buyer nhận hàng → holdCODFunds() → scheduleRelease() → releaseFunds()
+     * 
+     * @param int $orderId
+     * @param float $amount Tổng tiền đơn hàng
+     * @param int $sellerId
+     * @param string $productCondition
+     * @return array Thông tin escrow hold
+     */
+    public function holdCODFunds(int $orderId, float $amount, int $sellerId, string $productCondition = 'good'): array
+    {
+        // Kiểm tra đã có escrow chưa
+        $existing = $this->escrowModel->findByOrderId($orderId);
+        if ($existing) {
+            return [
+                'escrow_id' => $existing['id'],
+                'amount' => $existing['amount'],
+                'platform_fee' => $existing['platform_fee'],
+                'seller_amount' => $existing['seller_amount'],
+                'already_exists' => true,
+            ];
+        }
+
+        // Tính phí sàn
+        $fees = $this->calculateFees($amount);
+        $platformFee = $fees['platform_fee'];
+        $sellerAmount = $fees['seller_amount'];
+
+        // Tính thời gian giải ngân dự kiến
+        $trialDays = $this->getTrialDays($productCondition);
+
+        // Tạo escrow hold
+        $escrowId = $this->escrowModel->create([
+            'order_id' => $orderId,
+            'seller_id' => $sellerId,
+            'amount' => $amount,
+            'platform_fee' => $platformFee,
+            'seller_amount' => $sellerAmount,
+            'status' => 'holding',
+        ]);
+
+        // Tạo payment transaction log
+        $this->paymentTransModel->create([
+            'order_id' => $orderId,
+            'transaction_type' => 'cod_escrow_hold',
+            'amount' => $amount,
+            'status' => 'success',
+            'metadata' => json_encode([
+                'seller_id' => $sellerId,
+                'platform_fee' => $platformFee,
+                'seller_amount' => $sellerAmount,
+                'trial_days' => $trialDays,
+                'product_condition' => $productCondition,
+                'payment_method' => 'cod',
+            ]),
+        ]);
+
+        // Cập nhật pending_balance trong ví seller
+        $wallet = $this->walletModel->getOrCreate($sellerId);
+        $this->walletModel->updatePendingBalance($wallet['id'], $sellerAmount, 'add');
+
+        return [
+            'escrow_id' => $escrowId,
+            'amount' => $amount,
+            'platform_fee' => $platformFee,
+            'seller_amount' => $sellerAmount,
+            'trial_days' => $trialDays,
+        ];
     }
 }

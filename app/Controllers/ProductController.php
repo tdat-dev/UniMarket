@@ -142,6 +142,15 @@ class ProductController extends BaseController
         $userModel = new User();
         $seller = $userModel->find($product['user_id']);
 
+        // Lấy địa chỉ mặc định của seller từ user_addresses
+        $addressModel = new UserAddress();
+        $sellerAddress = $addressModel->getDefaultAddress((int) $product['user_id']);
+
+        // Gắn province vào seller để hiển thị vận chuyển
+        if ($seller) {
+            $seller['address'] = $sellerAddress['province'] ?? null;
+        }
+
         $productImages = $this->getProductImages((int) $id, $product['image'] ?? null);
         $relatedProducts = $productModel->getByCategory($product['category_id'], 4, $product['id']);
 
@@ -530,7 +539,7 @@ class ProductController extends BaseController
             return;
         }
 
-        $productId = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
+        $productId = isset($_POST['product_id']) ? (int) $_POST['product_id'] : 0;
         $reason = $_POST['reason'] ?? '';
         $description = $_POST['description'] ?? '';
         $reporterId = $_SESSION['user']['id'];
@@ -542,7 +551,7 @@ class ProductController extends BaseController
 
         try {
             $reportModel = new Report();
-            
+
             // Combine reason and description since DB doesn't have description column
             $fullReason = $reason;
             if (!empty($description)) {

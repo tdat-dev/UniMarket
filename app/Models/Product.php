@@ -46,6 +46,57 @@ class Product extends BaseModel
     public const CONDITION_LIKE_NEW = 'like_new';
     public const CONDITION_GOOD = 'good';
     public const CONDITION_FAIR = 'fair';
+    public const CONDITION_POOR = 'poor';
+
+    /**
+     * Get all product conditions with details
+     * @return array
+     */
+    public static function getConditions(): array
+    {
+        return [
+            self::CONDITION_NEW => [
+                'label' => 'Mới 100%',
+                'description' => 'Nguyên seal, chưa sử dụng',
+                'icon' => 'fa-solid fa-certificate',
+                'color_bg' => 'bg-blue-50',
+                'color_text' => 'text-blue-500',
+                'hover_bg' => 'group-hover:bg-indigo-500',
+            ],
+            self::CONDITION_LIKE_NEW => [
+                'label' => 'Như mới',
+                'description' => 'Mới 99%, mở hộp chưa dùng',
+                'icon' => 'fa-solid fa-star',
+                'color_bg' => 'bg-teal-50',
+                'color_text' => 'text-teal-500',
+                'hover_bg' => 'group-hover:bg-indigo-500',
+            ],
+            self::CONDITION_GOOD => [
+                'label' => 'Tốt',
+                'description' => 'Dùng tốt, xước nhẹ',
+                'icon' => 'fa-regular fa-thumbs-up',
+                'color_bg' => 'bg-green-50',
+                'color_text' => 'text-green-500',
+                'hover_bg' => 'group-hover:bg-indigo-500',
+            ],
+            self::CONDITION_FAIR => [
+                'label' => 'Trung bình',
+                'description' => 'Ngoại hình cũ, còn dùng tốt',
+                'icon' => 'fa-solid fa-layer-group',
+                'color_bg' => 'bg-orange-50',
+                'color_text' => 'text-orange-500',
+                'hover_bg' => 'group-hover:bg-indigo-500',
+            ],
+            self::CONDITION_POOR => [
+                'label' => 'Xác/Linh kiện',
+                'description' => 'Hỏng, bán lấy đồ',
+                'icon' => 'fa-solid fa-screwdriver-wrench',
+                'color_bg' => 'bg-slate-100',
+                'color_text' => 'text-slate-500',
+                'hover_bg' => 'group-hover:bg-slate-600',
+            ],
+        ];
+    }
 
     /** @var string Cache key prefix */
     private const CACHE_PREFIX = 'products_';
@@ -118,7 +169,7 @@ class Product extends BaseModel
 
         $sql = "SELECT p.*, {$this->getSoldCountSubquery()} AS sold_count
                 FROM {$this->table} p
-                WHERE p.status = ?
+                WHERE p.status = ? AND p.quantity > 0
                 ORDER BY p.id DESC 
                 LIMIT ?";
 
@@ -140,7 +191,7 @@ class Product extends BaseModel
     public function getRandom(int $limit = 12): array
     {
         $sql = "SELECT * FROM {$this->table} 
-                WHERE status = ? 
+                WHERE status = ? AND quantity > 0
                 ORDER BY RAND() 
                 LIMIT ?";
 
@@ -422,7 +473,7 @@ class Product extends BaseModel
                     {$this->getSoldCountSubquery()} AS sold_count
                     " . ($hasKeyword ? ", ({$relevanceScore}) AS relevance_score" : "") . "
                 FROM {$this->table} p
-                WHERE p.status = ?";
+                WHERE p.status = ? AND p.quantity > 0";
         $params = [self::STATUS_ACTIVE];
 
         // Filter by keyword (search in name + description)
