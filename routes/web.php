@@ -5,7 +5,7 @@ use App\Controllers\HomeController;
 use App\Controllers\ProductController;
 use App\Controllers\SearchController;
 use App\Controllers\CategoryController;
-use App\Controllers\GoogleAuthController;
+use App\Controllers\FirebaseAuthController;
 use App\Controllers\VerificationController;
 use App\Controllers\PaymentController;
 use App\Controllers\PasswordResetController;
@@ -31,9 +31,9 @@ $router->get('register', [AuthController::class, 'register']);
 $router->post('register', [AuthController::class, 'processRegister']);
 $router->post('logout', [AuthController::class, 'logout']);
 
-// Google OAuth
-$router->get('auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
-$router->get('auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
+// Firebase Auth (Google Sign-In)
+$router->post('auth/firebase', [FirebaseAuthController::class, 'handleFirebaseLogin']);
+$router->get('api/firebase/config', [FirebaseAuthController::class, 'getConfig']);
 
 // Password & Email Verification
 $router->get('forgot-password', [PasswordResetController::class, 'showForgotForm']);

@@ -60,7 +60,8 @@ ob_start();
                 class="w-full bg-[#5A88FF] text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition duration-300 cursor-pointer shadow-md uppercase tracking-wide text-sm">
 
             <div class="text-center pt-2">
-                <a href="/forgot-password" class="text-[#5A88FF] hover:text-blue-700 text-sm font-medium">Quên mật khẩu?</a>
+                <a href="/forgot-password" class="text-[#5A88FF] hover:text-blue-700 text-sm font-medium">Quên mật
+                    khẩu?</a>
             </div>
 
             <!-- Separator -->
@@ -70,11 +71,11 @@ ob_start();
                 <div class="flex-grow border-t border-gray-200"></div>
             </div>
 
-            <a href="/auth/google"
+            <button type="button" id="googleLoginBtn"
                 class="flex items-center justify-center w-full border border-gray-300 py-3 rounded-lg hover:bg-gray-50 transition duration-300 group bg-white">
                 <img src="/images/google.png" alt="Google" class="w-5 h-5 mr-3">
                 <span class="text-gray-700 font-medium group-hover:text-gray-900">Đăng nhập bằng Google</span>
-            </a>
+            </button>
 
             <div class="text-center mt-6">
                 <p class="text-gray-500 text-sm">Chưa có tài khoản? <a href="/register"
@@ -91,7 +92,84 @@ $content = ob_get_clean();
 // 4. Định nghĩa Scripts riêng cho trang này (nếu có muốn tách ra cho gọn)
 ob_start();
 ?>
+<!-- Firebase SDK -->
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getAuth, signInWithPopup, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+
+    // Firebase config - lấy từ .env qua PHP
+    const firebaseConfig = {
+        apiKey: "<?= $_ENV['FIREBASE_API_KEY'] ?? '' ?>",
+        authDomain: "<?= $_ENV['FIREBASE_AUTH_DOMAIN'] ?? '' ?>",
+        projectId: "<?= $_ENV['FIREBASE_PROJECT_ID'] ?? '' ?>",
+        storageBucket: "<?= $_ENV['FIREBASE_STORAGE_BUCKET'] ?? '' ?>",
+        messagingSenderId: "<?= $_ENV['FIREBASE_MESSAGING_SENDER_ID'] ?? '' ?>",
+        appId: "<?= $_ENV['FIREBASE_APP_ID'] ?? '' ?>",
+        measurementId: "<?= $_ENV['FIREBASE_MEASUREMENT_ID'] ?? '' ?>"
+    };
+
+    // Khởi tạo Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    // Xử lý click nút Google Login
+    document.getElementById('googleLoginBtn').addEventListener('click', async function () {
+        const btn = this;
+        const originalText = btn.querySelector('span').textContent;
+
+        try {
+            // Hiển thị loading
+            btn.disabled = true;
+            btn.querySelector('span').textContent = 'Đang xử lý...';
+
+            // Mở popup Google Sign-In
+            const result = await signInWithPopup(auth, provider);
+
+            // Lấy ID token từ Firebase
+            const idToken = await result.user.getIdToken();
+
+            // Gửi token về backend để xác thực
+            const response = await fetch('/auth/firebase', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ idToken: idToken })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Đăng nhập thành công → redirect
+                window.location.href = data.redirect || '/';
+            } else {
+                // Hiển thị lỗi
+                alert(data.message || 'Đăng nhập thất bại');
+                btn.disabled = false;
+                btn.querySelector('span').textContent = originalText;
+            }
+
+        } catch (error) {
+            console.error('Google Sign-In Error:', error);
+
+            // Xử lý các loại lỗi
+            if (error.code === 'auth/popup-closed-by-user') {
+                // User đóng popup, không cần thông báo
+            } else if (error.code === 'auth/cancelled-popup-request') {
+                // Popup bị cancel
+            } else {
+                alert('Đăng nhập Google thất bại. Vui lòng thử lại.');
+            }
+
+            btn.disabled = false;
+            btn.querySelector('span').textContent = originalText;
+        }
+    });
+</script>
+
 <script>
+    // Toggle password visibility
     const togglePassword = document.getElementById('togglePassword');
     const password = document.getElementById('password');
     if (togglePassword && password) {

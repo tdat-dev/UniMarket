@@ -186,7 +186,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="checkout" name="Checkout Payment">
-    <mxGraphModel dx="1489" dy="963" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1426" dy="889" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -219,7 +219,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="dc1" value="Logged in?" style="rhombus;whiteSpace=wrap;html=1;strokeWidth=2;" parent="1" vertex="1">
-          <mxGeometry x="324" y="210" width="140" height="80" as="geometry" />
+          <mxGeometry x="325" y="210" width="140" height="80" as="geometry" />
         </mxCell>
         <mxCell id="c2" value="Redirect to Login" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;" parent="1" vertex="1">
           <mxGeometry x="110" y="225" width="130" height="50" as="geometry" />
@@ -228,19 +228,19 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="c3" value="Display Checkout Page" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;" parent="1" vertex="1">
-          <mxGeometry x="309" y="350" width="170" height="50" as="geometry" />
+          <mxGeometry x="310" y="350" width="170" height="50" as="geometry" />
         </mxCell>
         <mxCell id="ntgK3ZekD7oxPJlfkGYf-8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="c4" target="c5" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="c4" value="Enter Shipping Address" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;" parent="1" vertex="1">
-          <mxGeometry x="304" y="460" width="180" height="50" as="geometry" />
+          <mxGeometry x="305" y="460" width="180" height="50" as="geometry" />
         </mxCell>
         <mxCell id="ntgK3ZekD7oxPJlfkGYf-9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="c5" target="dc2" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="c5" value="Select Payment Method" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;" parent="1" vertex="1">
-          <mxGeometry x="299" y="570" width="190" height="50" as="geometry" />
+          <mxGeometry x="300" y="570" width="190" height="50" as="geometry" />
         </mxCell>
         <mxCell id="ntgK3ZekD7oxPJlfkGYf-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="dc2" target="c6" edge="1">
           <mxGeometry relative="1" as="geometry" />
@@ -259,7 +259,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="dc2" value="Sufficient Balance?" style="rhombus;whiteSpace=wrap;html=1;strokeWidth=2;" parent="1" vertex="1">
-          <mxGeometry x="314" y="680" width="160" height="90" as="geometry" />
+          <mxGeometry x="315" y="680" width="160" height="90" as="geometry" />
         </mxCell>
         <mxCell id="c6" value="Error: Insufficient Balance" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;" parent="1" vertex="1">
           <mxGeometry x="70" y="700" width="170" height="50" as="geometry" />
@@ -268,16 +268,16 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="c7" value="Deduct Balance, Create Order" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;" parent="1" vertex="1">
-          <mxGeometry x="294" y="830" width="200" height="50" as="geometry" />
+          <mxGeometry x="295" y="830" width="200" height="50" as="geometry" />
         </mxCell>
         <mxCell id="ntgK3ZekD7oxPJlfkGYf-15" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="c8" target="ec" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="c8" value="Display Success Message" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;" parent="1" vertex="1">
-          <mxGeometry x="304" y="940" width="180" height="50" as="geometry" />
+          <mxGeometry x="305" y="940" width="180" height="50" as="geometry" />
         </mxCell>
         <mxCell id="ec" value="" style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#ff0000;" parent="1" vertex="1">
-          <mxGeometry x="374" y="1030" width="40" height="40" as="geometry" />
+          <mxGeometry x="375" y="1030" width="40" height="40" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
