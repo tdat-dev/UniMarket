@@ -270,7 +270,7 @@ class Product extends BaseModel
                 $params['limit'] = $limit;
 
                 $sql = "SELECT * FROM products 
-                        WHERE status = 'active' 
+                        WHERE status = '" . self::STATUS_ACTIVE . "' 
                         AND ($whereClause) 
                         LIMIT :limit";
 
@@ -708,7 +708,7 @@ class Product extends BaseModel
      */
     public function countActiveByUserId($userId): int
     {
-        $sql = "SELECT COUNT(*) as total FROM products WHERE user_id = :user_id AND status = 'active'";
+        $sql = "SELECT COUNT(*) as total FROM products WHERE user_id = :user_id AND status = '" . self::STATUS_ACTIVE . "'";
         $result = $this->db->fetchOne($sql, ['user_id' => (int) $userId]);
         return $result['total'] ?? 0;
     }
