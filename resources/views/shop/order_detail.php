@@ -74,28 +74,29 @@ include __DIR__ . '/../partials/head.php';
                 <!-- Detailed Timeline -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <h3 class="font-bold text-gray-800 mb-6">Trạng thái đơn hàng</h3>
-                    
+
                     <div class="relative pl-2">
-                        <?php 
+                        <?php
                         // Logic xác định trạng thái active
                         $steps = [
                             'placed' => ['active' => true, 'time' => $order['created_at'], 'label' => 'Đơn hàng đã đặt'],
                             'paid' => ['active' => false, 'time' => $order['paid_at'] ?? null, 'label' => 'Đã xác nhận thanh toán'],
-                            'shipping' => ['active' => false, 'time' => $order['updated_at'], 'label' => 'Đã giao cho ĐVVC'],
+                            'shipping' => ['active' => false, 'time' => $order['updated_at'] ?? null, 'label' => 'Đã giao cho ĐVVC'],
                             'completed' => ['active' => false, 'time' => $order['completed_at'] ?? $order['received_at'] ?? null, 'label' => 'Giao hàng thành công'],
                         ];
 
                         // Determine active steps based on status
                         if ($order['status'] != 'pending_payment' && $order['status'] != 'cancelled') {
-                             $steps['paid']['active'] = true;
-                             // Fallback time if paid_at is null but status advanced
-                             if (!$steps['paid']['time']) $steps['paid']['time'] = $order['updated_at'];
+                            $steps['paid']['active'] = true;
+                            // Fallback time if paid_at is null but status advanced
+                            if (!$steps['paid']['time'])
+                                $steps['paid']['time'] = $order['updated_at'] ?? null;
                         }
-                        
+
                         if ($order['status'] == 'shipping' || $order['status'] == 'completed' || $order['status'] == 'received') {
                             $steps['shipping']['active'] = true;
                         }
-                        
+
                         if ($order['status'] == 'completed' || $order['status'] == 'received') {
                             $steps['completed']['active'] = true;
                         }
@@ -104,7 +105,7 @@ include __DIR__ . '/../partials/head.php';
                         if ($order['status'] == 'cancelled') {
                             $steps = [
                                 'placed' => ['active' => true, 'time' => $order['created_at'], 'label' => 'Đơn hàng đã đặt'],
-                                'cancelled' => ['active' => true, 'time' => $order['updated_at'], 'label' => 'Đã hủy đơn hàng'],
+                                'cancelled' => ['active' => true, 'time' => $order['updated_at'] ?? null, 'label' => 'Đã hủy đơn hàng'],
                             ];
                         }
                         ?>
@@ -114,33 +115,35 @@ include __DIR__ . '/../partials/head.php';
 
                         <div class="space-y-8 relative">
                             <?php foreach ($steps as $key => $step): ?>
-                            <div class="relative pl-8">
-                                <!-- Dot -->
-                                <div class="absolute left-0 top-1 w-6 h-6 rounded-full border-4 flex items-center justify-center bg-white z-10
+                                <div class="relative pl-8">
+                                    <!-- Dot -->
+                                    <div class="absolute left-0 top-1 w-6 h-6 rounded-full border-4 flex items-center justify-center bg-white z-10
                                     <?= $step['active'] ? 'border-green-500' : 'border-gray-300' ?>">
-                                    <?php if ($step['active']): ?>
-                                        <div class="w-2.5 h-2.5 rounded-full bg-green-500"></div>
-                                    <?php else: ?>
-                                        <div class="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
-                                    <?php endif; ?>
+                                        <?php if ($step['active']): ?>
+                                            <div class="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+                                        <?php else: ?>
+                                            <div class="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <!-- Content -->
+                                    <div>
+                                        <h4
+                                            class="text-sm font-bold <?= $step['active'] ? 'text-green-600' : 'text-gray-500' ?> leading-none mb-1.5">
+                                            <?= $step['label'] ?>
+                                        </h4>
+                                        <?php if ($step['active'] && $step['time']): ?>
+                                            <p class="text-xs text-gray-500">
+                                                <?= date('H:i d-m-Y', strtotime($step['time'])) ?>
+                                            </p>
+                                        <?php endif; ?>
+
+                                        <?php if ($key == 'cancelled' && !empty($order['cancel_reason'])): ?>
+                                            <p class="text-xs text-red-500 mt-1">Lý do:
+                                                <?= htmlspecialchars($order['cancel_reason']) ?></p>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
-                                
-                                <!-- Content -->
-                                <div>
-                                    <h4 class="text-sm font-bold <?= $step['active'] ? 'text-green-600' : 'text-gray-500' ?> leading-none mb-1.5">
-                                        <?= $step['label'] ?>
-                                    </h4>
-                                    <?php if ($step['active'] && $step['time']): ?>
-                                        <p class="text-xs text-gray-500">
-                                            <?= date('H:i d-m-Y', strtotime($step['time'])) ?>
-                                        </p>
-                                    <?php endif; ?>
-                                    
-                                    <?php if ($key == 'cancelled' && !empty($order['cancel_reason'])): ?>
-                                         <p class="text-xs text-red-500 mt-1">Lý do: <?= htmlspecialchars($order['cancel_reason']) ?></p>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
                             <?php endforeach; ?>
                         </div>
                     </div>
@@ -149,11 +152,11 @@ include __DIR__ . '/../partials/head.php';
 
             <!-- Right Column: Info & Summary -->
             <div class="w-full md:w-80 flex-shrink-0 flex flex-col gap-6">
-                
+
                 <!-- Helper Actions for Shop -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
                     <h3 class="font-bold text-gray-800 mb-3 pb-3 border-b border-gray-100">Thao tác</h3>
-                     <form action="/shop/orders/update" method="POST" class="flex flex-col gap-2">
+                    <form action="/shop/orders/update" method="POST" class="flex flex-col gap-2">
                         <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
 
                         <?php if ($order['status'] == 'pending' || $order['status'] == 'paid'): ?>

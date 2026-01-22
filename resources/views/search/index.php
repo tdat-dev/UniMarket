@@ -5,12 +5,30 @@ include __DIR__ . '/../partials/head.php';
 include __DIR__ . '/../partials/header.php';
 
 // Variables for filter partials
-$baseUrl = '/search?q=' . urlencode($keyword);
+$baseUrl = '/search';
 $currentCategoryId = $_GET['category'] ?? null;
 $priceMin = $_GET['price_min'] ?? '';
 $priceMax = $_GET['price_max'] ?? '';
 $currentCondition = $_GET['condition'] ?? '';
 $currentSort = $_GET['sort'] ?? 'newest';
+
+// Query params to preserve (including keyword)
+$queryParams = [];
+if (!empty($keyword)) {
+    $queryParams['q'] = $keyword;
+}
+if (!empty($currentCategoryId)) {
+    $queryParams['category'] = $currentCategoryId;
+}
+if (!empty($priceMin)) {
+    $queryParams['price_min'] = $priceMin;
+}
+if (!empty($priceMax)) {
+    $queryParams['price_max'] = $priceMax;
+}
+if (!empty($currentCondition)) {
+    $queryParams['condition'] = $currentCondition;
+}
 
 // Nếu categories chưa được truyền từ controller, lấy từ model
 if (!isset($categories)) {
@@ -63,23 +81,32 @@ if (!isset($categories)) {
                     </div>
 
                     <!-- Pagination -->
+                    <?php
+                    // Build pagination URL helper
+                    $buildPageUrl = function ($page) use ($baseUrl, $queryParams) {
+                        $params = $queryParams;
+                        $params['page'] = $page;
+                        $query = http_build_query($params);
+                        return $query ? "{$baseUrl}?{$query}" : $baseUrl;
+                    };
+                    ?>
                     <div class="flex justify-center mt-10 gap-2">
                         <?php if ($currentPage > 1): ?>
-                            <a href="/search?q=<?= urlencode($keyword) ?>&page=<?= $currentPage - 1 ?><?= !empty($currentCondition) ? '&condition=' . $currentCondition : '' ?><?= !empty($priceMin) ? '&price_min=' . $priceMin : '' ?><?= !empty($priceMax) ? '&price_max=' . $priceMax : '' ?>"
+                            <a href="<?= $buildPageUrl($currentPage - 1) ?>"
                                 class="px-3 py-1 bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 rounded-sm">
                                 <i class="fa-solid fa-chevron-left"></i>
                             </a>
                         <?php endif; ?>
 
                         <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                            <a href="/search?q=<?= urlencode($keyword) ?>&page=<?= $i ?><?= !empty($currentCondition) ? '&condition=' . $currentCondition : '' ?><?= !empty($priceMin) ? '&price_min=' . $priceMin : '' ?><?= !empty($priceMax) ? '&price_max=' . $priceMax : '' ?>"
+                            <a href="<?= $buildPageUrl($i) ?>"
                                 class="px-3 py-1 border rounded-sm transition-colors <?= $i == $currentPage ? 'bg-[#2C67C8] border-[#2C67C8] text-white' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50' ?>">
                                 <?= $i ?>
                             </a>
                         <?php endfor; ?>
 
                         <?php if ($currentPage < $totalPages): ?>
-                            <a href="/search?q=<?= urlencode($keyword) ?>&page=<?= $currentPage + 1 ?><?= !empty($currentCondition) ? '&condition=' . $currentCondition : '' ?><?= !empty($priceMin) ? '&price_min=' . $priceMin : '' ?><?= !empty($priceMax) ? '&price_max=' . $priceMax : '' ?>"
+                            <a href="<?= $buildPageUrl($currentPage + 1) ?>"
                                 class="px-3 py-1 bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 rounded-sm">
                                 <i class="fa-solid fa-chevron-right"></i>
                             </a>

@@ -48,13 +48,61 @@
         <div class="border-t border-slate-700 my-4"></div>
 
         <!-- Report Management -->
-        <a href="/admin/reports"
-          class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm
+        <a href="/admin/reports" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm
           <?= str_contains($_SERVER['REQUEST_URI'], '/admin/reports') ? 'active' : '' ?>">
-          <i class="fa-solid fa-flag w-5"></i>
-          <span>Báo cáo vi phạm</span>
+            <i class="fa-solid fa-flag w-5"></i>
+            <span>Báo cáo vi phạm</span>
         </a>
 
+        <div class="border-t border-slate-700 my-4"></div>
+        <div class="text-xs text-slate-400 uppercase tracking-wider mb-3 px-3">Tài chính</div>
+
+        <!-- Wallet Management -->
+        <a href="/admin/wallets"
+            class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm <?= str_contains($_SERVER['REQUEST_URI'], '/admin/wallets') && !str_contains($_SERVER['REQUEST_URI'], 'withdrawals') && !str_contains($_SERVER['REQUEST_URI'], 'escrow') ? 'active' : '' ?>">
+            <i class="fa-solid fa-wallet w-5"></i>
+            <span>Quản lý Ví</span>
+        </a>
+
+        <!-- Withdrawals -->
+        <a href="/admin/wallets/withdrawals"
+            class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm <?= str_contains($_SERVER['REQUEST_URI'], '/withdrawals') ? 'active' : '' ?>">
+            <i class="fa-solid fa-money-bill-transfer w-5"></i>
+            <span>Yêu cầu Rút tiền</span>
+        </a>
+
+        <!-- Escrow -->
+        <a href="/admin/wallets/escrow"
+            class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm <?= str_contains($_SERVER['REQUEST_URI'], '/escrow') ? 'active' : '' ?>">
+            <i class="fa-solid fa-lock w-5"></i>
+            <span>Escrow</span>
+        </a>
+
+        <div class="border-t border-slate-700 my-4"></div>
+        <div class="text-xs text-slate-400 uppercase tracking-wider mb-3 px-3">Khác</div>
+
+        <!-- Reviews -->
+        <a href="/admin/reviews"
+            class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm <?= str_contains($_SERVER['REQUEST_URI'], '/admin/reviews') ? 'active' : '' ?>">
+            <i class="fa-solid fa-star w-5"></i>
+            <span>Đánh giá</span>
+        </a>
+
+        <!-- Analytics -->
+        <a href="/admin/analytics"
+            class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm <?= str_contains($_SERVER['REQUEST_URI'], '/admin/analytics') ? 'active' : '' ?>">
+            <i class="fa-solid fa-chart-simple w-5"></i>
+            <span>Phân tích</span>
+        </a>
+
+        <!-- Notifications -->
+        <a href="/admin/notifications/broadcast"
+            class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm <?= str_contains($_SERVER['REQUEST_URI'], '/admin/notifications') ? 'active' : '' ?>">
+            <i class="fa-solid fa-bullhorn w-5"></i>
+            <span>Gửi thông báo</span>
+        </a>
+
+        <div class="border-t border-slate-700 my-4"></div>
 
         <!-- Settings -->
         <a href="/admin/settings" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm">
