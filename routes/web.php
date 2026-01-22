@@ -15,6 +15,7 @@ use App\Controllers\ProfileController;
 use App\Controllers\ShopController;
 use App\Controllers\ChatController;
 use App\Controllers\AddressController;
+use App\Controllers\PhoneVerificationController;
 
 /** @var \App\Core\Router $router */
 
@@ -46,6 +47,10 @@ $router->get('verify-email', [VerificationController::class, 'showVerifyForm']);
 $router->post('verify-email', [VerificationController::class, 'verifyByOtp']);
 $router->get('verify-email/token', [VerificationController::class, 'verifyByToken']);
 $router->post('verify-email/resend', [VerificationController::class, 'resendVerification']);
+
+// Phone Verification (Firebase Phone Auth)
+$router->get('verify-phone', [PhoneVerificationController::class, 'show']);
+$router->post('verify-phone/confirm', [PhoneVerificationController::class, 'confirm']);
 
 // ======================= CATEGORIES (Zoldify SEO URLs) =======================
 // Format: /dm/ten-danh-muc.c123

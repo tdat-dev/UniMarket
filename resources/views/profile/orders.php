@@ -79,38 +79,38 @@ if (!isset($_SESSION['user'])) {
             ?>
 
             <?php if ($error && isset($errorMessages[$error])): ?>
-                <div class="mx-4 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
-                    <i class="fa-solid fa-circle-exclamation text-red-500"></i>
-                    <span class="text-red-700 text-sm"><?= $errorMessages[$error] ?></span>
-                </div>
+            <div class="mx-4 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+                <i class="fa-solid fa-circle-exclamation text-red-500"></i>
+                <span class="text-red-700 text-sm"><?= $errorMessages[$error] ?></span>
+            </div>
             <?php endif; ?>
 
             <?php if ($success && isset($successMessages[$success])): ?>
-                <div class="mx-4 mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
-                    <i class="fa-solid fa-circle-check text-green-500"></i>
-                    <span class="text-green-700 text-sm"><?= $successMessages[$success] ?></span>
-                </div>
+            <div class="mx-4 mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+                <i class="fa-solid fa-circle-check text-green-500"></i>
+                <span class="text-green-700 text-sm"><?= $successMessages[$success] ?></span>
+            </div>
             <?php endif; ?>
 
             <!-- Orders List -->
             <div class="divide-y divide-gray-100">
                 <?php if (empty($orders)): ?>
-                    <div class="p-12 text-center text-gray-500">
-                        <i class="fa-solid fa-basket-shopping text-4xl mb-4 text-gray-300"></i>
-                        <p>Bạn chưa mua đơn hàng nào.</p>
-                        <a href="/"
-                            class="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700">Mua
-                            sắm ngay</a>
-                    </div>
+                <div class="p-12 text-center text-gray-500">
+                    <i class="fa-solid fa-basket-shopping text-4xl mb-4 text-gray-300"></i>
+                    <p>Bạn chưa mua đơn hàng nào.</p>
+                    <a href="/"
+                        class="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700">Mua
+                        sắm ngay</a>
+                </div>
                 <?php else: ?>
-                    <?php foreach ($orders as $order): ?>
-                        <div class="p-6 hover:bg-gray-50 transition">
-                            <div class="flex flex-wrap justify-between items-start mb-4 gap-2">
-                                <div class="flex gap-3 items-center">
-                                    <span class="font-bold text-blue-600">#ORD-<?= $order['id'] ?></span>
-                                    <span
-                                        class="text-xs text-gray-500"><?= TimeHelper::formatDatetime($order['created_at']) ?></span>
-                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium 
+                <?php foreach ($orders as $order): ?>
+                <div class="p-6 hover:bg-gray-50 transition">
+                    <div class="flex flex-wrap justify-between items-start mb-4 gap-2">
+                        <div class="flex gap-3 items-center">
+                            <span class="font-bold text-blue-600">#ORD-<?= $order['id'] ?></span>
+                            <span
+                                class="text-xs text-gray-500"><?= TimeHelper::formatDatetime($order['created_at']) ?></span>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium 
                                         <?= $order['status'] == 'pending' ? 'bg-yellow-100 text-yellow-800' : '' ?>
                                         <?= $order['status'] == 'pending_payment' ? 'bg-orange-100 text-orange-800' : '' ?>
                                         <?= $order['status'] == 'paid' ? 'bg-green-100 text-green-800' : '' ?>
@@ -118,7 +118,7 @@ if (!isset($_SESSION['user'])) {
                                         <?= $order['status'] == 'completed' ? 'bg-green-100 text-green-800' : '' ?>
                                         <?= $order['status'] == 'cancelled' ? 'bg-red-100 text-red-800' : '' ?>
                                      ">
-                                        <?php
+                                <?php
                                         $statusMap = [
                                             'pending' => 'Chờ xác nhận',
                                             'pending_payment' => 'Chờ thanh toán',
@@ -129,73 +129,73 @@ if (!isset($_SESSION['user'])) {
                                         ];
                                         echo $statusMap[$order['status']] ?? ucfirst($order['status']);
                                         ?>
-                                    </span>
-                                </div>
-                                <div class="text-sm font-bold text-red-600">
-                                    <?= number_format($order['total_amount'] ?? 0, 0, ',', '.') ?>đ
-                                </div>
-                            </div>
+                            </span>
+                        </div>
+                        <div class="text-sm font-bold text-red-600">
+                            <?= number_format($order['total_amount'] ?? 0, 0, ',', '.') ?>đ
+                        </div>
+                    </div>
 
-                            <!-- Product Images -->
-                            <?php if (!empty($order['items'])): ?>
-                                <div class="flex items-center gap-3 mb-4">
-                                    <?php
+                    <!-- Product Images -->
+                    <?php if (!empty($order['items'])): ?>
+                    <div class="flex items-center gap-3 mb-4">
+                        <?php
                                     $displayItems = array_slice($order['items'], 0, 3);
                                     $remainingCount = count($order['items']) - 3;
                                     ?>
-                                    <?php foreach ($displayItems as $item): ?>
-                                        <a href="/products/<?= $item['product_id'] ?>" class="block">
-                                            <img src="<?= ImageHelper::url($item['product_image'] ?? 'default_product.png') ?>"
-                                                alt="<?= htmlspecialchars($item['product_name'] ?? 'Sản phẩm') ?>"
-                                                class="w-16 h-16 object-cover rounded-lg border border-gray-200 hover:border-blue-400 transition">
-                                        </a>
-                                    <?php endforeach; ?>
-                                    <?php if ($remainingCount > 0): ?>
-                                        <a href="/profile/orders/detail?id=<?= $order['id'] ?>"
-                                            class="w-16 h-16 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center text-gray-500 text-sm font-medium hover:bg-gray-100 transition">
-                                            +<?= $remainingCount ?>
-                                        </a>
-                                    <?php endif; ?>
+                        <?php foreach ($displayItems as $item): ?>
+                        <a href="/products/<?= $item['product_id'] ?>" class="block">
+                            <img src="<?= ImageHelper::url($item['product_image'] ?? 'default_product.png') ?>"
+                                alt="<?= htmlspecialchars($item['product_name'] ?? 'Sản phẩm') ?>"
+                                class="w-16 h-16 object-cover rounded-lg border border-gray-200 hover:border-blue-400 transition">
+                        </a>
+                        <?php endforeach; ?>
+                        <?php if ($remainingCount > 0): ?>
+                        <a href="/profile/orders/detail?id=<?= $order['id'] ?>"
+                            class="w-16 h-16 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center text-gray-500 text-sm font-medium hover:bg-gray-100 transition">
+                            +<?= $remainingCount ?>
+                        </a>
+                        <?php endif; ?>
 
-                                    <!-- Product name for single item -->
-                                    <?php if (count($order['items']) === 1): ?>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-gray-800 truncate">
-                                                <?= htmlspecialchars($order['items'][0]['product_name'] ?? '') ?>
-                                            </p>
-                                            <p class="text-xs text-gray-500">
-                                                x<?= $order['items'][0]['quantity'] ?? 1 ?>
-                                            </p>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-                            <?php endif; ?>
-                            <div class="flex flex-wrap justify-end items-center gap-2">
-                                <?php if ($order['status'] == 'pending' || $order['status'] == 'pending_payment'): ?>
-                                    <button type="button" onclick="initiateCancel(<?= $order['id'] ?>)"
-                                        class="px-4 py-2 border border-red-500 text-red-600 text-sm font-medium rounded-md hover:bg-red-50 whitespace-nowrap">Hủy
-                                        đơn hàng</button>
-                                <?php endif; ?>
-                                <?php if ($order['status'] == 'pending_payment'): ?>
-                                    <!-- Luôn tạo payment link MỚI để tránh link hết hạn -->
-                                    <form action="/payment/create" method="POST" class="inline">
-                                        <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
-                                        <button type="submit"
-                                            class="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-md hover:bg-orange-600 whitespace-nowrap"
-                                            style="background-color: #f97316 !important; color: white !important;">
-                                            <i class="fas fa-qrcode mr-1"></i>Thanh toán ngay
-                                        </button>
-                                    </form>
-                                <?php endif; ?>
-                                <button type="button" onclick="initiateRebuy(<?= $order['id'] ?>)"
-                                    class="px-4 py-2 border border-blue-600 text-blue-600 text-sm font-medium rounded-md hover:bg-blue-50 whitespace-nowrap">Mua
-                                    lại</button>
-                                <a href="/profile/orders/detail?id=<?= $order['id'] ?>"
-                                    class="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 whitespace-nowrap">Chi
-                                    tiết</a>
-                            </div>
+                        <!-- Product name for single item -->
+                        <?php if (count($order['items']) === 1): ?>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-800 truncate">
+                                <?= htmlspecialchars($order['items'][0]['product_name'] ?? '') ?>
+                            </p>
+                            <p class="text-xs text-gray-500">
+                                x<?= $order['items'][0]['quantity'] ?? 1 ?>
+                            </p>
                         </div>
-                    <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                    <?php endif; ?>
+                    <div class="flex flex-wrap justify-end items-center gap-2">
+                        <?php if ($order['status'] == 'pending' || $order['status'] == 'pending_payment'): ?>
+                        <button type="button" onclick="initiateCancel(<?= $order['id'] ?>)"
+                            class="px-4 py-2 border border-red-500 text-red-600 text-sm font-medium rounded-md hover:bg-red-50 whitespace-nowrap">Hủy
+                            đơn hàng</button>
+                        <?php endif; ?>
+                        <?php if ($order['status'] == 'pending_payment'): ?>
+                        <!-- Luôn tạo payment link MỚI để tránh link hết hạn -->
+                        <form action="/payment/create" method="POST" class="inline">
+                            <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
+                            <button type="submit"
+                                class="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-md hover:bg-orange-600 whitespace-nowrap"
+                                style="background-color: #f97316 !important; color: white !important;">
+                                <i class="fas fa-qrcode mr-1"></i>Thanh toán ngay
+                            </button>
+                        </form>
+                        <?php endif; ?>
+                        <button type="button" onclick="initiateRebuy(<?= $order['id'] ?>)"
+                            class="px-4 py-2 border border-blue-600 text-blue-600 text-sm font-medium rounded-md hover:bg-blue-50 whitespace-nowrap">Mua
+                            lại</button>
+                        <a href="/profile/orders/detail?id=<?= $order['id'] ?>"
+                            class="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 whitespace-nowrap">Chi
+                            tiết</a>
+                    </div>
+                </div>
+                <?php endforeach; ?>
                 <?php endif; ?>
             </div>
         </div>
@@ -305,75 +305,75 @@ if (!isset($_SESSION['user'])) {
     </div>
 
     <script>
-        let currentOrderId = null;
-        let selectedReason = null;
+    let currentOrderId = null;
+    let selectedReason = null;
 
-        function initiateCancel(orderId) {
-            currentOrderId = orderId;
-            document.getElementById('cancelReasonModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden'; // Prevent scrolling
+    function initiateCancel(orderId) {
+        currentOrderId = orderId;
+        document.getElementById('cancelReasonModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Prevent scrolling
 
-            // Reset selection
-            const radios = document.getElementsByName('cancel_reason');
-            radios.forEach(r => r.checked = false);
-        }
+        // Reset selection
+        const radios = document.getElementsByName('cancel_reason');
+        radios.forEach(r => r.checked = false);
+    }
 
-        function closeCancelModal() {
-            document.getElementById('cancelReasonModal').classList.add('hidden');
-            document.body.style.overflow = '';
-        }
+    function closeCancelModal() {
+        document.getElementById('cancelReasonModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
 
-        function proceedToConfirmation() {
-            const radios = document.getElementsByName('cancel_reason');
-            let selected = false;
-            radios.forEach(r => {
-                if (r.checked) {
-                    selected = true;
-                    selectedReason = r.value;
-                }
-            });
-
-            if (!selected) {
-                alert('Vui lòng chọn lý do để chúng tôi hỗ trợ tốt hơn!');
-                return;
+    function proceedToConfirmation() {
+        const radios = document.getElementsByName('cancel_reason');
+        let selected = false;
+        radios.forEach(r => {
+            if (r.checked) {
+                selected = true;
+                selectedReason = r.value;
             }
-
-            closeCancelModal();
-            document.getElementById('confirmCancelModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-
-            document.getElementById('finalOrderId').value = currentOrderId;
-            document.getElementById('finalReason').value = selectedReason;
-        }
-
-        function closeConfirmModal() {
-            document.getElementById('confirmCancelModal').classList.add('hidden');
-            document.body.style.overflow = '';
-        }
-
-        // Close modal when clicking outside
-        document.getElementById('cancelReasonModal').addEventListener('click', function (e) {
-            if (e.target === this) closeCancelModal();
         });
 
-        document.getElementById('confirmCancelModal').addEventListener('click', function (e) {
-            if (e.target === this) closeConfirmModal();
-        });
-
-        function initiateRebuy(orderId) {
-            document.getElementById('rebuyOrderId').value = orderId;
-            document.getElementById('rebuyOrderModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
+        if (!selected) {
+            alert('Vui lòng chọn lý do để chúng tôi hỗ trợ tốt hơn!');
+            return;
         }
 
-        function closeRebuyModal() {
-            document.getElementById('rebuyOrderModal').classList.add('hidden');
-            document.body.style.overflow = '';
-        }
+        closeCancelModal();
+        document.getElementById('confirmCancelModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
 
-        document.getElementById('rebuyOrderModal').addEventListener('click', function (e) {
-            if (e.target === this) closeRebuyModal();
-        });
+        document.getElementById('finalOrderId').value = currentOrderId;
+        document.getElementById('finalReason').value = selectedReason;
+    }
+
+    function closeConfirmModal() {
+        document.getElementById('confirmCancelModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('cancelReasonModal').addEventListener('click', function(e) {
+        if (e.target === this) closeCancelModal();
+    });
+
+    document.getElementById('confirmCancelModal').addEventListener('click', function(e) {
+        if (e.target === this) closeConfirmModal();
+    });
+
+    function initiateRebuy(orderId) {
+        document.getElementById('rebuyOrderId').value = orderId;
+        document.getElementById('rebuyOrderModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeRebuyModal() {
+        document.getElementById('rebuyOrderModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('rebuyOrderModal').addEventListener('click', function(e) {
+        if (e.target === this) closeRebuyModal();
+    });
     </script>
 </main>
 

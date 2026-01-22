@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Middleware\VerificationMiddleware;
+use App\Middleware\PhoneVerificationMiddleware;
 use App\Models\Product;
 use App\Models\Cart;
 use App\Models\User;
@@ -28,6 +29,7 @@ class CheckoutController extends BaseController
     public function process(): void
     {
         VerificationMiddleware::requireVerified();
+        PhoneVerificationMiddleware::requireVerified();
         $user = $this->requireAuth();
         $userId = (int) $user['id'];
 
@@ -108,6 +110,7 @@ class CheckoutController extends BaseController
     public function confirm(): void
     {
         VerificationMiddleware::requireVerified();
+        PhoneVerificationMiddleware::requireVerified();
         $user = $this->requireAuth();
         $userId = (int) $user['id'];
 

@@ -12,6 +12,7 @@ use App\Models\Follow;
 use App\Models\Notification;
 use App\Models\Report;
 use App\Models\UserAddress;
+use App\Middleware\PhoneVerificationMiddleware;
 
 
 /**
@@ -175,6 +176,7 @@ class ProductController extends BaseController
      */
     public function create(): void
     {
+        PhoneVerificationMiddleware::requireVerified();
         $user = $this->requireAuth();
 
         $categoryModel = new Category();
@@ -204,6 +206,7 @@ class ProductController extends BaseController
      */
     public function store(): void
     {
+        PhoneVerificationMiddleware::requireVerified();
         $user = $this->requireAuth();
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
