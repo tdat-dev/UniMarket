@@ -11,6 +11,7 @@ include __DIR__ . '/../partials/header.php';
 $baseUrl = '/products';
 $currentCategoryId = null; // No category selected on /products
 $currentSort = $sort ?? 'newest';
+$currentCondition = $currentCondition ?? '';
 $totalProducts = count($products ?? []) + (($currentPage - 1) * 20);
 
 // Query params for sorting/pagination
@@ -21,6 +22,8 @@ if (!empty($priceMin))
     $queryParams['price_min'] = $priceMin;
 if (!empty($priceMax))
     $queryParams['price_max'] = $priceMax;
+if (!empty($currentCondition))
+    $queryParams['condition'] = $currentCondition;
 ?>
 
 <main class="bg-gray-100 min-h-screen pb-20 md:pb-10">

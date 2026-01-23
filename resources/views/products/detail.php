@@ -50,16 +50,16 @@ include __DIR__ . '/../partials/header.php';
                     </div>
                     <!-- Thumbnails - Hiển thị đúng số ảnh thực tế -->
                     <?php if (!empty($productImages) && count($productImages) > 0): ?>
-                    <div class="flex gap-2 mt-4 overflow-x-auto">
-                        <?php foreach ($productImages as $index => $image): ?>
-                        <div class="product-thumbnail w-20 h-20 border border-gray-200 hover:border-[#2C67C8] cursor-pointer rounded-sm overflow-hidden flex-shrink-0 <?= $index === 0 ? 'border-[#2C67C8]' : '' ?>"
-                            data-image="<?= ImageHelper::url('uploads/' . $image['image_path']) ?>"
-                            data-index="<?= $index ?>">
-                            <img src="<?= ImageHelper::url('uploads/' . $image['image_path']) ?>"
-                                class="w-full h-full object-cover">
+                        <div class="flex gap-2 mt-4 overflow-x-auto">
+                            <?php foreach ($productImages as $index => $image): ?>
+                                <div class="product-thumbnail w-20 h-20 border border-gray-200 hover:border-[#2C67C8] cursor-pointer rounded-sm overflow-hidden flex-shrink-0 <?= $index === 0 ? 'border-[#2C67C8]' : '' ?>"
+                                    data-image="<?= ImageHelper::url('uploads/' . $image['image_path']) ?>"
+                                    data-index="<?= $index ?>">
+                                    <img src="<?= ImageHelper::url('uploads/' . $image['image_path']) ?>"
+                                        class="w-full h-full object-cover">
+                                </div>
+                            <?php endforeach; ?>
                         </div>
-                        <?php endforeach; ?>
-                    </div>
                     <?php endif; ?>
                 </div>
 
@@ -119,7 +119,7 @@ include __DIR__ . '/../partials/header.php';
                             <span class="w-32 text-gray-500">Tình trạng:</span>
                             <?php
                             $conditions = Product::getConditions();
-                            $conditionKey = $product['condition'] ?? 'good';
+                            $conditionKey = $product['product_condition'] ?? 'good';
                             $conditionInfo = $conditions[$conditionKey] ?? ['label' => 'Không xác định', 'color_text' => 'text-gray-500'];
                             ?>
                             <span class="<?= $conditionInfo['color_text'] ?? '' ?> font-medium">
@@ -144,35 +144,35 @@ include __DIR__ . '/../partials/header.php';
 
                     <!-- Buttons -->
                     <div class="flex gap-4 pt-4">
-                        <?php 
+                        <?php
                         $currentUserId = $_SESSION['user']['id'] ?? null;
                         $isOwner = $currentUserId && $currentUserId == $product['user_id'];
                         ?>
 
                         <?php if ($isOwner): ?>
-                        <div
-                            class="w-full px-8 py-3 bg-gray-100 text-gray-500 font-medium rounded-sm border border-gray-200 text-center select-none">
-                            <i class="fa-solid fa-user-tag mr-2"></i>Bạn là người bán sản phẩm này
-                        </div>
+                            <div
+                                class="w-full px-8 py-3 bg-gray-100 text-gray-500 font-medium rounded-sm border border-gray-200 text-center select-none">
+                                <i class="fa-solid fa-user-tag mr-2"></i>Bạn là người bán sản phẩm này
+                            </div>
                         <?php elseif ($product['quantity'] > 0 && $product['status'] === 'active'): ?>
-                        <form action="/cart/add" method="POST" class="flex gap-4 w-full">
-                            <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-                            <input type="hidden" name="quantity" value="1" id="input-quantity-submit">
+                            <form action="/cart/add" method="POST" class="flex gap-4 w-full">
+                                <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+                                <input type="hidden" name="quantity" value="1" id="input-quantity-submit">
 
-                            <button type="submit" name="action" value="add"
-                                class="flex-1 px-6 py-3 bg-[#2C67C8] text-white font-medium rounded-sm hover:bg-[#F97316] transition-colors flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-cart-shopping"></i> Thêm vào giỏ hàng
-                            </button>
-                            <button type="submit" name="action" value="buy"
-                                class="flex-1 px-8 py-3 bg-[#2C67C8] text-white font-medium rounded-sm hover:bg-[#F97316] transition-colors shadow-sm text-center">
-                                Mua ngay
-                            </button>
-                        </form>
+                                <button type="submit" name="action" value="add"
+                                    class="flex-1 px-6 py-3 bg-[#2C67C8] text-white font-medium rounded-sm hover:bg-[#F97316] transition-colors flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-cart-shopping"></i> Thêm vào giỏ hàng
+                                </button>
+                                <button type="submit" name="action" value="buy"
+                                    class="flex-1 px-8 py-3 bg-[#2C67C8] text-white font-medium rounded-sm hover:bg-[#F97316] transition-colors shadow-sm text-center">
+                                    Mua ngay
+                                </button>
+                            </form>
                         <?php else: ?>
-                        <button disabled
-                            class="w-full px-8 py-3 bg-gray-300 text-gray-500 font-medium rounded-sm cursor-not-allowed">
-                            Sản phẩm đã hết hàng
-                        </button>
+                            <button disabled
+                                class="w-full px-8 py-3 bg-gray-300 text-gray-500 font-medium rounded-sm cursor-not-allowed">
+                                Sản phẩm đã hết hàng
+                            </button>
                         <?php endif; ?>
                     </div>
 
@@ -230,10 +230,10 @@ include __DIR__ . '/../partials/header.php';
                 </div>
                 <div class="flex gap-2 w-full sm:w-auto mt-3 sm:mt-0">
                     <?php if (($currentUserId ?? ($_SESSION['user']['id'] ?? null)) != $seller['id']): ?>
-                    <a href="/chat?user_id=<?= $seller['id'] ?>"
-                        class="px-4 py-2 border border-[#2C67C8] text-[#2C67C8] rounded-sm hover:bg-blue-50 font-medium text-sm flex items-center gap-1">
-                        <i class="fa-regular fa-comment-dots"></i> Chat ngay
-                    </a>
+                        <a href="/chat?user_id=<?= $seller['id'] ?>"
+                            class="px-4 py-2 border border-[#2C67C8] text-[#2C67C8] rounded-sm hover:bg-blue-50 font-medium text-sm flex items-center gap-1">
+                            <i class="fa-regular fa-comment-dots"></i> Chat ngay
+                        </a>
                     <?php endif; ?>
                     <a href="/shop?id=<?= $seller['id'] ?>"
                         class="px-4 py-2 bg-gray-100 text-gray-600 rounded-sm hover:bg-gray-200 font-medium text-sm flex items-center gap-1">
@@ -255,60 +255,60 @@ include __DIR__ . '/../partials/header.php';
         <div class="bg-white rounded-sm shadow-sm p-5">
             <h2 class="text-lg font-medium text-gray-800 mb-6 uppercase">Sản phẩm tương tự</h2>
             <?php if (empty($relatedProducts)): ?>
-            <p class="text-gray-500 text-center py-4">Không có sản phẩm tương tự nào.</p>
+                <p class="text-gray-500 text-center py-4">Không có sản phẩm tương tự nào.</p>
             <?php else: ?>
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                <?php foreach ($relatedProducts as $item): ?>
-                <div
-                    class="group bg-white border border-transparent hover:border-[#2C67C8] hover:shadow-md transition-all duration-200 rounded-sm overflow-hidden relative">
-                    <a href="<?= SlugHelper::productUrl($item['name'], (int)($item['user_id'] ?? 0), (int)$item['id']) ?>"
-                        class="block">
-                        <!-- Image -->
-                        <div class="relative pt-[100%] overflow-hidden bg-gray-100">
-                            <img src="<?= ImageHelper::url('uploads/' . ($item['image'] ?? '')) ?>"
-                                alt="<?= htmlspecialchars($item['name'] ?? '') ?>"
-                                class="absolute top-0 left-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                    <?php foreach ($relatedProducts as $item): ?>
+                        <div
+                            class="group bg-white border border-transparent hover:border-[#2C67C8] hover:shadow-md transition-all duration-200 rounded-sm overflow-hidden relative">
+                            <a href="<?= SlugHelper::productUrl($item['name'], (int) ($item['user_id'] ?? 0), (int) $item['id']) ?>"
+                                class="block">
+                                <!-- Image -->
+                                <div class="relative pt-[100%] overflow-hidden bg-gray-100">
+                                    <img src="<?= ImageHelper::url('uploads/' . ($item['image'] ?? '')) ?>"
+                                        alt="<?= htmlspecialchars($item['name'] ?? '') ?>"
+                                        class="absolute top-0 left-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
 
-                            <!-- Badges - Freeship khi giá >= 200k -->
-                            <?php if (((float)($item['price'] ?? 0)) >= 200000): ?>
-                            <div
-                                class="absolute top-0 left-0 bg-[#00bfa5] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-br-sm">
-                                Freeship
-                            </div>
-                            <?php endif; ?>
-                        </div>
-
-                        <!-- Info -->
-                        <div class="p-2 space-y-1">
-                            <h3
-                                class="text-xs text-gray-700 font-normal line-clamp-2 leading-tight h-8 group-hover:text-[#2C67C8] transition-colors">
-                                <?= htmlspecialchars($item['name']) ?>
-                            </h3>
-
-                            <div class="flex items-center justify-between pt-1">
-                                <div class="text-[#EE4D2D] font-medium text-sm">
-                                    <?= number_format($item['price'], 0, ',', '.') ?><span
-                                        class="text-xs align-top">₫</span>
+                                    <!-- Badges - Freeship khi giá >= 200k -->
+                                    <?php if (((float) ($item['price'] ?? 0)) >= 200000): ?>
+                                        <div
+                                            class="absolute top-0 left-0 bg-[#00bfa5] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-br-sm">
+                                            Freeship
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
-                                <div class="text-[10px] text-gray-400">Còn <?= $item['quantity'] ?? 0 ?></div>
-                            </div>
 
-                            <!-- Location - Tạm ẩn vì chưa có dữ liệu địa chỉ trong related products -->
-                            <!-- TODO: Thêm seller location vào related products query -->
-                            <div class="flex items-center justify-between pt-2">
-                                <span class="text-[10px] text-gray-400 font-light truncate w-full">&nbsp;</span>
+                                <!-- Info -->
+                                <div class="p-2 space-y-1">
+                                    <h3
+                                        class="text-xs text-gray-700 font-normal line-clamp-2 leading-tight h-8 group-hover:text-[#2C67C8] transition-colors">
+                                        <?= htmlspecialchars($item['name']) ?>
+                                    </h3>
+
+                                    <div class="flex items-center justify-between pt-1">
+                                        <div class="text-[#EE4D2D] font-medium text-sm">
+                                            <?= number_format($item['price'], 0, ',', '.') ?><span
+                                                class="text-xs align-top">₫</span>
+                                        </div>
+                                        <div class="text-[10px] text-gray-400">Còn <?= $item['quantity'] ?? 0 ?></div>
+                                    </div>
+
+                                    <!-- Location - Tạm ẩn vì chưa có dữ liệu địa chỉ trong related products -->
+                                    <!-- TODO: Thêm seller location vào related products query -->
+                                    <div class="flex items-center justify-between pt-2">
+                                        <span class="text-[10px] text-gray-400 font-light truncate w-full">&nbsp;</span>
+                                    </div>
+                                </div>
+                            </a>
+
+                            <!-- Hover Action (Tìm kiếm tương tự) -->
+                            <div
+                                class="absolute bottom-0 left-0 w-full bg-[#2C67C8] text-white text-center text-xs py-1.5 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                Tìm sản phẩm tương tự
                             </div>
                         </div>
-                    </a>
-
-                    <!-- Hover Action (Tìm kiếm tương tự) -->
-                    <div
-                        class="absolute bottom-0 left-0 w-full bg-[#2C67C8] text-white text-center text-xs py-1.5 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                        Tìm sản phẩm tương tự
-                    </div>
+                    <?php endforeach; ?>
                 </div>
-                <?php endforeach; ?>
-            </div>
             <?php endif; ?>
         </div>
 
@@ -367,154 +367,154 @@ include __DIR__ . '/../partials/header.php';
 </div>
 
 <script>
-const isLoggedIn = <?= isset($_SESSION['user']['id']) ? 'true' : 'false' ?>;
+    const isLoggedIn = <?= isset($_SESSION['user']['id']) ? 'true' : 'false' ?>;
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Handle report messages
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('success') === 'report_sent') {
-        alert('Cảm ơn bạn! Báo cáo vi phạm đã được gửi và sẽ được xem xét.');
-        const newUrl = window.location.pathname;
-        window.history.replaceState(null, null, newUrl);
-    } else if (urlParams.get('error') === 'missing_data') {
-        alert('Vui lòng chọn lý do báo cáo.');
-    } else if (urlParams.get('error') === 'server_error') {
-        alert('Có lỗi xảy ra, vui lòng thử lại sau.');
-    }
-
-    const btnDecrease = document.getElementById('btn-decrease');
-    const btnIncrease = document.getElementById('btn-increase');
-    const inputQuantity = document.getElementById('input-quantity');
-    const maxStock = parseInt(document.getElementById('max-stock')?.value) || 0;
-    const inputSubmit = document.getElementById('input-quantity-submit');
-    const btnSubmitCart = document.querySelector('button[value="add"]');
-    const btnSubmitBuy = document.querySelector('button[value="buy"]');
-
-    const formCart = document.querySelector('form[action="/cart/add"]');
-
-    if (formCart) {
-        formCart.addEventListener('submit', function(e) {
-            if (!isLoggedIn) {
-                e.preventDefault();
-                window.location.href = '/login';
-            }
-        });
-    }
-
-    function updateQuantity(val) {
-        let newVal = parseInt(val);
-        if (isNaN(newVal) || newVal < 1) newVal = 1;
-        if (newVal > maxStock) newVal = maxStock;
-
-        if (inputQuantity) inputQuantity.value = newVal;
-        if (inputSubmit) inputSubmit.value = newVal; // Update hidden input for form
-
-        // Validate functionality if stock is somehow 0 (though covered by PHP)
-        if (maxStock <= 0) {
-            if (inputQuantity) inputQuantity.value = 0;
-            if (btnSubmitCart) btnSubmitCart.disabled = true;
-            if (btnSubmitBuy) btnSubmitBuy.disabled = true;
+    document.addEventListener('DOMContentLoaded', function () {
+        // Handle report messages
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('success') === 'report_sent') {
+            alert('Cảm ơn bạn! Báo cáo vi phạm đã được gửi và sẽ được xem xét.');
+            const newUrl = window.location.pathname;
+            window.history.replaceState(null, null, newUrl);
+        } else if (urlParams.get('error') === 'missing_data') {
+            alert('Vui lòng chọn lý do báo cáo.');
+        } else if (urlParams.get('error') === 'server_error') {
+            alert('Có lỗi xảy ra, vui lòng thử lại sau.');
         }
-    }
 
-    if (btnDecrease) {
-        btnDecrease.addEventListener('click', function() {
-            if (inputQuantity) updateQuantity(parseInt(inputQuantity.value) - 1);
-        });
-    }
+        const btnDecrease = document.getElementById('btn-decrease');
+        const btnIncrease = document.getElementById('btn-increase');
+        const inputQuantity = document.getElementById('input-quantity');
+        const maxStock = parseInt(document.getElementById('max-stock')?.value) || 0;
+        const inputSubmit = document.getElementById('input-quantity-submit');
+        const btnSubmitCart = document.querySelector('button[value="add"]');
+        const btnSubmitBuy = document.querySelector('button[value="buy"]');
 
-    if (btnIncrease) {
-        btnIncrease.addEventListener('click', function() {
-            if (inputQuantity) updateQuantity(parseInt(inputQuantity.value) + 1);
-        });
-    }
+        const formCart = document.querySelector('form[action="/cart/add"]');
 
-    if (inputQuantity) {
-        inputQuantity.addEventListener('change', function() {
-            updateQuantity(this.value);
-        });
-        // Initial check
-        updateQuantity(inputQuantity.value);
-    }
+        if (formCart) {
+            formCart.addEventListener('submit', function (e) {
+                if (!isLoggedIn) {
+                    e.preventDefault();
+                    window.location.href = '/login';
+                }
+            });
+        }
 
-    // Xử lý click thumbnail để đổi ảnh chính
-    const thumbnails = document.querySelectorAll('.product-thumbnail');
-    const mainImage = document.getElementById('main-product-image');
+        function updateQuantity(val) {
+            let newVal = parseInt(val);
+            if (isNaN(newVal) || newVal < 1) newVal = 1;
+            if (newVal > maxStock) newVal = maxStock;
 
-    thumbnails.forEach(thumb => {
-        thumb.addEventListener('click', function() {
-            // Đổi ảnh chính
-            const newSrc = this.getAttribute('data-image');
-            if (mainImage && newSrc) {
-                mainImage.src = newSrc;
+            if (inputQuantity) inputQuantity.value = newVal;
+            if (inputSubmit) inputSubmit.value = newVal; // Update hidden input for form
+
+            // Validate functionality if stock is somehow 0 (though covered by PHP)
+            if (maxStock <= 0) {
+                if (inputQuantity) inputQuantity.value = 0;
+                if (btnSubmitCart) btnSubmitCart.disabled = true;
+                if (btnSubmitBuy) btnSubmitBuy.disabled = true;
             }
+        }
 
-            // Cập nhật currentIndex cho lightbox
-            currentImageIndex = parseInt(this.getAttribute('data-index')) || 0;
+        if (btnDecrease) {
+            btnDecrease.addEventListener('click', function () {
+                if (inputQuantity) updateQuantity(parseInt(inputQuantity.value) - 1);
+            });
+        }
 
-            // Highlight thumbnail được chọn
-            thumbnails.forEach(t => t.classList.remove('border-[#2C67C8]'));
-            this.classList.add('border-[#2C67C8]');
+        if (btnIncrease) {
+            btnIncrease.addEventListener('click', function () {
+                if (inputQuantity) updateQuantity(parseInt(inputQuantity.value) + 1);
+            });
+        }
+
+        if (inputQuantity) {
+            inputQuantity.addEventListener('change', function () {
+                updateQuantity(this.value);
+            });
+            // Initial check
+            updateQuantity(inputQuantity.value);
+        }
+
+        // Xử lý click thumbnail để đổi ảnh chính
+        const thumbnails = document.querySelectorAll('.product-thumbnail');
+        const mainImage = document.getElementById('main-product-image');
+
+        thumbnails.forEach(thumb => {
+            thumb.addEventListener('click', function () {
+                // Đổi ảnh chính
+                const newSrc = this.getAttribute('data-image');
+                if (mainImage && newSrc) {
+                    mainImage.src = newSrc;
+                }
+
+                // Cập nhật currentIndex cho lightbox
+                currentImageIndex = parseInt(this.getAttribute('data-index')) || 0;
+
+                // Highlight thumbnail được chọn
+                thumbnails.forEach(t => t.classList.remove('border-[#2C67C8]'));
+                this.classList.add('border-[#2C67C8]');
+            });
         });
     });
-});
 
-// ===== LIGHTBOX FUNCTIONS =====
-const productImages = <?= json_encode(array_map(function ($img) {
+    // ===== LIGHTBOX FUNCTIONS =====
+    const productImages = <?= json_encode(array_map(function ($img) {
         return \App\Helpers\ImageHelper::url('uploads/' . $img['image_path']);
     }, $productImages ?? [])) ?>;
 
-let currentImageIndex = 0;
-const lightbox = document.getElementById('image-lightbox');
-const lightboxImage = document.getElementById('lightbox-image');
-const lightboxCounter = document.getElementById('lightbox-counter');
+    let currentImageIndex = 0;
+    const lightbox = document.getElementById('image-lightbox');
+    const lightboxImage = document.getElementById('lightbox-image');
+    const lightboxCounter = document.getElementById('lightbox-counter');
 
-function openLightbox(index = 0) {
-    if (productImages.length === 0) return;
+    function openLightbox(index = 0) {
+        if (productImages.length === 0) return;
 
-    currentImageIndex = index;
-    updateLightboxImage();
-    lightbox.classList.remove('hidden');
-    document.body.style.overflow = 'hidden'; // Ngăn scroll trang
-}
-
-function closeLightbox() {
-    lightbox.classList.add('hidden');
-    document.body.style.overflow = ''; // Cho phép scroll lại
-}
-
-function updateLightboxImage() {
-    if (productImages[currentImageIndex]) {
-        lightboxImage.src = productImages[currentImageIndex];
-        lightboxCounter.textContent = `${currentImageIndex + 1} / ${productImages.length}`;
+        currentImageIndex = index;
+        updateLightboxImage();
+        lightbox.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Ngăn scroll trang
     }
-}
 
-function nextImage() {
-    currentImageIndex = (currentImageIndex + 1) % productImages.length;
-    updateLightboxImage();
-}
-
-function prevImage() {
-    currentImageIndex = (currentImageIndex - 1 + productImages.length) % productImages.length;
-    updateLightboxImage();
-}
-
-// Đóng lightbox khi click vào nền đen
-lightbox?.addEventListener('click', function(e) {
-    if (e.target === lightbox) {
-        closeLightbox();
+    function closeLightbox() {
+        lightbox.classList.add('hidden');
+        document.body.style.overflow = ''; // Cho phép scroll lại
     }
-});
 
-// Đóng lightbox khi nhấn ESC, chuyển ảnh bằng phím mũi tên
-document.addEventListener('keydown', function(e) {
-    if (lightbox?.classList.contains('hidden')) return;
+    function updateLightboxImage() {
+        if (productImages[currentImageIndex]) {
+            lightboxImage.src = productImages[currentImageIndex];
+            lightboxCounter.textContent = `${currentImageIndex + 1} / ${productImages.length}`;
+        }
+    }
 
-    if (e.key === 'Escape') closeLightbox();
-    if (e.key === 'ArrowRight') nextImage();
-    if (e.key === 'ArrowLeft') prevImage();
-});
+    function nextImage() {
+        currentImageIndex = (currentImageIndex + 1) % productImages.length;
+        updateLightboxImage();
+    }
+
+    function prevImage() {
+        currentImageIndex = (currentImageIndex - 1 + productImages.length) % productImages.length;
+        updateLightboxImage();
+    }
+
+    // Đóng lightbox khi click vào nền đen
+    lightbox?.addEventListener('click', function (e) {
+        if (e.target === lightbox) {
+            closeLightbox();
+        }
+    });
+
+    // Đóng lightbox khi nhấn ESC, chuyển ảnh bằng phím mũi tên
+    document.addEventListener('keydown', function (e) {
+        if (lightbox?.classList.contains('hidden')) return;
+
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowRight') nextImage();
+        if (e.key === 'ArrowLeft') prevImage();
+    });
 </script>
 
 <?php include __DIR__ . '/../partials/footer.php'; ?>

@@ -47,9 +47,12 @@ include __DIR__ . '/../partials/header.php';
                 <?php
                 $currentUserId = $_SESSION['user']['id'] ?? null;
                 if ($currentUserId != $seller['id']):
+                    $followBtnClass = !empty($isFollowing) 
+                        ? 'bg-gray-100 text-gray-600 border-gray-300' 
+                        : 'border-[#2C67C8] text-[#2C67C8] hover:bg-blue-50';
                     ?>
                     <button id="btn-follow" data-shop-id="<?= $seller['id'] ?>"
-                        class="px-6 py-2 border border-[#2C67C8] text-[#2C67C8] font-medium rounded-sm hover:bg-blue-50 transition-colors w-[160px]">
+                        class="px-6 py-2 border font-medium rounded-sm transition-colors w-[160px] <?= $followBtnClass ?>">
                         <?php if (!empty($isFollowing)): ?>
                             <i class="fa-solid fa-check mr-1"></i> Đang theo dõi
                         <?php else: ?>
@@ -174,41 +177,61 @@ include __DIR__ . '/../partials/header.php';
 <?php include __DIR__ . '/../partials/footer.php'; ?>
 
 <script>
-    document.getElementById('btn-follow').addEventListener('click', function () {
-        const btn = this;
-        const shopId = btn.getAttribute('data-shop-id');
-        const countSpan = document.getElementById('follower-count');
+    // Follow button - only attach if element exists
+    const btnFollow = document.getElementById('btn-follow');
+    if (btnFollow) {
+        btnFollow.addEventListener('click', function (e) {
+            e.preventDefault();
+            const btn = this;
+            const shopId = btn.getAttribute('data-shop-id');
+            const countSpan = document.getElementById('follower-count');
 
-        fetch('/shop/follow', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ shop_id: shopId })
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Update button UI
-                    if (data.status === 'followed') {
-                        btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Đang theo dõi';
-                    } else {
-                        btn.innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Theo dõi';
-                    }
-                    // Update count
-                    if (countSpan) {
-                        countSpan.innerText = data.new_count;
-                    }
-                } else {
-                    alert(data.message);
-                    if (data.message.includes('đăng nhập')) {
-                        window.location.href = '/login';
-                    }
-                }
+            // Disable button while processing
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
+            fetch('/shop/follow', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ shop_id: shopId })
             })
-            .catch(error => console.error('Error:', error));
-    });
-</script>
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update button UI
+                        if (data.status === 'followed') {
+                            btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Đang theo dõi';
+                            btn.classList.remove('border-[#2C67C8]', 'text-[#2C67C8]', 'hover:bg-blue-50');
+                            btn.classList.add('bg-gray-100', 'text-gray-600', 'border-gray-300');
+                        } else {
+                            btn.innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Theo dõi';
+                            btn.classList.add('border-[#2C67C8]', 'text-[#2C67C8]', 'hover:bg-blue-50');
+                            btn.classList.remove('bg-gray-100', 'text-gray-600', 'border-gray-300');
+                        }
+                        // Update count
+                        if (countSpan) {
+                            countSpan.innerText = data.new_count;
+                        }
+                    } else {
+                        alert(data.message || 'Có lỗi xảy ra');
+                        if (data.message && data.message.includes('đăng nhập')) {
+                            window.location.href = '/login';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra, vui lòng thử lại');
+                })
+                .finally(() => {
+                    // Re-enable button
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50');
+                });
+        });
+    }
 </script>
 <script>
     let currentProductId = null;
