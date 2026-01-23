@@ -63,7 +63,7 @@ class Report extends BaseModel
                     p.price AS product_price,
                     p.image AS product_image,
                     p.status AS product_status,
-                    p.condition AS product_condition,
+                    p.product_condition,
                     p.quantity AS product_quantity,
                     seller.full_name AS seller_name,
                     seller.email AS seller_email,

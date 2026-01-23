@@ -309,7 +309,7 @@ class PaymentController extends BaseController
         if (!empty($orderDetails)) {
             $productModel = new Product();
             $product = $productModel->find($orderDetails[0]['product_id']);
-            $productCondition = $product['condition'] ?? 'new';
+            $productCondition = $product['product_condition'] ?? 'new';
         }
 
         // Lấy trial days và cập nhật order

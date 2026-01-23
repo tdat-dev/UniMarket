@@ -29,7 +29,7 @@ class Product extends BaseModel
         'image',
         'quantity',
         'status',
-        'condition',
+        'product_condition',
         'view_count',
     ];
 
@@ -199,6 +199,23 @@ class Product extends BaseModel
     }
 
     /**
+     * Lấy sản phẩm phổ biến (view_count cao nhất)
+     * 
+     * @param int $limit
+     * @return array<int, array<string, mixed>>
+     */
+    public function getPopular(int $limit = 12): array
+    {
+        $sql = "SELECT p.*, {$this->getSoldCountSubquery()} AS sold_count
+                FROM {$this->table} p
+                WHERE p.status = ? AND p.quantity > 0
+                ORDER BY p.view_count DESC 
+                LIMIT ?";
+
+        return $this->db->fetchAll($sql, [self::STATUS_ACTIVE, $limit]);
+    }
+
+    /**
      * Lấy sản phẩm theo top keywords phổ biến
      * 
      * Tìm các sản phẩm match với keywords được tìm nhiều nhất.
@@ -208,97 +225,93 @@ class Product extends BaseModel
      */
     public function getByTopKeywords(int $limit = 6): array
     {
-        // Lấy top keywords từ search_keywords table
-        $keywordsSql = "SELECT keyword FROM search_keywords ORDER BY search_count DESC LIMIT 5";
-        $topKeywords = $this->db->fetchAll($keywordsSql);
+        // Lấy top keywords được tìm kiếm nhiều nhất (đã filter keywords xấu)
+        $keywordModel = new SearchKeyword();
+        $topKeywords = $keywordModel->getTopKeywords(15);
 
         if (empty($topKeywords)) {
-            // Fallback: return random products if no keywords
-            return $this->getRandom($limit);
+            // Fallback: trả về sản phẩm phổ biến nếu chưa có ai tìm kiếm
+            return $this->getPopular($limit);
         }
-
-        // Build LIKE conditions cho mỗi keyword
-        $conditions = [];
-        $params = [self::STATUS_ACTIVE];
-
-        foreach ($topKeywords as $row) {
-            $conditions[] = "p.name LIKE ?";
-            $params[] = '%' . $row['keyword'] . '%';
-        }
-        // Lấy 5 keyword phổ biến nhất
-        $keywordModel = new SearchKeyword();
-        $topKeywords = $keywordModel->getTopKeywords(5);
 
         $products = [];
+        $foundIds = [];
 
-        // Nếu có keyword, thử tìm sản phẩm
-        if (!empty($topKeywords)) {
-            $allWords = [];
-
-            // Tách từng keyword thành các từ riêng lẻ
-            foreach ($topKeywords as $kw) {
-                $keyword = $kw['keyword'];
-
-                // Tách theo khoảng trắng
-                $words = explode(' ', trim($keyword));
-                foreach ($words as $word) {
-                    $word = trim(strtolower($word));
-                    // Chỉ lấy từ có độ dài >= 3 ký tự (tránh từ như "c", "a"...)
-                    if (mb_strlen($word) >= 3) {
-                        $allWords[] = $word;
-                    }
-                }
+        // Duyệt qua từng keyword và tìm sản phẩm match
+        foreach ($topKeywords as $kw) {
+            if (count($products) >= $limit) {
+                break;
             }
 
-            // Loại bỏ từ trùng lặp
-            $allWords = array_unique($allWords);
+            $keyword = trim($kw['keyword']);
+            if (empty($keyword))
+                continue;
 
-            if (!empty($allWords)) {
-                // ✅ FIXED: Sử dụng prepared statements thay vì string concatenation
-                $conditions = [];
-                $params = [];
-                $index = 0;
+            // Tìm sản phẩm có tên chứa keyword này
+            $excludeClause = '';
+            $params = [
+                'status' => self::STATUS_ACTIVE,
+                'keyword1' => '%' . $keyword . '%',
+                'keyword2' => '%' . $keyword . '%',
+                'limit' => 2 // Lấy tối đa 2 sản phẩm mỗi keyword để đa dạng
+            ];
 
-                foreach ($allWords as $word) {
-                    $paramName = "word_$index";
-                    $conditions[] = "name LIKE :$paramName";
-                    $params[$paramName] = "%$word%";
-                    $index++;
+            if (!empty($foundIds)) {
+                $placeholders = [];
+                foreach ($foundIds as $i => $id) {
+                    $placeholders[] = ":exclude_$i";
+                    $params["exclude_$i"] = $id;
                 }
+                $excludeClause = "AND p.id NOT IN (" . implode(',', $placeholders) . ")";
+            }
 
-                $whereClause = '(' . implode(' OR ', $conditions) . ')';
-                $params['limit'] = $limit;
+            $sql = "SELECT p.* FROM products p
+                    WHERE p.status = :status
+                      AND p.quantity > 0
+                      AND (p.name LIKE :keyword1 OR p.description LIKE :keyword2)
+                      $excludeClause
+                    ORDER BY p.view_count DESC
+                    LIMIT :limit";
 
-                $sql = "SELECT * FROM products 
-                        WHERE status = '" . self::STATUS_ACTIVE . "' 
-                        AND ($whereClause) 
-                        LIMIT :limit";
+            $matched = $this->db->fetchAll($sql, $params);
 
-                $products = $this->db->fetchAll($sql, $params);
+            foreach ($matched as $product) {
+                if (count($products) >= $limit)
+                    break;
+                if (!in_array($product['id'], $foundIds)) {
+                    $products[] = $product;
+                    $foundIds[] = $product['id'];
+                }
             }
         }
 
-        // Nếu số lượng sản phẩm tìm được < limit -> Lấy thêm ngẫu nhiên bù vào
-        // $count = count($products);
-        // if ($count < $limit) {
-        //     $needed = $limit - $count;
+        // Nếu vẫn chưa đủ, bù thêm sản phẩm phổ biến
+        if (count($products) < $limit) {
+            $needed = $limit - count($products);
 
-        //     // Lấy ID các sản phẩm đã có để loại trừ (tránh trùng)
-        //     $existingIds = array_column($products, 'id');
-        //     $excludeSql = "";
-        //     if (!empty($existingIds)) {
-        //         $ids = implode(',', $existingIds);
-        //         $excludeSql = "AND id NOT IN ($ids)";
-        //     }
+            $excludeClause = '';
+            $params = [
+                'status' => self::STATUS_ACTIVE,
+                'needed' => $needed
+            ];
 
-        //     // Query lấy thêm
-        //     $moreProducts = $this->db->fetchAll(
-        //         "SELECT * FROM products WHERE status = 'active' $excludeSql ORDER BY RAND() LIMIT $needed"
-        //     );
+            if (!empty($foundIds)) {
+                $placeholders = [];
+                foreach ($foundIds as $i => $id) {
+                    $placeholders[] = ":exclude_$i";
+                    $params["exclude_$i"] = $id;
+                }
+                $excludeClause = "AND id NOT IN (" . implode(',', $placeholders) . ")";
+            }
 
-        //     // Gộp lại
-        //     $products = array_merge($products, $moreProducts);
-        // }
+            $sql = "SELECT * FROM products 
+                    WHERE status = :status AND quantity > 0 $excludeClause 
+                    ORDER BY view_count DESC 
+                    LIMIT :needed";
+
+            $moreProducts = $this->db->fetchAll($sql, $params);
+            $products = array_merge($products, $moreProducts);
+        }
 
         return $products;
     }
@@ -495,9 +508,9 @@ class Product extends BaseModel
         }
 
         // Filter by condition (new, like_new, good, fair)
-        if (!empty($filters['condition'])) {
-            $sql .= " AND p.condition = ?";
-            $params[] = $filters['condition'];
+        if (!empty($filters['product_condition'])) {
+            $sql .= " AND p.product_condition = ?";
+            $params[] = $filters['product_condition'];
         }
 
         // Filter by price range
@@ -560,9 +573,9 @@ class Product extends BaseModel
             }
         }
 
-        if (!empty($filters['condition'])) {
-            $sql .= " AND p.condition = ?";
-            $params[] = $filters['condition'];
+        if (!empty($filters['product_condition'])) {
+            $sql .= " AND p.product_condition = ?";
+            $params[] = $filters['product_condition'];
         }
 
         if (!empty($filters['price_min'])) {
@@ -743,8 +756,8 @@ class Product extends BaseModel
     public function createProduct(array $data): int
     {
         $sql = "INSERT INTO {$this->table} 
-                (name, price, description, user_id, category_id, image, quantity, status) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                (name, price, description, user_id, category_id, image, quantity, status, product_condition) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $id = $this->db->insert($sql, [
             $data['name'],
@@ -755,6 +768,7 @@ class Product extends BaseModel
             $data['image'],
             $data['quantity'] ?? 1,
             self::STATUS_ACTIVE,
+            $data['product_condition'] ?? self::CONDITION_GOOD,
         ]);
 
         $this->clearCache();
@@ -770,7 +784,7 @@ class Product extends BaseModel
      */
     public function updateProduct(int $id, array $data): bool
     {
-        $allowedFields = ['name', 'price', 'quantity', 'description', 'category_id', 'status', 'image', 'condition'];
+        $allowedFields = ['name', 'price', 'quantity', 'description', 'category_id', 'status', 'image', 'product_condition'];
 
         $sets = [];
         $params = [];

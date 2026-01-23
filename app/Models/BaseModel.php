@@ -84,7 +84,8 @@ abstract class BaseModel
             throw new \InvalidArgumentException("No fillable data provided");
         }
 
-        $columns = implode(', ', array_keys($filtered));
+        // Wrap column names in backticks to handle MySQL reserved words (e.g., 'condition')
+        $columns = implode(', ', array_map(fn($col) => "`{$col}`", array_keys($filtered)));
         $placeholders = implode(', ', array_fill(0, count($filtered), '?'));
 
         $sql = "INSERT INTO {$this->table} ({$columns}) VALUES ({$placeholders})";
@@ -106,7 +107,8 @@ abstract class BaseModel
             return false;
         }
 
-        $setParts = array_map(fn($col) => "{$col} = ?", array_keys($filtered));
+        // Wrap column names in backticks to handle MySQL reserved words
+        $setParts = array_map(fn($col) => "`{$col}` = ?", array_keys($filtered));
         $setClause = implode(', ', $setParts);
 
         $sql = "UPDATE {$this->table} SET {$setClause} WHERE {$this->primaryKey} = ?";
