@@ -43,6 +43,11 @@ class SearchKeyword extends BaseModel
             return;
         }
 
+        // Skip invalid keywords (containing query params or special chars)
+        if (!$this->isValidKeyword($keyword)) {
+            return;
+        }
+
         // UPSERT: Insert hoặc Update nếu đã tồn tại
         $sql = "INSERT INTO {$this->table} (keyword, search_count) 
                 VALUES (?, 1)
@@ -63,8 +68,17 @@ class SearchKeyword extends BaseModel
      */
     public function getTopKeywords(int $limit = 10): array
     {
+        // Filter out invalid keywords containing query params
         $sql = "SELECT keyword, search_count 
                 FROM {$this->table} 
+                WHERE keyword NOT LIKE '%?%'
+                  AND keyword NOT LIKE '%=%'
+                  AND keyword NOT LIKE '%sort%'
+                  AND keyword NOT LIKE '%condition%'
+                  AND keyword NOT LIKE '%price_%'
+                  AND keyword NOT LIKE '%page%'
+                  AND keyword NOT LIKE '%category%'
+                  AND LENGTH(keyword) >= 2
                 ORDER BY search_count DESC 
                 LIMIT ?";
 
@@ -131,6 +145,24 @@ class SearchKeyword extends BaseModel
         return $this->db->execute($sql, [$minCount]);
     }
 
+    /**
+     * Xóa keywords chứa query params (dọn dẹp dữ liệu xấu)
+     * 
+     * @return int Số records đã xóa
+     */
+    public function cleanupInvalidKeywords(): int
+    {
+        $sql = "DELETE FROM {$this->table} 
+                WHERE keyword LIKE '%?%'
+                   OR keyword LIKE '%=%'
+                   OR keyword LIKE '%sort%'
+                   OR keyword LIKE '%condition%'
+                   OR keyword LIKE '%price_%'
+                   OR keyword LIKE '%page%'
+                   OR keyword LIKE '%category%'";
+        return $this->db->execute($sql, []);
+    }
+
     // =========================================================================
     // PRIVATE HELPERS
     // =========================================================================
@@ -144,5 +176,42 @@ class SearchKeyword extends BaseModel
     private function normalizeKeyword(string $keyword): string
     {
         return trim(mb_strtolower($keyword));
+    }
+
+    /**
+     * Kiểm tra keyword có hợp lệ không
+     * 
+     * Loại bỏ keywords chứa query params hoặc ký tự đặc biệt
+     * 
+     * @param string $keyword
+     * @return bool
+     */
+    private function isValidKeyword(string $keyword): bool
+    {
+        // Keyword quá ngắn
+        if (mb_strlen($keyword) < 2) {
+            return false;
+        }
+
+        // Keyword chứa các ký tự query string
+        $invalidPatterns = [
+            '?',
+            '=',
+            '&',
+            'sort=',
+            'condition=',
+            'price_min',
+            'price_max',
+            'page=',
+            'category=',
+        ];
+
+        foreach ($invalidPatterns as $pattern) {
+            if (strpos($keyword, $pattern) !== false) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

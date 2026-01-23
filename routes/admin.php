@@ -6,6 +6,10 @@ use App\Controllers\Admin\CategoryController;
 use App\Controllers\Admin\OrderController;
 use App\Controllers\Admin\SettingController;
 use App\Controllers\Admin\ReportController;
+use App\Controllers\Admin\WalletController;
+use App\Controllers\Admin\ReviewController;
+use App\Controllers\Admin\AnalyticsController;
+use App\Controllers\Admin\NotificationController;
 
 
 /** @var \App\Core\Router $router */
@@ -50,3 +54,22 @@ $router->post('admin/settings/toggle-maintenance', [SettingController::class, 't
 $router->get('admin/reports', [ReportController::class, 'index']);
 $router->get('admin/reports/show', [ReportController::class, 'show']);
 $router->post('admin/reports/hide-product', [ReportController::class, 'hideProduct']);
+
+// Wallet Management
+$router->get('admin/wallets', [WalletController::class, 'index']);
+$router->get('admin/wallets/show', [WalletController::class, 'show']);
+$router->get('admin/wallets/withdrawals', [WalletController::class, 'withdrawals']);
+$router->post('admin/wallets/approve-withdrawal', [WalletController::class, 'approveWithdrawal']);
+$router->post('admin/wallets/reject-withdrawal', [WalletController::class, 'rejectWithdrawal']);
+$router->get('admin/wallets/escrow', [WalletController::class, 'escrow']);
+
+// Reviews Management
+$router->get('admin/reviews', [ReviewController::class, 'index']);
+$router->post('admin/reviews/delete', [ReviewController::class, 'delete']);
+
+// Analytics
+$router->get('admin/analytics', [AnalyticsController::class, 'search']);
+
+// Notifications Broadcast
+$router->get('admin/notifications/broadcast', [NotificationController::class, 'broadcast']);
+$router->post('admin/notifications/send', [NotificationController::class, 'sendBroadcast']);

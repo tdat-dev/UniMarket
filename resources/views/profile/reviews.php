@@ -1,5 +1,6 @@
 <?php
 use App\Helpers\ImageHelper;
+use App\Helpers\TimeHelper;
 include __DIR__ . '/../partials/head.php';
 ?>
 <?php
@@ -112,7 +113,7 @@ if (!isset($_SESSION['user'])) {
                                             </div>
                                         </div>
                                         <span
-                                            class="text-xs text-gray-400"><?= date('d/m/Y', strtotime($review['created_at'])) ?></span>
+                                            class="text-xs text-gray-400"><?= TimeHelper::formatDate($review['created_at']) ?></span>
                                     </div>
                                     <p class="text-sm text-gray-600"><?= htmlspecialchars($review['comment']) ?></p>
                                 </div>

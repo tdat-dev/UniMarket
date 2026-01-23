@@ -62,9 +62,10 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                                         </div>
                                         <div>
                                             <p class="text-sm text-gray-800 line-clamp-2">
-                                                <?= htmlspecialchars($notif['content']) ?></p>
+                                                <?= htmlspecialchars($notif['content']) ?>
+                                            </p>
                                             <span
-                                                class="text-xs text-gray-400 mt-1 block"><?= date('H:i d/m', strtotime($notif['created_at'])) ?></span>
+                                                class="text-xs text-gray-400 mt-1 block"><?= \App\Helpers\TimeHelper::format($notif['created_at'], 'H:i d/m') ?></span>
                                         </div>
                                     </div>
                                 </a>
@@ -111,11 +112,7 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                                     <i class="fa-solid fa-wallet w-5 text-center"></i>
                                     Tiền của tôi
                                 </a>
-                                <a href="/reviews"
-                                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
-                                    <i class="fa-regular fa-star w-5 text-center"></i>
-                                    Đánh giá của tôi
-                                </a>
+
                                 <a href="/profile/orders"
                                     class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
                                     <i class="fa-solid fa-bag-shopping w-5 text-center"></i>
@@ -131,6 +128,12 @@ $is_auth_page = (strpos($current_page, '/login') !== false || strpos($current_pa
                                     class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
                                     <i class="fa-solid fa-plus w-5 text-center"></i>
                                     Thêm sản phẩm
+                                </a>
+
+                                <a href="/shop?id=<?= $_SESSION['user']['id'] ?? '' ?>"
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#2C67C8] transition-colors">
+                                    <i class="fa-solid fa-box-open w-5 text-center"></i>
+                                    Tất cả sản phẩm
                                 </a>
 
                                 <a href="/shop/orders"

@@ -212,7 +212,7 @@ class Cart extends BaseModel
 
         // Batch check products exist (tránh N+1)
         $placeholders = implode(',', array_fill(0, count($productIds), '?'));
-        $sql = "SELECT id FROM products WHERE id IN ({$placeholders}) AND status = 'active'";
+        $sql = "SELECT id FROM products WHERE id IN ({$placeholders}) AND status = '" . Product::STATUS_ACTIVE . "'";
         $existingProducts = $this->db->fetchAll($sql, $productIds);
         $existingIds = array_column($existingProducts, 'id');
 
@@ -245,7 +245,7 @@ class Cart extends BaseModel
         $sql = "DELETE c FROM {$this->table} c
                 LEFT JOIN products p ON c.product_id = p.id
                 WHERE c.user_id = ? 
-                AND (p.id IS NULL OR p.status != 'active')";
+                AND (p.id IS NULL OR p.status != '" . Product::STATUS_ACTIVE . "')";
 
         return $this->db->execute($sql, [$userId]);
     }

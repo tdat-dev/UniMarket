@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Helpers\SeoHelper;
 
 /**
  * Category Controller
@@ -82,6 +83,10 @@ class CategoryController extends BaseController
         $totalProducts = $productModel->countFiltered($filters);
         $totalPages = (int) ceil($totalProducts / self::ITEMS_PER_PAGE);
 
+        // ========== SEO cho trang danh mục ==========
+        SeoHelper::setCategory($category);
+        // ============================================
+
         $this->view('category/index', [
             'category' => $category,
             'parentCategory' => $parentCategory,
@@ -108,7 +113,7 @@ class CategoryController extends BaseController
 
         return [
             'category_id' => $categoryIds,
-            'condition' => $this->query('condition'),
+            'product_condition' => $this->query('product_condition'),
             'rating' => $this->query('rating') !== null ? (int) $this->query('rating') : null,
             'price_min' => $this->query('price_min') !== null ? (int) $this->query('price_min') : null,
             'price_max' => $this->query('price_max') !== null ? (int) $this->query('price_max') : null,

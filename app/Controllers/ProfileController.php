@@ -117,6 +117,15 @@ class ProfileController extends BaseController
 
                 // Update session
                 $_SESSION['user']['avatar'] = $newFilename;
+
+                header('Location: ' . $_SERVER['HTTP_REFERER'] . '?success=avatar_updated');
+                exit;
+            } else {
+                // Log error for debugging
+                error_log("Avatar upload failed for user {$_SESSION['user']['id']}. Upload dir: {$uploadDir}, Path: {$uploadPath}, is_writable: " . (is_writable($uploadDir) ? 'yes' : 'no'));
+
+                header('Location: ' . $_SERVER['HTTP_REFERER'] . '?error=upload_failed');
+                exit;
             }
         }
 
@@ -272,32 +281,38 @@ class ProfileController extends BaseController
     }
 
     public function storeReview()
-    {
-        if (session_status() == PHP_SESSION_NONE)
-            session_start();
-        if (!isset($_SESSION['user'])) {
-            header('Location: /login');
-            exit;
-        }
-
-        $userId = $_SESSION['user']['id'];
-        $productId = $_POST['product_id'] ?? null;
-        $rating = $_POST['rating'] ?? 5;
-        $comment = $_POST['comment'] ?? '';
-
-        if ($productId) {
-            $reviewModel = new \App\Models\Review();
-            $reviewModel->create([
-                'user_id' => $userId,
-                'product_id' => $productId,
-                'rating' => $rating,
-                'comment' => $comment
-            ]);
-        }
-
-        header('Location: /reviews?tab=reviewed');
+{
+    if (session_status() == PHP_SESSION_NONE)
+        session_start();
+    if (!isset($_SESSION['user'])) {
+        header('Location: /login');
         exit;
     }
+
+    $userId = $_SESSION['user']['id'];
+    $productId = $_POST['product_id'] ?? null;
+    $orderId = $_POST['order_id'] ?? null;
+    $rating = $_POST['rating'] ?? 5;
+    $comment = $_POST['comment'] ?? '';
+
+    if ($productId) {
+        $reviewModel = new \App\Models\Review();
+        $reviewModel->create([
+            'reviewer_id' => $userId,
+            'product_id' => $productId,
+            'rating' => $rating,
+            'comment' => $comment
+        ]);
+    }
+
+    // Redirect về trang chi tiết đơn hàng nếu có order_id
+    if ($orderId) {
+        header('Location: /profile/order-detail?id=' . $orderId . '&reviewed=1');
+    } else {
+        header('Location: /reviews?tab=reviewed');
+    }
+    exit;
+}
     public function cancelOrder()
     {
         if (session_status() == PHP_SESSION_NONE)
@@ -426,9 +441,9 @@ class ProfileController extends BaseController
         foreach ($itemsToBuy as $newItem) {
             $orderItemModel->addItem(
                 $newOrderId,
-                (int)$newItem['product_id'],
-                (int)$newItem['quantity'],
-                (float)$newItem['price']
+                (int) $newItem['product_id'],
+                (int) $newItem['quantity'],
+                (float) $newItem['price']
             );
 
             // Deduct from database (available products)
@@ -440,44 +455,55 @@ class ProfileController extends BaseController
     }
 
     public function orderDetail()
-    {
-        if (session_status() == PHP_SESSION_NONE)
-            session_start();
-        if (!isset($_SESSION['user'])) {
-            header('Location: /login');
-            exit;
+{
+    if (session_status() == PHP_SESSION_NONE)
+        session_start();
+    if (!isset($_SESSION['user'])) {
+        header('Location: /login');
+        exit;
+    }
+
+    $userId = $_SESSION['user']['id'];
+    $orderId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+
+    if (!$orderId) {
+        header('Location: /profile/orders');
+        exit;
+    }
+
+    $orderModel = new \App\Models\Order();
+    $order = $orderModel->find($orderId);
+
+    if (!$order || $order['buyer_id'] != $userId) {
+        header('Location: /profile/orders?error=unauthorized');
+        exit;
+    }
+
+    // Get Details
+    $orderItemModel = new \App\Models\OrderItem();
+    $order['items'] = $orderItemModel->getByOrderId($orderId);
+
+    // Nếu đơn hàng đã hoàn thành, lấy thông tin review cho từng sản phẩm
+    $reviewModel = new \App\Models\Review();
+    foreach ($order['items'] as &$item) {
+        $item['is_reviewed'] = $reviewModel->hasReviewed($userId, (int) $item['product_id']);
+        if ($item['is_reviewed']) {
+            // Lấy review của user cho sản phẩm này
+            $item['review'] = $reviewModel->getByUserAndProduct($userId, (int) $item['product_id']);
         }
+    }
+    unset($item); // Giải phóng reference
 
-        $userId = $_SESSION['user']['id'];
-        $orderId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+    // Get Buyer Info for Address display (Assuming current user info or snapshot)
+    // Since we don't have snapshot address in order table, we use current user profile
+    $userModel = new \App\Models\User();
+    $buyer = $userModel->find($userId);
 
-        if (!$orderId) {
-            header('Location: /profile/orders');
-            exit;
-        }
-
-        $orderModel = new \App\Models\Order();
-        $order = $orderModel->find($orderId);
-
-        if (!$order || $order['buyer_id'] != $userId) {
-            header('Location: /profile/orders?error=unauthorized');
-            exit;
-        }
-
-        // Get Details
-        $orderItemModel = new \App\Models\OrderItem();
-        $order['items'] = $orderItemModel->getByOrderId($orderId);
-
-        // Get Buyer Info for Address display (Assuming current user info or snapshot)
-        // Since we don't have snapshot address in order table, we use current user profile
-        $userModel = new \App\Models\User();
-        $buyer = $userModel->find($userId);
-
-        $this->view('profile/order_detail', [
-            'pageTitle' => 'Chi tiết đơn hàng #' . $orderId,
-            'order' => $order,
-            'buyer' => $buyer
-        ]);
+    $this->view('profile/order_detail', [
+        'pageTitle' => 'Chi tiết đơn hàng #' . $orderId,
+        'order' => $order,
+        'buyer' => $buyer
+    ]);
     }
 
     /**
@@ -522,8 +548,21 @@ class ProfileController extends BaseController
         // Cập nhật order: status = received, received_at = now, escrow_release_at = now + trial days
         $orderModel->confirmReceived($orderId, $trialDays);
 
-        // Schedule escrow release
+        // Khởi tạo Escrow
         $escrowService = new \App\Services\EscrowService();
+
+        // Nếu là đơn COD → Tạo escrow hold tại thời điểm nhận hàng
+        // (Đơn PayOS đã tạo escrow ngay khi thanh toán thành công)
+        if (($order['payment_method'] ?? 'cod') === 'cod') {
+            $escrowService->holdCODFunds(
+                $orderId,
+                (float) $order['total_amount'],
+                (int) $order['seller_id'],
+                'good' // Default condition cho đồ cũ
+            );
+        }
+
+        // Schedule escrow release (áp dụng cho cả COD và PayOS)
         $escrowService->scheduleRelease($orderId, $trialDays);
 
         $_SESSION['success'] = "Cảm ơn bạn đã xác nhận! Bạn có {$trialDays} ngày để kiểm tra hàng.";

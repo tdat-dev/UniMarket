@@ -1,5 +1,6 @@
 <?php
 use App\Helpers\ImageHelper;
+use App\Helpers\TimeHelper;
 include __DIR__ . '/../partials/head.php';
 ?>
 <?php include __DIR__ . '/../partials/header.php'; ?>
@@ -43,28 +44,92 @@ include __DIR__ . '/../partials/head.php';
                     </div>
                     <div class="divide-y divide-gray-100">
                         <?php foreach ($order['items'] as $item): ?>
-                            <div class="p-4 flex gap-4 hover:bg-gray-50 transition">
-                                <div
-                                    class="w-20 h-20 bg-gray-100 rounded-md flex-shrink-0 overflow-hidden border border-gray-200">
-                                    <img src="<?= ImageHelper::url('uploads/' . ($item['product_image'] ?? '')) ?>"
-                                        class="w-full h-full object-cover">
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="font-medium text-gray-900 line-clamp-2">
-                                            <?= htmlspecialchars($item['product_name']) ?>
-                                        </h4>
-                                        <span
-                                            class="font-bold text-gray-900 ml-4"><?= number_format($item['price_at_purchase'] * $item['quantity'], 0, ',', '.') ?>đ</span>
+                            <div class="p-4 hover:bg-gray-50 transition">
+                                <div class="flex gap-4">
+                                    <div
+                                        class="w-20 h-20 bg-gray-100 rounded-md flex-shrink-0 overflow-hidden border border-gray-200">
+                                        <img src="<?= ImageHelper::url('uploads/' . ($item['product_image'] ?? '')) ?>"
+                                            class="w-full h-full object-cover">
                                     </div>
-                                    <p class="text-sm text-gray-500 mt-1">Phân loại: Mặc định</p>
-                                    <div class="flex justify-between items-center mt-2">
-                                        <span class="text-sm text-gray-500">x<?= $item['quantity'] ?></span>
-                                        <!-- Backend data -->
-                                        <span
-                                            class="text-xs text-gray-400 line-through"><?= number_format(($item['price_at_purchase'] * 1.2), 0, ',', '.') ?>đ</span>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-start">
+                                            <h4 class="font-medium text-gray-900 line-clamp-2">
+                                                <?= htmlspecialchars($item['product_name']) ?>
+                                            </h4>
+                                            <span
+                                                class="font-bold text-gray-900 ml-4"><?= number_format($item['price_at_purchase'] * $item['quantity'], 0, ',', '.') ?>đ</span>
+                                        </div>
+                                        <p class="text-sm text-gray-500 mt-1">Phân loại: Mặc định</p>
+                                        <div class="flex justify-between items-center mt-2">
+                                            <span class="text-sm text-gray-500">x<?= $item['quantity'] ?></span>
+                                            <span
+                                                class="text-xs text-gray-400 line-through"><?= number_format(($item['price_at_purchase'] * 1.2), 0, ',', '.') ?>đ</span>
+                                        </div>
                                     </div>
                                 </div>
+                                
+                                <?php if ($order['status'] == 'completed'): ?>
+                                    <!-- Review Section -->
+                                    <div class="mt-4 pt-4 border-t border-gray-100">
+                                        <?php if (!empty($item['is_reviewed']) && !empty($item['review'])): ?>
+                                            <!-- Đã đánh giá - Hiển thị review -->
+                                            <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+                                                <div class="flex items-center gap-2 mb-2">
+                                                    <i class="fa-solid fa-circle-check text-green-600"></i>
+                                                    <span class="text-sm font-medium text-green-700">Đã đánh giá</span>
+                                                    <div class="flex items-center ml-2">
+                                                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                            <i class="fa-solid fa-star text-xs <?= $i <= ($item['review']['rating'] ?? 0) ? 'text-yellow-400' : 'text-gray-300' ?>"></i>
+                                                        <?php endfor; ?>
+                                                    </div>
+                                                </div>
+                                                <?php if (!empty($item['review']['comment'])): ?>
+                                                    <p class="text-sm text-gray-600 italic">"<?= htmlspecialchars($item['review']['comment']) ?>"</p>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php else: ?>
+                                            <!-- Chưa đánh giá - Hiển thị form -->
+                                            <div class="bg-orange-50 rounded-lg p-4 border border-orange-200">
+                                                <div class="flex items-center gap-2 mb-3">
+                                                    <i class="fa-solid fa-star text-orange-500"></i>
+                                                    <span class="text-sm font-medium text-orange-700">Đánh giá sản phẩm này</span>
+                                                </div>
+                                                <form action="/reviews/store" method="POST">
+                                                    <input type="hidden" name="product_id" value="<?= $item['product_id'] ?>">
+                                                    <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
+                                                    
+                                                    <!-- Rating Stars -->
+                                                    <div class="mb-3">
+                                                        <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Chọn số sao</label>
+                                                        <div class="flex items-center gap-1" id="star-rating-<?= $item['product_id'] ?>">
+                                                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                                <label class="cursor-pointer">
+                                                                    <input type="radio" name="rating" value="<?= $i ?>" class="hidden" <?= $i == 5 ? 'checked' : '' ?>>
+                                                                    <i class="fa-solid fa-star text-2xl star-icon <?= $i <= 5 ? 'text-yellow-400' : 'text-gray-300' ?> hover:text-yellow-400 transition"
+                                                                       data-rating="<?= $i ?>"></i>
+                                                                </label>
+                                                            <?php endfor; ?>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Comment -->
+                                                    <div class="mb-3">
+                                                        <textarea name="comment" rows="2"
+                                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                                                            placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."></textarea>
+                                                    </div>
+                                                    
+                                                    <!-- Submit -->
+                                                    <button type="submit"
+                                                        class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-2.5 px-4 rounded-lg shadow-md hover:from-orange-600 hover:to-red-600 transition-all transform hover:scale-[1.01] flex items-center justify-center gap-2">
+                                                        <i class="fa-solid fa-paper-plane"></i>
+                                                        Gửi Đánh Giá
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -79,7 +144,8 @@ include __DIR__ . '/../partials/head.php';
                                 class="absolute -left-[21px] top-1 w-4 h-4 rounded-full bg-blue-500 border-2 border-white ring-2 ring-blue-100">
                             </div>
                             <div class="text-sm font-bold text-gray-900">Đơn hàng được tạo</div>
-                            <div class="text-xs text-gray-500"><?= date('H:i d/m/Y', strtotime($order['created_at'])) ?>
+                            <div class="text-xs text-gray-500">
+                                <?= TimeHelper::format($order['created_at'], 'H:i d/m/Y') ?>
                             </div>
                         </div>
                         <?php if ($order['status'] == 'cancelled'): ?>

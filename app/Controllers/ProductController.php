@@ -12,6 +12,9 @@ use App\Models\Follow;
 use App\Models\Notification;
 use App\Models\Report;
 use App\Models\UserAddress;
+use App\Middleware\PhoneVerificationMiddleware;
+use App\Helpers\SeoHelper;
+use App\Helpers\ImageHelper;
 
 
 /**
@@ -76,6 +79,7 @@ class ProductController extends BaseController
             'keyword' => $this->query('keyword', ''),
             'price_min' => $this->getNumericQuery('price_min'),
             'price_max' => $this->getNumericQuery('price_max'),
+            'product_condition' => $this->query('product_condition'),
             'sort' => $this->query('sort', 'newest')
         ];
 
@@ -86,6 +90,10 @@ class ProductController extends BaseController
         $totalProducts = $productModel->countFiltered($filters);
         $totalPages = (int) ceil($totalProducts / self::ITEMS_PER_PAGE);
 
+        // SEO cho trang danh sách sản phẩm
+        SeoHelper::setTitle('Tất cả sản phẩm');
+        SeoHelper::setDescription('Khám phá hàng ngàn sản phẩm secondhand chất lượng với giá tốt nhất tại Zoldify');
+
         $this->view('products/index', [
             'products' => $products,
             'currentPage' => $page,
@@ -95,7 +103,8 @@ class ProductController extends BaseController
             'categoryId' => 0,
             'sort' => $filters['sort'],
             'priceMin' => $filters['price_min'],
-            'priceMax' => $filters['price_max']
+            'priceMax' => $filters['price_max'],
+            'currentCondition' => $filters['product_condition'] ?? ''
         ]);
     }
 
@@ -136,8 +145,20 @@ class ProductController extends BaseController
             exit;
         }
 
+        // Tăng lượt xem
+        $productModel->incrementViews((int) $id);
+
         $userModel = new User();
         $seller = $userModel->find($product['user_id']);
+
+        // Lấy địa chỉ mặc định của seller từ user_addresses
+        $addressModel = new UserAddress();
+        $sellerAddress = $addressModel->getDefaultAddress((int) $product['user_id']);
+
+        // Gắn province vào seller để hiển thị vận chuyển
+        if ($seller) {
+            $seller['address'] = $sellerAddress['province'] ?? null;
+        }
 
         $productImages = $this->getProductImages((int) $id, $product['image'] ?? null);
         $relatedProducts = $productModel->getByCategory($product['category_id'], 4, $product['id']);
@@ -147,6 +168,14 @@ class ProductController extends BaseController
 
         $reviewModel = new \App\Models\Review();
         $stats = $reviewModel->getSellerStats($product['user_id']);
+
+        // ========== SEO: Set meta tags cho trang sản phẩm ==========
+        $mainImageUrl = !empty($productImages[0]['image_path'])
+            ? ImageHelper::url('uploads/' . $productImages[0]['image_path'])
+            : null;
+
+        SeoHelper::setProduct($product, $mainImageUrl);
+        // ===========================================================
 
         $this->view('products/detail', [
             'product' => $product,
@@ -163,6 +192,7 @@ class ProductController extends BaseController
      */
     public function create(): void
     {
+        PhoneVerificationMiddleware::requireVerified();
         $user = $this->requireAuth();
 
         $categoryModel = new Category();
@@ -192,6 +222,7 @@ class ProductController extends BaseController
      */
     public function store(): void
     {
+        PhoneVerificationMiddleware::requireVerified();
         $user = $this->requireAuth();
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -199,6 +230,10 @@ class ProductController extends BaseController
         }
 
         $data = $_POST;
+
+        // DEBUG: Write to file
+        file_put_contents(__DIR__ . '/../../storage/logs/debug_post.txt', print_r($_POST, true));
+
         $errors = $this->validateProductData($data);
 
         if (!empty($errors)) {
@@ -222,6 +257,9 @@ class ProductController extends BaseController
 
         $mainImage = $uploadedImages[0] ?? 'default_product.png';
 
+        // Debug: Log condition received
+        error_log("[ProductController] Condition from POST: " . ($data['product_condition'] ?? 'NOT SET'));
+
         $productData = [
             'name' => htmlspecialchars($data['name']),
             'price' => (int) $data['price'],
@@ -229,14 +267,29 @@ class ProductController extends BaseController
             'user_id' => $user['id'],
             'category_id' => (int) $data['category_id'],
             'quantity' => max(1, (int) ($data['quantity'] ?? 1)),
-            'image' => $mainImage
+            'image' => $mainImage,
+            'product_condition' => $data['product_condition'] ?? 'good'
         ];
+
+        // DEBUG: Write productData to file
+        file_put_contents(__DIR__ . '/../../storage/logs/debug_productdata.txt', print_r($productData, true));
 
         try {
             $productModel = new Product();
             $newId = $productModel->create($productData);
 
             if ($newId) {
+                // DEBUG: Check what was actually saved in database
+                $savedProduct = $productModel->find($newId);
+                error_log("[ProductController] SAVED condition in DB: " . ($savedProduct['product_condition'] ?? 'NULL'));
+                file_put_contents(
+                    __DIR__ . '/../../storage/logs/debug_saved.txt',
+                    "Product ID: $newId\n" .
+                    "Expected condition: " . $productData['product_condition'] . "\n" .
+                    "Actual condition in DB: " . ($savedProduct['product_condition'] ?? 'NULL') . "\n" .
+                    print_r($savedProduct, true)
+                );
+
                 $this->saveProductImages($newId, $uploadedImages);
                 $this->notifyFollowers($user, $productData['name']);
                 $this->redirect('/shop?id=' . $user['id']);
@@ -436,9 +489,10 @@ class ProductController extends BaseController
     {
         $description = htmlspecialchars($data['description'] ?? '');
 
-        if (!empty($data['condition'])) {
-            $conditionText = $data['condition'] === 'new' ? 'Mới 100%' : $data['condition'];
-            $description .= "\n\nTình trạng: " . $conditionText;
+        if (!empty($data['product_condition'])) {
+            $conditions = Product::getConditions();
+            $conditionLabel = $conditions[$data['product_condition']]['label'] ?? $data['product_condition'];
+            $description .= "\n\nTình trạng: " . $conditionLabel;
         }
 
         return $description;
@@ -527,7 +581,7 @@ class ProductController extends BaseController
             return;
         }
 
-        $productId = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
+        $productId = isset($_POST['product_id']) ? (int) $_POST['product_id'] : 0;
         $reason = $_POST['reason'] ?? '';
         $description = $_POST['description'] ?? '';
         $reporterId = $_SESSION['user']['id'];
@@ -539,7 +593,7 @@ class ProductController extends BaseController
 
         try {
             $reportModel = new Report();
-            
+
             // Combine reason and description since DB doesn't have description column
             $fullReason = $reason;
             if (!empty($description)) {

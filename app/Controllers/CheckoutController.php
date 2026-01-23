@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Middleware\VerificationMiddleware;
+use App\Middleware\PhoneVerificationMiddleware;
 use App\Models\Product;
 use App\Models\Cart;
 use App\Models\User;
@@ -28,6 +29,7 @@ class CheckoutController extends BaseController
     public function process(): void
     {
         VerificationMiddleware::requireVerified();
+        PhoneVerificationMiddleware::requireVerified();
         $user = $this->requireAuth();
         $userId = (int) $user['id'];
 
@@ -108,6 +110,7 @@ class CheckoutController extends BaseController
     public function confirm(): void
     {
         VerificationMiddleware::requireVerified();
+        PhoneVerificationMiddleware::requireVerified();
         $user = $this->requireAuth();
         $userId = (int) $user['id'];
 
@@ -317,14 +320,19 @@ class CheckoutController extends BaseController
         $createdOrderIds = [];
 
         foreach ($ordersBySeller as $orderData) {
-            // COD: Đã xác nhận thanh toán tiền mặt | PayOS: Chờ thanh toán online
-            $orderStatus = ($paymentMethod === 'cod') ? Order::STATUS_PAID : Order::STATUS_PENDING;
+            // COD: Chờ seller xác nhận | PayOS: Chờ thanh toán online
+            $orderStatus = ($paymentMethod === 'cod') ? Order::STATUS_PENDING : 'pending_payment';
 
-            // Create order
+            // Tính phí sàn và số tiền seller nhận
+            $fees = $escrowService->calculateFees($orderData['total']);
+
+            // Create order với platform_fee và seller_amount
             $orderId = $orderModel->createOrder([
                 'buyer_id' => $buyerId,
                 'seller_id' => $orderData['seller_id'],
                 'total_amount' => $orderData['total'],
+                'platform_fee' => $fees['platform_fee'],
+                'seller_amount' => $fees['seller_amount'],
                 'status' => $orderStatus,
                 'payment_method' => $paymentMethod,
             ]);
@@ -333,7 +341,7 @@ class CheckoutController extends BaseController
 
             // Set trial days based on product condition
             $firstProduct = $orderData['items'][0]['product'] ?? null;
-            $condition = $firstProduct['condition'] ?? 'new';
+            $condition = $firstProduct['product_condition'] ?? 'new';
             $trialDays = $escrowService->getTrialDays($condition);
             $orderModel->update($orderId, ['trial_days' => $trialDays]);
 

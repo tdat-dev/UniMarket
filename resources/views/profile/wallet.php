@@ -1,4 +1,7 @@
-<?php include __DIR__ . '/../partials/head.php'; ?>
+<?php
+use App\Helpers\TimeHelper;
+include __DIR__ . '/../partials/head.php';
+?>
 <?php include __DIR__ . '/../partials/header.php'; ?>
 
 <main class="bg-gray-50 min-h-screen pb-20 md:pb-12">
@@ -73,7 +76,7 @@
                                                     <?= $t['type'] == 'deposit' ? 'Nạp tiền vào ví' : ($t['type'] == 'withdraw' ? 'Rút tiền' : 'Giao dịch khác') ?>
                                                 </p>
                                                 <p class="text-xs text-gray-500">
-                                                    <?= date('d/m/Y H:i', strtotime($t['created_at'])) ?>
+                                                    <?= TimeHelper::formatDatetime($t['created_at']) ?>
                                                 </p>
                                             </div>
                                         </div>

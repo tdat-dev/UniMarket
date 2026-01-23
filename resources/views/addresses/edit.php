@@ -9,6 +9,9 @@ unset($_SESSION['old']);
 $errors = $_SESSION['errors'] ?? [];
 unset($_SESSION['errors']);
 
+// Lấy redirect_to để quay về trang trước sau khi cập nhật
+$redirectTo = $_GET['redirect_to'] ?? $_SERVER['HTTP_REFERER'] ?? '/addresses';
+
 // HERE Maps API Key
 $hereApiKey = 'LWsRBnOZXXoE0HZp6R9Ijj5B1YneBem6xT_2CNSsrpc';
 ?>
@@ -30,6 +33,7 @@ $hereApiKey = 'LWsRBnOZXXoE0HZp6R9Ijj5B1YneBem6xT_2CNSsrpc';
         <form action="/addresses/update" method="POST" class="bg-white rounded-lg shadow-sm p-6 space-y-5"
             id="address-form">
             <input type="hidden" name="id" value="<?= $address['id'] ?>">
+            <input type="hidden" name="redirect_to" value="<?= htmlspecialchars($redirectTo) ?>">
 
             <!-- Label -->
             <div>

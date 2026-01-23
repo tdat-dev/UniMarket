@@ -1,6 +1,7 @@
 <?php
 use App\Helpers\SlugHelper;
 use App\Helpers\ImageHelper;
+use App\Models\Product;
 
 include __DIR__ . '/../partials/head.php';
 include __DIR__ . '/../partials/header.php';
@@ -116,7 +117,14 @@ include __DIR__ . '/../partials/header.php';
                         </div>
                         <div class="flex items-center">
                             <span class="w-32 text-gray-500">Tình trạng:</span>
-                            <span>Đã sử dụng - Tốt</span>
+                            <?php
+                            $conditions = Product::getConditions();
+                            $conditionKey = $product['product_condition'] ?? 'good';
+                            $conditionInfo = $conditions[$conditionKey] ?? ['label' => 'Không xác định', 'color_text' => 'text-gray-500'];
+                            ?>
+                            <span class="<?= $conditionInfo['color_text'] ?? '' ?> font-medium">
+                                <?= htmlspecialchars($conditionInfo['label']) ?>
+                            </span>
                         </div>
                         <div class="flex items-center">
                             <span class="w-32 text-gray-500">Số lượng:</span>
@@ -136,15 +144,16 @@ include __DIR__ . '/../partials/header.php';
 
                     <!-- Buttons -->
                     <div class="flex gap-4 pt-4">
-                        <?php 
+                        <?php
                         $currentUserId = $_SESSION['user']['id'] ?? null;
                         $isOwner = $currentUserId && $currentUserId == $product['user_id'];
                         ?>
-                        
+
                         <?php if ($isOwner): ?>
-                             <div class="w-full px-8 py-3 bg-gray-100 text-gray-500 font-medium rounded-sm border border-gray-200 text-center select-none">
+                            <div
+                                class="w-full px-8 py-3 bg-gray-100 text-gray-500 font-medium rounded-sm border border-gray-200 text-center select-none">
                                 <i class="fa-solid fa-user-tag mr-2"></i>Bạn là người bán sản phẩm này
-                             </div>
+                            </div>
                         <?php elseif ($product['quantity'] > 0 && $product['status'] === 'active'): ?>
                             <form action="/cart/add" method="POST" class="flex gap-4 w-full">
                                 <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
@@ -177,9 +186,10 @@ include __DIR__ . '/../partials/header.php';
                             <i class="fa-solid fa-globe text-[#2C67C8] text-base"></i>
                             <span>Nền tảng mua bán đồ cũ vì môi trường</span>
                         </div>
-                        
+
                         <div class="col-span-2 pt-2">
-                             <button onclick="document.getElementById('reportModal').classList.remove('hidden')" class="flex items-center gap-4 hover:text-red-500 transition-colors">
+                            <button onclick="document.getElementById('reportModal').classList.remove('hidden')"
+                                class="flex items-center gap-4 hover:text-red-500 transition-colors">
                                 <i class="fa-solid fa-flag text-base"></i>
                                 <span>Báo cáo sản phẩm</span>
                             </button>
@@ -194,9 +204,14 @@ include __DIR__ . '/../partials/header.php';
         <div class="bg-white rounded-sm shadow-sm p-4">
             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <div class="relative">
-                    <img src="https://ui-avatars.com/api/?name=<?= urlencode($seller['full_name']) ?>&background=random&size=128"
+                    <?php
+                    $sellerAvatarUrl = !empty($seller['avatar'])
+                        ? ImageHelper::url('uploads/avatars/' . $seller['avatar'])
+                        : 'https://ui-avatars.com/api/?name=' . urlencode($seller['full_name']) . '&background=random&size=128';
+                    ?>
+                    <img src="<?= htmlspecialchars($sellerAvatarUrl) ?>"
                         alt="<?= htmlspecialchars($seller['full_name']) ?>"
-                        class="w-16 h-16 rounded-full border border-gray-200">
+                        class="w-16 h-16 rounded-full border border-gray-200 object-cover">
                     <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white">
                     </div>
                 </div>
@@ -208,17 +223,17 @@ include __DIR__ . '/../partials/header.php';
                     <div class="text-sm text-gray-500 flex items-center gap-4 mt-1">
                         <span><i class="fa-solid fa-box mr-1"></i> <?= $activeProductCount ?? 0 ?> sản phẩm</span>
                         <span>
-                            <i class="fa-solid fa-star mr-1 text-yellow-500"></i> 
+                            <i class="fa-solid fa-star mr-1 text-yellow-500"></i>
                             <?= ($stats['review_count'] ?? 0) > 0 ? number_format($stats['avg_rating'], 1) . ' (' . $stats['review_count'] . ' đánh giá)' : 'Chưa có đánh giá' ?>
                         </span>
                     </div>
                 </div>
                 <div class="flex gap-2 w-full sm:w-auto mt-3 sm:mt-0">
                     <?php if (($currentUserId ?? ($_SESSION['user']['id'] ?? null)) != $seller['id']): ?>
-                    <a href="/chat?user_id=<?= $seller['id'] ?>"
-                        class="px-4 py-2 border border-[#2C67C8] text-[#2C67C8] rounded-sm hover:bg-blue-50 font-medium text-sm flex items-center gap-1">
-                        <i class="fa-regular fa-comment-dots"></i> Chat ngay
-                    </a>
+                        <a href="/chat?user_id=<?= $seller['id'] ?>"
+                            class="px-4 py-2 border border-[#2C67C8] text-[#2C67C8] rounded-sm hover:bg-blue-50 font-medium text-sm flex items-center gap-1">
+                            <i class="fa-regular fa-comment-dots"></i> Chat ngay
+                        </a>
                     <?php endif; ?>
                     <a href="/shop?id=<?= $seller['id'] ?>"
                         class="px-4 py-2 bg-gray-100 text-gray-600 rounded-sm hover:bg-gray-200 font-medium text-sm flex items-center gap-1">
@@ -246,7 +261,8 @@ include __DIR__ . '/../partials/header.php';
                     <?php foreach ($relatedProducts as $item): ?>
                         <div
                             class="group bg-white border border-transparent hover:border-[#2C67C8] hover:shadow-md transition-all duration-200 rounded-sm overflow-hidden relative">
-                            <a href="<?= SlugHelper::productUrl($item['name'], (int)($item['user_id'] ?? 0), (int)$item['id']) ?>" class="block">
+                            <a href="<?= SlugHelper::productUrl($item['name'], (int) ($item['user_id'] ?? 0), (int) $item['id']) ?>"
+                                class="block">
                                 <!-- Image -->
                                 <div class="relative pt-[100%] overflow-hidden bg-gray-100">
                                     <img src="<?= ImageHelper::url('uploads/' . ($item['image'] ?? '')) ?>"
@@ -254,8 +270,9 @@ include __DIR__ . '/../partials/header.php';
                                         class="absolute top-0 left-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
 
                                     <!-- Badges - Freeship khi giá >= 200k -->
-                                    <?php if (((float)($item['price'] ?? 0)) >= 200000): ?>
-                                        <div class="absolute top-0 left-0 bg-[#00bfa5] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-br-sm">
+                                    <?php if (((float) ($item['price'] ?? 0)) >= 200000): ?>
+                                        <div
+                                            class="absolute top-0 left-0 bg-[#00bfa5] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-br-sm">
                                             Freeship
                                         </div>
                                     <?php endif; ?>
@@ -276,10 +293,10 @@ include __DIR__ . '/../partials/header.php';
                                         <div class="text-[10px] text-gray-400">Còn <?= $item['quantity'] ?? 0 ?></div>
                                     </div>
 
-                                    <!-- Location -->
+                                    <!-- Location - Tạm ẩn vì chưa có dữ liệu địa chỉ trong related products -->
+                                    <!-- TODO: Thêm seller location vào related products query -->
                                     <div class="flex items-center justify-between pt-2">
-                                        <span class="text-[10px] text-gray-400 font-light truncate w-full">TP. Hồ Chí
-                                            Minh</span>
+                                        <span class="text-[10px] text-gray-400 font-light truncate w-full">&nbsp;</span>
                                     </div>
                                 </div>
                             </a>
@@ -303,17 +320,19 @@ include __DIR__ . '/../partials/header.php';
     <div class="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
         <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
             <h3 class="font-medium text-gray-800">Báo cáo sản phẩm</h3>
-            <button onclick="document.getElementById('reportModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+            <button onclick="document.getElementById('reportModal').classList.add('hidden')"
+                class="text-gray-400 hover:text-gray-600">
                 <i class="fa-solid fa-xmark text-xl"></i>
             </button>
         </div>
         <form action="/report/product" method="POST" class="p-6">
             <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-            
+
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Lý do báo cáo</label>
-                    <select name="reason" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm p-2 border">
+                    <select name="reason" required
+                        class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm p-2 border">
                         <option value="">-- Chọn lý do --</option>
                         <option value="Hàng giả/Hàng nhái">Hàng giả/Hàng nhái</option>
                         <option value="Sản phẩm bị cấm">Sản phẩm bị cấm</option>
@@ -324,18 +343,22 @@ include __DIR__ . '/../partials/header.php';
                         <option value="Khác">Khác</option>
                     </select>
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả chi tiết</label>
-                    <textarea name="description" rows="4" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm p-2 border" placeholder="Vui lòng cung cấp thêm thông tin..."></textarea>
+                    <textarea name="description" rows="4"
+                        class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm p-2 border"
+                        placeholder="Vui lòng cung cấp thêm thông tin..."></textarea>
                 </div>
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-                <button type="button" onclick="document.getElementById('reportModal').classList.add('hidden')" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 text-sm font-medium hover:bg-gray-50">
+                <button type="button" onclick="document.getElementById('reportModal').classList.add('hidden')"
+                    class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 text-sm font-medium hover:bg-gray-50">
                     Hủy bỏ
                 </button>
-                <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700">
+                <button type="submit"
+                    class="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700">
                     Gửi báo cáo
                 </button>
             </div>

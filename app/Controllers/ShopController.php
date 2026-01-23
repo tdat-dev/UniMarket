@@ -329,5 +329,45 @@ class ShopController extends BaseController
             $_SESSION['warning'] = "Không thể tạo đơn GHN: " . $e->getMessage();
         }
     }
+    /**
+     * Chi tiết đơn hàng (Dành cho shop)
+     */
+    public function orderDetail(): void
+    {
+        $user = $this->requireAuth();
+        $userId = (int) $user['id'];
+        $orderId = (int) $this->query('id', 0);
+
+        if ($orderId <= 0) {
+            $this->redirect('/shop/orders');
+        }
+
+        $orderModel = new Order();
+        $order = $orderModel->find($orderId);
+
+        // Security check: ensure order belongs to seller
+        if ($order === null || (int) $order['seller_id'] !== $userId) {
+            $this->redirect('/shop/orders'); // Or show error
+        }
+
+        // Get Details
+        $orderItemModel = new OrderItem();
+        $order['items'] = $orderItemModel->getByOrderId($orderId);
+
+        // Get Buyer info
+        $userModel = new User();
+        // Buyer ID might be in 'buyer_id'
+        $buyerId = (int) $order['buyer_id'];
+        $buyer = $userModel->find($buyerId);
+
+        // If buyer has shipping address in order, use that
+        // But for now we just use buyer profile + order specific info if available
+        
+        $this->view('shop/order_detail', [
+            'pageTitle' => 'Chi tiết đơn hàng #' . $orderId,
+            'order' => $order,
+            'buyer' => $buyer
+        ]);
+    }
 }
 

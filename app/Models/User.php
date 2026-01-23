@@ -23,6 +23,7 @@ class User extends BaseModel
 		'email',
 		'password',
 		'phone_number',
+		'phone_verified',
 		'address',
 		'avatar',
 		'role',
@@ -158,7 +159,7 @@ class User extends BaseModel
 	 */
 	public function find(int $id): ?array
 	{
-		$sql = "SELECT id, full_name, email, phone_number, address, role, gender, 
+		$sql = "SELECT id, full_name, email, phone_number, phone_verified, address, role, gender, 
                        created_at, balance, avatar, email_verified, is_locked 
                 FROM {$this->table} WHERE id = ?";
 
@@ -173,7 +174,7 @@ class User extends BaseModel
 	 */
 	public function findByEmail(string $email): ?array
 	{
-		$sql = "SELECT id, full_name, email, phone_number, address, role, gender,
+		$sql = "SELECT id, full_name, email, phone_number, phone_verified, address, role, gender,
                        created_at, balance, avatar, email_verified 
                 FROM {$this->table} WHERE email = ?";
 
@@ -256,6 +257,42 @@ class User extends BaseModel
                 WHERE id = ?";
 
 		return $this->db->execute($sql, [$userId]) > 0;
+	}
+
+	// =========================================================================
+	// PHONE VERIFICATION
+	// =========================================================================
+
+	/**
+	 * Check if user's phone is verified
+	 * 
+	 * @param int $userId
+	 * @return bool
+	 */
+	public function isPhoneVerified(int $userId): bool
+	{
+		$user = $this->find($userId);
+		return !empty($user['phone_verified']);
+	}
+
+	/**
+	 * Mark phone as verified and update phone number
+	 * 
+	 * Firebase Phone Auth đã xác minh OTP phía client,
+	 * backend chỉ cần lưu trạng thái và số điện thoại.
+	 * 
+	 * @param int $userId
+	 * @param string $phoneNumber Số điện thoại đã xác minh
+	 * @return bool
+	 */
+	public function markPhoneAsVerified(int $userId, string $phoneNumber): bool
+	{
+		$sql = "UPDATE {$this->table} SET 
+                phone_number = ?, 
+                phone_verified = 1 
+                WHERE id = ?";
+
+		return $this->db->execute($sql, [$phoneNumber, $userId]) > 0;
 	}
 
 	// =========================================================================
@@ -487,5 +524,34 @@ class User extends BaseModel
 	public function getAll(): array
 	{
 		return $this->getAllForAdmin();
+	}
+
+	// =========================================================================
+	// ROLE METHODS (cho Notification Broadcasting)
+	// =========================================================================
+
+	/**
+	 * Đếm users theo role
+	 * 
+	 * @param string $role buyer|seller|admin
+	 * @return int
+	 */
+	public function countByRole(string $role): int
+	{
+		$sql = "SELECT COUNT(*) AS total FROM {$this->table} WHERE role = ?";
+		$result = $this->db->fetchOne($sql, [$role]);
+		return (int) ($result['total'] ?? 0);
+	}
+
+	/**
+	 * Lấy users theo role
+	 * 
+	 * @param string $role buyer|seller|admin
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function getByRole(string $role): array
+	{
+		$sql = "SELECT id, full_name, email FROM {$this->table} WHERE role = ?";
+		return $this->db->fetchAll($sql, [$role]);
 	}
 }

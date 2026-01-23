@@ -11,7 +11,7 @@
  * - $currentCategoryId: (optional) Currently selected category ID
  * - $priceMin: (optional) Current price min filter
  * - $priceMax: (optional) Current price max filter
- * - $currentCondition: (optional) Current condition filter
+ * - $currentCondition: (optional) Current product_condition filter
  */
 
 use App\Helpers\SlugHelper;
@@ -101,9 +101,9 @@ $queryParams = $queryParams ?? [];
             foreach ($conditions as $value => $label):
                 $isActive = ($currentCondition ?? '') === $value;
                 // Build URL with condition filter
-                $conditionParams = array_merge($queryParams, ['condition' => $value]);
+                $conditionParams = array_merge($queryParams, ['product_condition' => $value]);
                 if ($value === '')
-                    unset($conditionParams['condition']);
+                    unset($conditionParams['product_condition']);
                 $conditionUrl = $baseUrl . (!empty($conditionParams) ? '?' . http_build_query($conditionParams) : '');
                 ?>
                 <a href="<?= $conditionUrl ?>" class="flex items-center gap-2 text-sm py-1 hover:text-[#2C67C8] transition-colors
@@ -119,41 +119,6 @@ $queryParams = $queryParams ?? [];
             <?php endforeach; ?>
         </div>
 
-        <!-- Đánh Giá -->
-        <div class="p-3">
-            <div class="text-sm text-gray-700 mb-2">Đánh Giá</div>
-            <div class="space-y-1">
-                <?php
-                $currentRating = $filters['rating'] ?? 0;
-                for ($star = 5; $star >= 3; $star--):
-                    $isActive = (int) $currentRating === $star;
-                    // Build URL with rating filter
-                    $ratingParams = array_merge($queryParams, ['rating' => $star]);
-                    $ratingUrl = $baseUrl . '?' . http_build_query($ratingParams);
-                    ?>
-                    <a href="<?= $ratingUrl ?>" class="flex items-center gap-1 text-sm py-1 hover:text-[#2C67C8] transition-colors
-                              <?= $isActive ? 'bg-blue-50 px-2 -mx-2 rounded' : '' ?>">
-                        <?php for ($i = 1; $i <= 5; $i++): ?>
-                            <i class="fa-solid fa-star text-xs <?= $i <= $star ? 'text-yellow-400' : 'text-gray-300' ?>"></i>
-                        <?php endfor; ?>
-                        <span class="text-gray-500 text-xs ml-1">trở lên</span>
-                        <?php if ($isActive): ?>
-                            <i class="fa-solid fa-check text-[#2C67C8] text-xs ml-auto"></i>
-                        <?php endif; ?>
-                    </a>
-                <?php endfor; ?>
-                <?php if (!empty($currentRating)): ?>
-                    <?php
-                    $clearRatingParams = $queryParams;
-                    unset($clearRatingParams['rating']);
-                    $clearRatingUrl = $baseUrl . (!empty($clearRatingParams) ? '?' . http_build_query($clearRatingParams) : '');
-                    ?>
-                    <a href="<?= $clearRatingUrl ?>" class="text-xs text-gray-400 hover:text-red-500 mt-1 block">
-                        Xóa bộ lọc đánh giá
-                    </a>
-                <?php endif; ?>
-            </div>
-        </div>
     </div>
 
     <!-- Nút Xóa Tất Cả (nếu có filter) -->

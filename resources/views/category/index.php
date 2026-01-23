@@ -10,7 +10,7 @@ $baseUrl = SlugHelper::categoryUrl($category['name'], $category['id']);
 // Current query params (for preserving filters)
 $queryParams = [
     'sort' => $currentSort ?? 'popular',
-    'condition' => $filters['condition'] ?? '',
+    'product_condition' => $filters['product_condition'] ?? '',
     'rating' => $filters['rating'] ?? '',
     'price_min' => $filters['price_min'] ?? '',
     'price_max' => $filters['price_max'] ?? '',
@@ -23,7 +23,7 @@ $title = $category['name'];
 $currentCategoryId = $category['id'];
 $priceMin = $filters['price_min'] ?? '';
 $priceMax = $filters['price_max'] ?? '';
-$currentCondition = $filters['condition'] ?? '';
+$currentCondition = $filters['product_condition'] ?? '';
 ?>
 
 <main class="bg-gray-100 min-h-screen pb-20 md:pb-10">

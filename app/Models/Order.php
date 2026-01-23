@@ -500,6 +500,77 @@ class Order extends BaseModel
     }
 
     // =========================================================================
+    // AUTO-CANCEL EXPIRED ORDERS
+    // =========================================================================
+
+    /** @var int Thời gian tối đa chờ thanh toán (phút) */
+    public const PAYMENT_TIMEOUT_MINUTES = 15;
+
+    /**
+     * Lấy các đơn hàng pending quá hạn thanh toán
+     * 
+     * @param int $minutes Số phút timeout (mặc định 15)
+     * @return array<int, array<string, mixed>>
+     */
+    public function getExpiredPendingOrders(int $minutes = self::PAYMENT_TIMEOUT_MINUTES): array
+    {
+        $sql = "SELECT o.*, GROUP_CONCAT(od.product_id, ':', od.quantity) AS items_data
+                FROM {$this->table} o
+                LEFT JOIN order_details od ON od.order_id = o.id
+                WHERE o.status = ?
+                AND o.payment_method != 'cod'
+                AND o.created_at < DATE_SUB(NOW(), INTERVAL ? MINUTE)
+                GROUP BY o.id";
+
+        return $this->db->fetchAll($sql, [self::STATUS_PENDING, $minutes]);
+    }
+
+    /**
+     * Tự động hủy các đơn hàng quá hạn và hoàn lại stock
+     * 
+     * @return array{cancelled: int, restored_items: int}
+     */
+    public function cancelExpiredOrders(): array
+    {
+        $expiredOrders = $this->getExpiredPendingOrders();
+        $cancelledCount = 0;
+        $restoredItems = 0;
+
+        $productModel = new Product();
+
+        foreach ($expiredOrders as $order) {
+            // Parse items_data: "1:2,3:1" => [product_id => quantity]
+            $itemsRaw = $order['items_data'] ?? '';
+            $items = [];
+            if (!empty($itemsRaw)) {
+                foreach (explode(',', $itemsRaw) as $pair) {
+                    [$productId, $qty] = explode(':', $pair);
+                    $items[(int) $productId] = (int) $qty;
+                }
+            }
+
+            // Hoàn lại stock cho từng sản phẩm
+            foreach ($items as $productId => $quantity) {
+                $productModel->increaseQuantity($productId, $quantity);
+                $restoredItems++;
+            }
+
+            // Hủy đơn hàng
+            $this->updateStatus(
+                (int) $order['id'],
+                self::STATUS_CANCELLED,
+                'Tự động hủy do quá hạn thanh toán (' . self::PAYMENT_TIMEOUT_MINUTES . ' phút)'
+            );
+            $cancelledCount++;
+        }
+
+        return [
+            'cancelled' => $cancelledCount,
+            'restored_items' => $restoredItems,
+        ];
+    }
+
+    // =========================================================================
     // LEGACY COMPATIBILITY
     // =========================================================================
 

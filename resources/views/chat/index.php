@@ -1,4 +1,6 @@
 <?php
+use App\Helpers\TimeHelper;
+use App\Helpers\ImageHelper;
 include __DIR__ . '/../partials/head.php';
 include __DIR__ . '/../partials/header.php';
 ?>
@@ -45,7 +47,16 @@ include __DIR__ . '/../partials/header.php';
                                 <div
                                     class="p-3 border-b border-gray-100 flex gap-3 hover:bg-gray-50 cursor-pointer <?= $isActive ? 'bg-blue-50/50 border-l-4 border-l-[#2C67C8]' : '' ?>">
                                     <div class="relative">
-                                        <img src="<?= !empty($partnerAvatar) ? '/uploads/avatars/' . htmlspecialchars($partnerAvatar) : 'https://ui-avatars.com/api/?name=' . urlencode($partnerName) . '&background=random' ?>"
+                    <?php
+                    // Helper function for avatar URL inside loop is tricky with replace_file_content if we want to extract variable
+                    // We will inline the logic using ImageHelper
+                    ?>
+                                        <?php
+                                        $pAvatarUrl = !empty($partnerAvatar)
+                                            ? ImageHelper::url('uploads/avatars/' . $partnerAvatar)
+                                            : 'https://ui-avatars.com/api/?name=' . urlencode($partnerName) . '&background=random';
+                                        ?>
+                                        <img src="<?= htmlspecialchars($pAvatarUrl) ?>"
                                             class="w-10 h-10 rounded-full object-cover">
                                         <!-- Online status - sẽ được JS cập nhật -->
                                         <span
@@ -58,7 +69,7 @@ include __DIR__ . '/../partials/header.php';
                                                 <?= htmlspecialchars($partnerName) ?>
                                             </h4>
                                             <span class="text-[10px] text-gray-400">
-                                                <?= $lastMessageAt ? date('H:i', strtotime($lastMessageAt)) : '' ?>
+                                                <?= $lastMessageAt ? TimeHelper::formatTime($lastMessageAt) : '' ?>
                                             </span>
                                         </div>
                                         <p
@@ -88,7 +99,12 @@ include __DIR__ . '/../partials/header.php';
                                 <i class="fa-solid fa-arrow-left"></i>
                             </a>
                             <div class="relative">
-                                <img src="<?= !empty($activePartner['avatar']) ? '/uploads/avatars/' . htmlspecialchars($activePartner['avatar']) : 'https://ui-avatars.com/api/?name=' . urlencode($activePartner['full_name']) . '&background=0D8ABC&color=fff&size=128' ?>"
+                                <?php
+                                $activeAvatarUrl = !empty($activePartner['avatar'])
+                                    ? ImageHelper::url('uploads/avatars/' . $activePartner['avatar'])
+                                    : 'https://ui-avatars.com/api/?name=' . urlencode($activePartner['full_name']) . '&background=0D8ABC&color=fff&size=128';
+                                ?>
+                                <img src="<?= htmlspecialchars($activeAvatarUrl) ?>"
                                     class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm">
                                 <!-- Status dot - sẽ được JS cập nhật -->
                                 <span
@@ -139,7 +155,12 @@ include __DIR__ . '/../partials/header.php';
                                     <div class="flex max-w-[70%] <?= $isMe ? 'flex-row-reverse' : 'flex-row' ?> items-end gap-2">
                                         <!-- Avatar for other user -->
                                         <?php if (!$isMe): ?>
-                                            <img src="<?= !empty($activePartner['avatar']) ? '/uploads/avatars/' . htmlspecialchars($activePartner['avatar']) : 'https://ui-avatars.com/api/?name=' . urlencode($activePartner['full_name']) . '&background=random&size=64' ?>"
+                                            <?php
+                                            $msgAvatarUrl = !empty($activePartner['avatar'])
+                                                ? ImageHelper::url('uploads/avatars/' . $activePartner['avatar'])
+                                                : 'https://ui-avatars.com/api/?name=' . urlencode($activePartner['full_name']) . '&background=random&size=64';
+                                            ?>
+                                            <img src="<?= htmlspecialchars($msgAvatarUrl) ?>"
                                                 class="w-8 h-8 rounded-full object-cover shadow-sm mb-1 flex-shrink-0">
                                         <?php endif; ?>
 
@@ -155,7 +176,7 @@ include __DIR__ . '/../partials/header.php';
                                             <!-- Time -->
                                             <span
                                                 class="text-[10px] text-gray-400 mt-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity select-none">
-                                                <?= date('H:i', strtotime($msg['created_at'])) ?>
+                                                <?= TimeHelper::formatTime($msg['created_at']) ?>
                                             </span>
                                         </div>
                                     </div>

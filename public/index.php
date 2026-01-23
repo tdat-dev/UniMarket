@@ -14,5 +14,8 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->safeLoad();
 
+// Set timezone mặc định (UTC để tính toán, hiển thị sẽ convert sang VN)
+date_default_timezone_set($_ENV['APP_TIMEZONE'] ?? 'UTC');
+
 $app = new App();
 $app->run();
