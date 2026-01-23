@@ -10,7 +10,7 @@
  * - $baseUrl: URL base for filter links
  * - $currentCategoryId: Currently selected category ID
  * - $priceMin, $priceMax: Current price filters
- * - $currentCondition: Current condition filter
+ * - $currentCondition: Current product_condition filter
  */
 
 use App\Helpers\SlugHelper;
@@ -18,14 +18,14 @@ use App\Helpers\SlugHelper;
 
 <!-- CSS để ẩn bộ lọc mobile khi màn hình ≥ 1024px -->
 <style>
-@media (min-width: 1024px) {
+    @media (min-width: 1024px) {
 
-    #mobileFilterButton,
-    #mobileFilterOverlay,
-    #mobileFilterDrawer {
-        display: none !important;
+        #mobileFilterButton,
+        #mobileFilterOverlay,
+        #mobileFilterDrawer {
+            display: none !important;
+        }
     }
-}
 </style>
 
 <?php
@@ -77,21 +77,21 @@ $currentCondition = $currentCondition ?? '';
                 $catUrl = SlugHelper::categoryUrl($cat['name'], $cat['id']);
                 $isActive = $currentCategoryId == $cat['id'];
                 ?>
-            <a href="<?= $catUrl ?>" class="block py-2 text-sm border-b border-gray-100 last:border-0
+                <a href="<?= $catUrl ?>" class="block py-2 text-sm border-b border-gray-100 last:border-0
                           <?= $isActive ? 'text-[#2C67C8] font-medium' : 'text-gray-700' ?>">
-                <?= htmlspecialchars($cat['name']) ?>
-            </a>
-            <?php if (!empty($cat['children'])): ?>
-            <?php foreach ($cat['children'] as $child):
+                    <?= htmlspecialchars($cat['name']) ?>
+                </a>
+                <?php if (!empty($cat['children'])): ?>
+                    <?php foreach ($cat['children'] as $child):
                         $childUrl = SlugHelper::categoryUrl($child['name'], $child['id']);
                         $isChildActive = $currentCategoryId == $child['id'];
                         ?>
-            <a href="<?= $childUrl ?>" class="block py-1.5 pl-4 text-[13px] border-b border-gray-50 last:border-0
+                        <a href="<?= $childUrl ?>" class="block py-1.5 pl-4 text-[13px] border-b border-gray-50 last:border-0
                                   <?= $isChildActive ? 'text-[#2C67C8] font-medium' : 'text-gray-500' ?>">
-                <?= htmlspecialchars($child['name']) ?>
-            </a>
-            <?php endforeach; ?>
-            <?php endif; ?>
+                            <?= htmlspecialchars($child['name']) ?>
+                        </a>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             <?php endforeach; ?>
         </div>
     </div>
@@ -102,11 +102,11 @@ $currentCondition = $currentCondition ?? '';
         <form method="GET" action="<?= $baseUrl ?>" class="px-4 py-3">
             <!-- Preserve existing params -->
             <?php if (!empty($queryParams)): ?>
-            <?php foreach ($queryParams as $key => $value):
+                <?php foreach ($queryParams as $key => $value):
                     if (!in_array($key, ['price_min', 'price_max', 'page'])):
                         ?>
-            <input type="hidden" name="<?= htmlspecialchars($key) ?>" value="<?= htmlspecialchars($value) ?>">
-            <?php endif; endforeach; ?>
+                        <input type="hidden" name="<?= htmlspecialchars($key) ?>" value="<?= htmlspecialchars($value) ?>">
+                    <?php endif; endforeach; ?>
             <?php endif; ?>
             <div class="flex gap-2 items-center mb-3">
                 <input type="number" name="price_min" placeholder="₫ TỪ" value="<?= $priceMin ?>"
@@ -139,23 +139,23 @@ $currentCondition = $currentCondition ?? '';
                 // Preserve existing query params and add/remove condition
                 $conditionParams = is_array($queryParams ?? null) ? $queryParams : [];
                 if ($value !== '') {
-                    $conditionParams['condition'] = $value;
+                    $conditionParams['product_condition'] = $value;
                 } else {
-                    unset($conditionParams['condition']);
+                    unset($conditionParams['product_condition']);
                 }
                 unset($conditionParams['page']); // Reset page when filtering
                 $conditionUrl = $baseUrl . (!empty($conditionParams) ? '?' . http_build_query($conditionParams) : '');
                 ?>
-            <a href="<?= $conditionUrl ?>" onclick="closeMobileFilter()" class="flex items-center gap-3 text-sm py-2 hover:text-[#2C67C8] transition-colors
+                <a href="<?= $conditionUrl ?>" onclick="closeMobileFilter()" class="flex items-center gap-3 text-sm py-2 hover:text-[#2C67C8] transition-colors
                           <?= $isActive ? 'text-[#2C67C8] font-medium' : 'text-gray-700' ?>">
-                <span class="w-5 h-5 rounded-full border-2 flex items-center justify-center
+                    <span class="w-5 h-5 rounded-full border-2 flex items-center justify-center
                                 <?= $isActive ? 'border-[#2C67C8]' : 'border-gray-300' ?>">
-                    <?php if ($isActive): ?>
-                    <span class="w-2.5 h-2.5 bg-[#2C67C8] rounded-full"></span>
-                    <?php endif; ?>
-                </span>
-                <?= $label ?>
-            </a>
+                        <?php if ($isActive): ?>
+                            <span class="w-2.5 h-2.5 bg-[#2C67C8] rounded-full"></span>
+                        <?php endif; ?>
+                    </span>
+                    <?= $label ?>
+                </a>
             <?php endforeach; ?>
         </div>
     </div>
@@ -182,15 +182,15 @@ $currentCondition = $currentCondition ?? '';
 </div>
 
 <script>
-function openMobileFilter() {
-    document.getElementById('mobileFilterOverlay').classList.remove('opacity-0', 'invisible');
-    document.getElementById('mobileFilterDrawer').style.transform = 'translateX(0)';
-    document.body.style.overflow = 'hidden';
-}
+    function openMobileFilter() {
+        document.getElementById('mobileFilterOverlay').classList.remove('opacity-0', 'invisible');
+        document.getElementById('mobileFilterDrawer').style.transform = 'translateX(0)';
+        document.body.style.overflow = 'hidden';
+    }
 
-function closeMobileFilter() {
-    document.getElementById('mobileFilterOverlay').classList.add('opacity-0', 'invisible');
-    document.getElementById('mobileFilterDrawer').style.transform = 'translateX(-100%)';
-    document.body.style.overflow = '';
-}
+    function closeMobileFilter() {
+        document.getElementById('mobileFilterOverlay').classList.add('opacity-0', 'invisible');
+        document.getElementById('mobileFilterDrawer').style.transform = 'translateX(-100%)';
+        document.body.style.overflow = '';
+    }
 </script>

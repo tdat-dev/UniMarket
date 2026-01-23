@@ -161,7 +161,7 @@ include __DIR__ . '/../partials/header.php';
                 <div class="p-6 sm:p-8 relative z-10">
                     <label class="block text-sm font-bold text-slate-700 mb-4">Tình trạng sản phẩm <span
                             class="text-red-500">*</span></label>
-                    <input type="hidden" name="condition" id="inputCondition" required>
+                    <input type="hidden" name="product_condition" id="inputCondition" required>
 
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                         <?php

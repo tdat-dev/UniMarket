@@ -9,7 +9,7 @@ $baseUrl = '/search';
 $currentCategoryId = $_GET['category'] ?? null;
 $priceMin = $_GET['price_min'] ?? '';
 $priceMax = $_GET['price_max'] ?? '';
-$currentCondition = $_GET['condition'] ?? '';
+$currentCondition = $_GET['product_condition'] ?? '';
 $currentSort = $_GET['sort'] ?? 'newest';
 
 // Query params to preserve (including keyword)
@@ -27,7 +27,7 @@ if (!empty($priceMax)) {
     $queryParams['price_max'] = $priceMax;
 }
 if (!empty($currentCondition)) {
-    $queryParams['condition'] = $currentCondition;
+    $queryParams['product_condition'] = $currentCondition;
 }
 
 // Nếu categories chưa được truyền từ controller, lấy từ model

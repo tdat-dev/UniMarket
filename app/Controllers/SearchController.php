@@ -28,14 +28,14 @@ class SearchController extends BaseController
         $categoryId = $this->query('category');
         $page = max(1, (int) $this->query('page', 1));
         $offset = ($page - 1) * self::ITEMS_PER_PAGE;
-        
+
         // Get sort parameter
         $sort = $this->query('sort', 'newest');
-        
+
         // Get filter parameters
         $priceMin = $this->query('price_min');
         $priceMax = $this->query('price_max');
-        $condition = $this->query('condition');
+        $productCondition = $this->query('product_condition');
 
         // Track keyword nếu có
         if (!empty(trim($keyword))) {
@@ -56,7 +56,7 @@ class SearchController extends BaseController
             'sort' => $sort,
             'price_min' => $priceMin,
             'price_max' => $priceMax,
-            'condition' => $condition,
+            'product_condition' => $productCondition,
         ];
 
         $productModel = new Product();

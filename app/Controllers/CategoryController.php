@@ -108,7 +108,7 @@ class CategoryController extends BaseController
 
         return [
             'category_id' => $categoryIds,
-            'condition' => $this->query('condition'),
+            'product_condition' => $this->query('product_condition'),
             'rating' => $this->query('rating') !== null ? (int) $this->query('rating') : null,
             'price_min' => $this->query('price_min') !== null ? (int) $this->query('price_min') : null,
             'price_max' => $this->query('price_max') !== null ? (int) $this->query('price_max') : null,

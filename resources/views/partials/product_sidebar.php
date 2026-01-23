@@ -11,7 +11,7 @@
  * - $currentCategoryId: (optional) Currently selected category ID
  * - $priceMin: (optional) Current price min filter
  * - $priceMax: (optional) Current price max filter
- * - $currentCondition: (optional) Current condition filter
+ * - $currentCondition: (optional) Current product_condition filter
  */
 
 use App\Helpers\SlugHelper;
@@ -101,9 +101,9 @@ $queryParams = $queryParams ?? [];
             foreach ($conditions as $value => $label):
                 $isActive = ($currentCondition ?? '') === $value;
                 // Build URL with condition filter
-                $conditionParams = array_merge($queryParams, ['condition' => $value]);
+                $conditionParams = array_merge($queryParams, ['product_condition' => $value]);
                 if ($value === '')
-                    unset($conditionParams['condition']);
+                    unset($conditionParams['product_condition']);
                 $conditionUrl = $baseUrl . (!empty($conditionParams) ? '?' . http_build_query($conditionParams) : '');
                 ?>
                 <a href="<?= $conditionUrl ?>" class="flex items-center gap-2 text-sm py-1 hover:text-[#2C67C8] transition-colors

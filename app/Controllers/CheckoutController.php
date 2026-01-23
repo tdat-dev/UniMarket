@@ -341,7 +341,7 @@ class CheckoutController extends BaseController
 
             // Set trial days based on product condition
             $firstProduct = $orderData['items'][0]['product'] ?? null;
-            $condition = $firstProduct['condition'] ?? 'new';
+            $condition = $firstProduct['product_condition'] ?? 'new';
             $trialDays = $escrowService->getTrialDays($condition);
             $orderModel->update($orderId, ['trial_days' => $trialDays]);
 

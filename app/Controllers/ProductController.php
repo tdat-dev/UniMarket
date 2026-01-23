@@ -77,7 +77,7 @@ class ProductController extends BaseController
             'keyword' => $this->query('keyword', ''),
             'price_min' => $this->getNumericQuery('price_min'),
             'price_max' => $this->getNumericQuery('price_max'),
-            'condition' => $this->query('condition'),
+            'product_condition' => $this->query('product_condition'),
             'sort' => $this->query('sort', 'newest')
         ];
 
@@ -98,7 +98,7 @@ class ProductController extends BaseController
             'sort' => $filters['sort'],
             'priceMin' => $filters['price_min'],
             'priceMax' => $filters['price_max'],
-            'currentCondition' => $filters['condition'] ?? ''
+            'currentCondition' => $filters['product_condition'] ?? ''
         ]);
     }
 
@@ -244,7 +244,7 @@ class ProductController extends BaseController
         $mainImage = $uploadedImages[0] ?? 'default_product.png';
 
         // Debug: Log condition received
-        error_log("[ProductController] Condition from POST: " . ($data['condition'] ?? 'NOT SET'));
+        error_log("[ProductController] Condition from POST: " . ($data['product_condition'] ?? 'NOT SET'));
 
         $productData = [
             'name' => htmlspecialchars($data['name']),
@@ -254,7 +254,7 @@ class ProductController extends BaseController
             'category_id' => (int) $data['category_id'],
             'quantity' => max(1, (int) ($data['quantity'] ?? 1)),
             'image' => $mainImage,
-            'product_condition' => $data['condition'] ?? 'good'
+            'product_condition' => $data['product_condition'] ?? 'good'
         ];
 
         // DEBUG: Write productData to file
@@ -475,9 +475,9 @@ class ProductController extends BaseController
     {
         $description = htmlspecialchars($data['description'] ?? '');
 
-        if (!empty($data['condition'])) {
+        if (!empty($data['product_condition'])) {
             $conditions = Product::getConditions();
-            $conditionLabel = $conditions[$data['condition']]['label'] ?? $data['condition'];
+            $conditionLabel = $conditions[$data['product_condition']]['label'] ?? $data['product_condition'];
             $description .= "\n\nTình trạng: " . $conditionLabel;
         }
 

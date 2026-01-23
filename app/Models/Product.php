@@ -508,9 +508,9 @@ class Product extends BaseModel
         }
 
         // Filter by condition (new, like_new, good, fair)
-        if (!empty($filters['condition'])) {
+        if (!empty($filters['product_condition'])) {
             $sql .= " AND p.product_condition = ?";
-            $params[] = $filters['condition'];
+            $params[] = $filters['product_condition'];
         }
 
         // Filter by price range
@@ -573,9 +573,9 @@ class Product extends BaseModel
             }
         }
 
-        if (!empty($filters['condition'])) {
+        if (!empty($filters['product_condition'])) {
             $sql .= " AND p.product_condition = ?";
-            $params[] = $filters['condition'];
+            $params[] = $filters['product_condition'];
         }
 
         if (!empty($filters['price_min'])) {
