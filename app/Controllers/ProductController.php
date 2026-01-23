@@ -13,6 +13,8 @@ use App\Models\Notification;
 use App\Models\Report;
 use App\Models\UserAddress;
 use App\Middleware\PhoneVerificationMiddleware;
+use App\Helpers\SeoHelper;
+use App\Helpers\ImageHelper;
 
 
 /**
@@ -88,6 +90,10 @@ class ProductController extends BaseController
         $totalProducts = $productModel->countFiltered($filters);
         $totalPages = (int) ceil($totalProducts / self::ITEMS_PER_PAGE);
 
+        // SEO cho trang danh sách sản phẩm
+        SeoHelper::setTitle('Tất cả sản phẩm');
+        SeoHelper::setDescription('Khám phá hàng ngàn sản phẩm secondhand chất lượng với giá tốt nhất tại Zoldify');
+
         $this->view('products/index', [
             'products' => $products,
             'currentPage' => $page,
@@ -162,6 +168,14 @@ class ProductController extends BaseController
 
         $reviewModel = new \App\Models\Review();
         $stats = $reviewModel->getSellerStats($product['user_id']);
+
+        // ========== SEO: Set meta tags cho trang sản phẩm ==========
+        $mainImageUrl = !empty($productImages[0]['image_path'])
+            ? ImageHelper::url('uploads/' . $productImages[0]['image_path'])
+            : null;
+
+        SeoHelper::setProduct($product, $mainImageUrl);
+        // ===========================================================
 
         $this->view('products/detail', [
             'product' => $product,

@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Helpers\SeoHelper;
 
 /**
  * Home Controller
@@ -23,6 +24,10 @@ class HomeController extends BaseController
     {
         $productModel = new Product();
         $categoryModel = new Category();
+
+        // SEO cho trang chủ
+        SeoHelper::setTitle('Mua bán đồ cũ uy tín', false);
+        SeoHelper::setDescription('Zoldify - Nền tảng mua bán đồ secondhand hàng đầu Việt Nam với hệ thống Escrow bảo vệ người mua. Mua bán điện thoại, laptop, quần áo cũ giá tốt.');
 
         $this->view('home/index', [
             'latestProducts' => $productModel->getLatest(8),

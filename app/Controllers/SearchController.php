@@ -7,6 +7,7 @@ namespace App\Controllers;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\SearchKeyword;
+use App\Helpers\SeoHelper;
 
 /**
  * Search Controller
@@ -62,6 +63,10 @@ class SearchController extends BaseController
         $productModel = new Product();
         $products = $productModel->getFiltered($filters, self::ITEMS_PER_PAGE, $offset);
         $totalProducts = $productModel->countFiltered($filters);
+
+        // SEO: noindex cho trang search để tránh duplicate content
+        SeoHelper::setTitle('Tìm kiếm: ' . $keyword);
+        SeoHelper::setRobots('noindex, follow');
 
         $this->view('search/index', [
             'products' => $products,

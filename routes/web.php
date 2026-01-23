@@ -16,8 +16,12 @@ use App\Controllers\ShopController;
 use App\Controllers\ChatController;
 use App\Controllers\AddressController;
 use App\Controllers\PhoneVerificationController;
+use App\Controllers\SitemapController;
 
 /** @var \App\Core\Router $router */
+
+// ======================= SEO =======================
+$router->get('sitemap.xml', [SitemapController::class, 'index']);
 
 // ======================= HOME & SUPPORT =======================
 $router->get('/', [HomeController::class, 'index']);
