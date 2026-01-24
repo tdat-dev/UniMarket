@@ -97,6 +97,13 @@ include __DIR__ . '/../partials/header.php';
                                 <i class="fa-solid fa-fire text-white text-[10px]"></i>
                             </div>
 
+                            <?php if (!empty($prod['is_freeship'])): ?>
+                                <div
+                                    class="absolute top-0 right-0 z-10 bg-[#00bfa5] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-bl-sm">
+                                    Freeship
+                                </div>
+                            <?php endif; ?>
+
                             <img src="/uploads/<?= !empty($prod['image']) ? $prod['image'] : 'default.png' ?>"
                                 alt="<?= htmlspecialchars($prod['name'] ?? $prod['title']) ?>"
                                 class="w-full h-full object-cover">
@@ -126,9 +133,15 @@ include __DIR__ . '/../partials/header.php';
                 <?php foreach ($latestProducts as $item): ?>
                     <a href="<?= SlugHelper::productUrl($item['name'], (int) ($item['user_id'] ?? 0), (int) $item['id']) ?>"
                         class="block bg-white rounded-sm shadow-sm hover:shadow-md transition-all group border border-transparent hover:border-[#2C67C8]/30 overflow-hidden">
-                        <div class="aspect-square relative">
+                        <div class="aspect-square relative overflow-hidden">
                             <img src="/uploads/<?= !empty($item['image']) ? $item['image'] : 'default.png' ?>"
                                 class="w-full h-full object-cover">
+                            <?php if (!empty($item['is_freeship'])): ?>
+                                <div
+                                    class="absolute top-0 left-0 bg-[#00bfa5] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-br-sm">
+                                    Freeship
+                                </div>
+                            <?php endif; ?>
                         </div>
                         <div class="p-2">
                             <div class="text-xs text-gray-800 line-clamp-2 mb-2 min-h-[32px]">

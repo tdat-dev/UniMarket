@@ -268,7 +268,8 @@ class ProductController extends BaseController
             'category_id' => (int) $data['category_id'],
             'quantity' => max(1, (int) ($data['quantity'] ?? 1)),
             'image' => $mainImage,
-            'product_condition' => $data['product_condition'] ?? 'good'
+            'product_condition' => $data['product_condition'] ?? 'good',
+            'is_freeship' => (int) ($data['is_freeship'] ?? \App\Models\Product::SHIP_PAYER_BUYER)
         ];
 
         // DEBUG: Write productData to file

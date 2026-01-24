@@ -17,8 +17,7 @@ include __DIR__ . '/../partials/header.php';
                     ? ImageHelper::url('uploads/avatars/' . $seller['avatar'])
                     : 'https://ui-avatars.com/api/?name=' . urlencode($seller['full_name']) . '&background=random&size=128';
                 ?>
-                <img src="<?= htmlspecialchars($avatarUrl) ?>"
-                    alt="<?= htmlspecialchars($seller['full_name']) ?>"
+                <img src="<?= htmlspecialchars($avatarUrl) ?>" alt="<?= htmlspecialchars($seller['full_name']) ?>"
                     class="w-20 h-20 rounded-full border-2 border-gray-100 object-cover">
                 <div class="absolute bottom-0 right-0 w-5 h-5 bg-green-500 rounded-full border-2 border-white"></div>
             </div>
@@ -47,8 +46,8 @@ include __DIR__ . '/../partials/header.php';
                 <?php
                 $currentUserId = $_SESSION['user']['id'] ?? null;
                 if ($currentUserId != $seller['id']):
-                    $followBtnClass = !empty($isFollowing) 
-                        ? 'bg-gray-100 text-gray-600 border-gray-300' 
+                    $followBtnClass = !empty($isFollowing)
+                        ? 'bg-gray-100 text-gray-600 border-gray-300'
                         : 'border-[#2C67C8] text-[#2C67C8] hover:bg-blue-50';
                     ?>
                     <button id="btn-follow" data-shop-id="<?= $seller['id'] ?>"
@@ -89,9 +88,16 @@ include __DIR__ . '/../partials/header.php';
                         class="block">
                         <!-- Image -->
                         <div class="relative pt-[100%] overflow-hidden bg-gray-100">
-                            <img src="/uploads/<?= htmlspecialchars($item['image']) ?>"
+                            <img src="/uploads/<?= htmlspecialchars($item['image'] ?? '') ?>"
                                 alt="<?= htmlspecialchars($item['name']) ?>"
                                 class="absolute top-0 left-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            
+                            <?php if (!empty($item['is_freeship'])): ?>
+                                <div class="absolute top-0 left-0 bg-[#00bfa5] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-br-sm">
+                                    Freeship
+                                </div>
+                            <?php endif; ?>
+                            
                             <?php if ($item['quantity'] <= 0): ?>
                                 <div
                                     class="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-xs font-bold uppercase tracking-wider">

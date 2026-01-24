@@ -101,9 +101,17 @@ include __DIR__ . '/../partials/header.php';
 
                     <!-- Price -->
                     <div class="bg-gray-50 p-4 rounded-sm">
-                        <span class="text-3xl font-bold text-[#EE4D2D]">
-                            <?= number_format($product['price'], 0, ',', '.') ?>đ
-                        </span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl font-bold text-[#EE4D2D]">
+                                <?= number_format($product['price'], 0, ',', '.') ?>đ
+                            </span>
+                            <?php if (!empty($product['is_freeship'])): ?>
+                                <span
+                                    class="px-2 py-0.5 rounded text-xs font-bold bg-green-100 text-green-700 flex items-center gap-1">
+                                    <i class="fa-solid fa-truck-fast"></i> Freeship
+                                </span>
+                            <?php endif; ?>
+                        </div>
                     </div>
 
                     <!-- Details -->
@@ -269,8 +277,8 @@ include __DIR__ . '/../partials/header.php';
                                         alt="<?= htmlspecialchars($item['name'] ?? '') ?>"
                                         class="absolute top-0 left-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
 
-                                    <!-- Badges - Freeship khi giá >= 200k -->
-                                    <?php if (((float) ($item['price'] ?? 0)) >= 200000): ?>
+                                    <!-- Badges - Freeship -->
+                                    <?php if (!empty($item['is_freeship'])): ?>
                                         <div
                                             class="absolute top-0 left-0 bg-[#00bfa5] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-br-sm">
                                             Freeship
