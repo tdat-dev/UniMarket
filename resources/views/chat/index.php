@@ -316,6 +316,6 @@ include __DIR__ . '/../partials/header.php';
     }
 </style>
 
-<script src="/js/chat-page.js"></script>
+<script src="/js/chat-page.js?v=<?= time() ?>"></script>
 
 <?php include __DIR__ . '/../partials/footer.php'; ?>

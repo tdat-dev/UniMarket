@@ -31,6 +31,7 @@ class Product extends BaseModel
         'status',
         'product_condition',
         'view_count',
+        'is_freeship',
     ];
 
 
@@ -47,6 +48,10 @@ class Product extends BaseModel
     public const CONDITION_GOOD = 'good';
     public const CONDITION_FAIR = 'fair';
     public const CONDITION_POOR = 'poor';
+
+    /** @var int Shipping payer options */
+    public const SHIP_PAYER_SELLER = 1; // Freeship
+    public const SHIP_PAYER_BUYER = 0;  // Buyer pays
 
     /**
      * Get all product conditions with details
@@ -554,7 +559,7 @@ class Product extends BaseModel
         $tokens = $hasKeyword ? $this->tokenizeKeyword($keyword) : [];
         $searchConditions = $hasKeyword ? $this->buildSearchConditions($tokens) : null;
 
-        $sql = "SELECT COUNT(*) AS total FROM {$this->table} p WHERE p.status = ?";
+        $sql = "SELECT COUNT(*) AS total FROM {$this->table} p WHERE p.status = ? AND p.quantity > 0";
         $params = [self::STATUS_ACTIVE];
 
         if ($searchConditions !== null) {

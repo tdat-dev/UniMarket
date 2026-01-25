@@ -35,6 +35,11 @@ class SitemapController extends BaseController
      */
     public function index(): void
     {
+        // Clear any previous output (whitespace, etc.) to prevent XML errors
+        if (ob_get_length()) {
+            ob_end_clean();
+        }
+
         // Set header để browser hiểu đây là file XML
         header('Content-Type: application/xml; charset=UTF-8');
 

@@ -253,6 +253,71 @@ include __DIR__ . '/../partials/header.php';
                     </div>
                 </div>
 
+                <!-- Shipping Fee Payer -->
+                <div class="mt-6 border-t border-slate-100 pt-6">
+                    <label class="block text-sm font-bold text-slate-700 mb-4">Phí vận chuyển <span class="text-red-500">*</span></label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Option: Buyer Pays -->
+                        <div id="shipOption0" onclick="selectShipping(0)" 
+                             class="cursor-pointer p-4 rounded-xl border-2 border-indigo-500 bg-indigo-50/50 hover:bg-slate-50 transition-all flex items-start gap-3">
+                            <input type="radio" name="is_freeship" value="0" id="radioShip0" class="hidden" checked>
+                            <div id="shipTick0" class="w-5 h-5 rounded-full border border-indigo-500 bg-indigo-500 flex items-center justify-center mt-0.5">
+                                <i class="fa-solid fa-check text-white text-[10px]"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-bold text-slate-700">Người mua trả phí</div>
+                                <div class="text-xs text-slate-500 mt-1">Người mua sẽ thanh toán phí ship khi nhận hàng.</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Option: Seller Pays -->
+                        <div id="shipOption1" onclick="selectShipping(1)" 
+                             class="cursor-pointer p-4 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all flex items-start gap-3 group">
+                            <input type="radio" name="is_freeship" value="1" id="radioShip1" class="hidden">
+                            <div id="shipTick1" class="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center mt-0.5">
+                                <i class="fa-solid fa-check text-white text-[10px] hidden"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <div class="text-sm font-bold text-slate-700">Người bán trả phí</div>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700">Freeship</span>
+                                </div>
+                                <div class="text-xs text-slate-500 mt-1">Bạn sẽ chịu phí ship. Thu hút người mua hơn!</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                function selectShipping(val) {
+                    // Set radio value
+                    document.getElementById('radioShip' + val).checked = true;
+
+                    // Reset styling
+                    [0, 1].forEach(v => {
+                        const opt = document.getElementById('shipOption' + v);
+                        const tick = document.getElementById('shipTick' + v);
+                        const icon = tick.querySelector('i');
+
+                        if (v === val) {
+                            // Active state
+                            opt.classList.remove('border-slate-200');
+                            opt.classList.add('border-2', 'border-indigo-500', 'bg-indigo-50/50');
+                            tick.classList.remove('border-slate-300');
+                            tick.classList.add('border-indigo-500', 'bg-indigo-500');
+                            icon.classList.remove('hidden');
+                        } else {
+                            // Inactive state
+                            opt.classList.add('border-slate-200');
+                            opt.classList.remove('border-2', 'border-indigo-500', 'bg-indigo-50/50');
+                            tick.classList.add('border-slate-300');
+                            tick.classList.remove('border-indigo-500', 'bg-indigo-500');
+                            icon.classList.add('hidden');
+                        }
+                    });
+                }
+                </script>
+
                 <!-- Fee Calculator -->
                 <div id="feeCalculator"
                     class="mt-6 bg-gradient-to-r from-slate-50 to-indigo-50/30 rounded-xl p-4 border border-slate-200 hidden">
