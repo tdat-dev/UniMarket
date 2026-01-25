@@ -114,7 +114,7 @@ class EscrowService
 
         // Cập nhật pending_balance trong ví seller
         $wallet = $this->walletModel->getOrCreate($sellerId);
-        $this->walletModel->updatePendingBalance($wallet['id'], $sellerAmount, 'add');
+        $this->walletModel->addPendingBalance($wallet['id'], $sellerAmount);
 
         return [
             'escrow_id' => $escrowId,
@@ -405,7 +405,7 @@ class EscrowService
 
         // Cập nhật pending_balance trong ví seller
         $wallet = $this->walletModel->getOrCreate($sellerId);
-        $this->walletModel->updatePendingBalance($wallet['id'], $sellerAmount, 'add');
+        $this->walletModel->addPendingBalance($wallet['id'], $sellerAmount);
 
         return [
             'escrow_id' => $escrowId,

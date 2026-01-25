@@ -115,7 +115,7 @@ class AuthService
     {
         $userModel = new User();
 
-        if (!$userModel->verifyIdPassword($userId, $currentPassword)) {
+        if (!$userModel->verifyPassword($userId, $currentPassword)) {
             return ['success' => false, 'message' => 'Mật khẩu hiện tại không đúng.'];
         }
 

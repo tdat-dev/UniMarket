@@ -440,6 +440,19 @@ class Order extends BaseModel
     // =========================================================================
 
     /**
+     * Đếm số đơn hàng của buyer
+     * 
+     * @param int $buyerId
+     * @return int
+     */
+    public function countByBuyerId(int $buyerId): int
+    {
+        $sql = "SELECT COUNT(*) AS total FROM {$this->table} WHERE buyer_id = ?";
+        $result = $this->db->fetchOne($sql, [$buyerId]);
+        return (int) ($result['total'] ?? 0);
+    }
+
+    /**
      * Đếm theo trạng thái
      * 
      * @return array<string, int>

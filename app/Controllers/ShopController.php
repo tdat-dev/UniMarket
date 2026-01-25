@@ -166,12 +166,19 @@ class ShopController extends BaseController
             $order['items'] = $orderItemModel->getByOrderId((int) $order['id']);
         }
 
-        $this->view('shop/orders', [
+        // Lấy thống kê cho profile card
+        $reviewModel = new Review();
+        $profileStats = [
+            'orderCount' => $orderModel->countByBuyerId($userId),
+            'reviewCount' => $reviewModel->countByUserId($userId),
+        ];
+
+        $this->view('shop/orders', array_merge([
             'pageTitle' => 'Đơn bán hàng',
             'orders' => $orders,
             'currentStatus' => $status,
             'counts' => $counts,
-        ]);
+        ], $profileStats));
     }
 
     /**

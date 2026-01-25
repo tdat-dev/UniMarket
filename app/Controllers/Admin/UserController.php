@@ -128,7 +128,7 @@ class UserController extends AdminBaseController
      */
     public function toggleStatus()
     {
-        $id = $_POST['id'] ?? null;
+        $id = isset($_POST['id']) ? (int) $_POST['id'] : null;
 
         if ($id) {
             $this->userModel->toggleVerified($id);
