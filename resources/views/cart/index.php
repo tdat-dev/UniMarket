@@ -119,7 +119,7 @@ include __DIR__ . '/../partials/header.php';
                         </div>
                         <div class="flex justify-between items-center mb-6">
                             <span class="text-gray-600 text-sm">Phí vận chuyển</span>
-                            <span class="text-sm text-green-600 font-medium">Miễn phí</span>
+                            <span class="text-sm text-gray-500 font-medium">Tính theo GHN</span>
                         </div>
 
                         <div class="flex justify-between items-center mb-6 pt-4 border-t">

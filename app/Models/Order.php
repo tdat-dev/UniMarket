@@ -230,6 +230,10 @@ class Order extends BaseModel
      *     total_amount: float,
      *     status?: string,
      *     payment_method?: string,
+     *     payment_status?: string,
+     *     platform_fee?: float,
+     *     seller_amount?: float,
+     *     shipping_fee?: float,
      *     shipping_address_id?: int,
      *     shipping_note?: string
      * } $data
@@ -238,9 +242,9 @@ class Order extends BaseModel
     public function createOrder(array $data): int
     {
         $sql = "INSERT INTO {$this->table} 
-                (buyer_id, seller_id, total_amount, status, payment_method, 
-                 shipping_address_id, shipping_note) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)";
+                (buyer_id, seller_id, total_amount, status, payment_method, payment_status,
+                 platform_fee, seller_amount, shipping_fee, shipping_address_id, shipping_note) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         return $this->db->insert($sql, [
             $data['buyer_id'],
@@ -248,6 +252,10 @@ class Order extends BaseModel
             $data['total_amount'],
             $data['status'] ?? self::STATUS_PENDING,
             $data['payment_method'] ?? 'cod',
+            $data['payment_status'] ?? self::PAYMENT_PENDING,
+            $data['platform_fee'] ?? 0,
+            $data['seller_amount'] ?? 0,
+            $data['shipping_fee'] ?? 0,
             $data['shipping_address_id'] ?? null,
             $data['shipping_note'] ?? null,
         ]);

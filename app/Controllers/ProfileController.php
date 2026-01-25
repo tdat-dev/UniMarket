@@ -281,11 +281,22 @@ class ProfileController extends BaseController
         ];
 
         foreach ($allOrders as $o) {
-            if (isset($counts[$o['status']])) {
-                $counts[$o['status']]++;
+            $orderStatus = $o['status'];
+
+            if (isset($counts[$orderStatus])) {
+                $counts[$orderStatus]++;
             }
 
-            if ($status == 'all' || $o['status'] == $status) {
+            // Gộp paid vào pending (Chờ xác nhận)
+            if ($orderStatus === 'paid') {
+                $counts['pending']++;
+            }
+
+            if ($status == 'all') {
+                $orders[] = $o;
+            } elseif ($status === 'pending' && ($orderStatus === 'pending' || $orderStatus === 'paid')) {
+                $orders[] = $o;
+            } elseif ($orderStatus == $status) {
                 $orders[] = $o;
             }
         }

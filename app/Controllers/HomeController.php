@@ -30,8 +30,8 @@ class HomeController extends BaseController
         SeoHelper::setDescription('Zoldify - Nền tảng mua bán đồ secondhand hàng đầu Việt Nam với hệ thống Escrow bảo vệ người mua. Mua bán điện thoại, laptop, quần áo cũ giá tốt.');
 
         $this->view('home/index', [
-            'latestProducts' => $productModel->getLatest(8),
-            'suggestedProducts' => $productModel->getRandom(12),
+            'latestProducts' => $productModel->getLatest(12),
+            'suggestedProducts' => $productModel->getRandom(18),
             'topProducts' => $productModel->getByTopKeywords(6),
             'categories' => $categoryModel->getParents(20),
         ]);

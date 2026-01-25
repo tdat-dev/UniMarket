@@ -23,7 +23,7 @@ include __DIR__ . '/../partials/head.php';
                     <div class="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
                         <h2 class="font-bold text-gray-800">Sản phẩm (<?= count($order['items']) ?>)</h2>
                         <span class="px-2.5 py-0.5 rounded-full text-xs font-medium 
-                            <?= $order['status'] == 'pending' ? 'bg-yellow-100 text-yellow-800' : '' ?>
+                            <?= ($order['status'] == 'pending' || $order['status'] == 'paid') ? 'bg-yellow-100 text-yellow-800' : '' ?>
                             <?= $order['status'] == 'pending_payment' ? 'bg-orange-100 text-orange-800' : '' ?>
                             <?= $order['status'] == 'shipping' ? 'bg-blue-100 text-blue-800' : '' ?>
                             <?= $order['status'] == 'completed' ? 'bg-green-100 text-green-800' : '' ?>
@@ -33,7 +33,7 @@ include __DIR__ . '/../partials/head.php';
                             $statusMap = [
                                 'pending' => 'Chờ xác nhận',
                                 'pending_payment' => 'Chờ thanh toán',
-                                'paid' => 'Đã thanh toán',
+                                'paid' => 'Chờ xác nhận',
                                 'shipping' => 'Đang giao',
                                 'completed' => 'Giao hàng thành công',
                                 'cancelled' => 'Đã bị huỷ'
@@ -172,6 +172,14 @@ include __DIR__ . '/../partials/head.php';
 
             <!-- Right Column: Info & Summary -->
             <div class="w-full md:w-80 flex-shrink-0 flex flex-col gap-6">
+                <?php
+                $itemsSubtotal = 0;
+                foreach ($order['items'] as $item) {
+                    $itemsSubtotal += (float) $item['price_at_purchase'] * (int) $item['quantity'];
+                }
+                $shippingFee = (float) ($order['shipping_fee'] ?? 0);
+                $totalPayable = (float) ($order['total_amount'] ?? ($itemsSubtotal + $shippingFee));
+                ?>
                 <!-- Receiver Info -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
                     <h3 class="font-bold text-gray-800 mb-3 pb-3 border-b border-gray-100">Địa chỉ nhận hàng</h3>
@@ -191,11 +199,13 @@ include __DIR__ . '/../partials/head.php';
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between text-gray-600">
                             <span>Tổng tiền hàng</span>
-                            <span><?= number_format($order['total_amount'], 0, ',', '.') ?>đ</span>
+                            <span><?= number_format($itemsSubtotal, 0, ',', '.') ?>đ</span>
                         </div>
                         <div class="flex justify-between text-gray-600">
                             <span>Phí vận chuyển</span>
-                            <span>0đ</span>
+                            <span>
+                                <?= $shippingFee <= 0 ? 'Miễn phí' : number_format($shippingFee, 0, ',', '.') . 'đ' ?>
+                            </span>
                         </div>
                         <div class="flex justify-between text-gray-600">
                             <span>Giảm giá</span>
@@ -204,7 +214,7 @@ include __DIR__ . '/../partials/head.php';
                         <div class="border-t border-gray-100 pt-2 flex justify-between items-center">
                             <span class="font-bold text-gray-900">Tổng thanh toán</span>
                             <span
-                                class="font-bold text-xl text-red-600"><?= number_format($order['total_amount'], 0, ',', '.') ?>đ</span>
+                                class="font-bold text-xl text-red-600"><?= number_format($totalPayable, 0, ',', '.') ?>đ</span>
                         </div>
                     </div>
                 </div>
