@@ -24,6 +24,13 @@ class PhoneVerificationMiddleware
      */
     public static function requireVerified(): bool
     {
+        // ============================================
+        // TẠM TẮT CHỨC NĂNG XÁC MINH SĐT
+        // Uncomment code bên dưới để bật lại
+        // ============================================
+        return true;
+        
+        /*
         // Chưa đăng nhập -> Cho phép (AuthMiddleware sẽ xử lý)
         if (!isset($_SESSION['user'])) {
             return true;
@@ -40,6 +47,7 @@ class PhoneVerificationMiddleware
         }
 
         return true;
+        */
     }
 
     /**

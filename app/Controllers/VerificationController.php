@@ -39,6 +39,7 @@ class VerificationController extends BaseController
         if (empty($token)) {
             $_SESSION['error'] = 'Token không hợp lệ';
             $this->redirect('/login');
+            return;
         }
 
         $verificationService = new EmailVerificationService();
@@ -46,6 +47,10 @@ class VerificationController extends BaseController
 
         if ($result['success']) {
             $this->handleVerificationSuccess();
+        } else {
+            // Token không hợp lệ hoặc hết hạn - hiển thị lỗi
+            $_SESSION['error'] = $result['message'] ?? 'Xác minh thất bại';
+            $this->redirect('/login');
         }
     }
 
