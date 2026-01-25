@@ -155,11 +155,11 @@ if (!empty($products)) {
                     </div>
                     <div class="flex justify-between items-center mb-4">
                         <span class="text-gray-600">Phí vận chuyển</span>
-                        <span class="font-medium text-green-600">Miễn phí</span>
+                        <span class="font-medium text-gray-500">Tính theo GHN</span>
                     </div>
 
                     <div class="flex justify-between items-center mb-6 pt-4 border-t">
-                        <span class="text-base font-medium text-gray-800">Tổng thanh toán</span>
+                        <span class="text-base font-medium text-gray-800">Tổng thanh toán (tạm tính)</span>
                         <span class="text-xl font-bold text-[#EE4D2D]"
                             id="final-total"><?= number_format($grandTotal, 0, ',', '.') ?>đ</span>
                     </div>
