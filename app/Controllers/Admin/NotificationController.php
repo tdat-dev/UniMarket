@@ -60,32 +60,20 @@ class NotificationController extends AdminBaseController
             exit;
         }
 
-        // Lấy danh sách users theo target
+        // Lấy danh sách user IDs theo target (không giới hạn)
         switch ($target) {
             case 'buyers':
-                $users = $this->userModel->getByRole('buyer');
+                $userIds = $this->userModel->getUserIdsByRole('buyer');
                 break;
             case 'sellers':
-                $users = $this->userModel->getByRole('seller');
+                $userIds = $this->userModel->getUserIdsByRole('seller');
                 break;
             default:
-                $users = $this->userModel->getAll();
+                $userIds = $this->userModel->getAllUserIds();
         }
 
-        $sent = 0;
-        foreach ($users as $user) {
-            try {
-                $this->notifModel->createNotification(
-                    (int) $user['id'],
-                    $content,
-                    $type
-                );
-                $sent++;
-            } catch (\Exception $e) {
-                // Log error but continue
-                error_log("Failed to send notification to user #{$user['id']}: " . $e->getMessage());
-            }
-        }
+        // Sử dụng bulk insert để gửi thông báo hiệu quả
+        $sent = $this->notifModel->createBulkNotifications($userIds, $content, $type);
 
         $_SESSION['success'] = "Đã gửi thông báo đến {$sent} người dùng!";
         header('Location: /admin/notifications/broadcast');

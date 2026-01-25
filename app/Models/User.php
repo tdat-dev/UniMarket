@@ -554,4 +554,29 @@ class User extends BaseModel
 		$sql = "SELECT id, full_name, email FROM {$this->table} WHERE role = ?";
 		return $this->db->fetchAll($sql, [$role]);
 	}
+
+	/**
+	 * Lấy tất cả user IDs (không giới hạn, cho broadcast)
+	 * 
+	 * @return array<int> Array of user IDs
+	 */
+	public function getAllUserIds(): array
+	{
+		$sql = "SELECT id FROM {$this->table}";
+		$results = $this->db->fetchAll($sql);
+		return array_column($results, 'id');
+	}
+
+	/**
+	 * Lấy user IDs theo role (không giới hạn, cho broadcast)
+	 * 
+	 * @param string $role buyer|seller|admin
+	 * @return array<int> Array of user IDs
+	 */
+	public function getUserIdsByRole(string $role): array
+	{
+		$sql = "SELECT id FROM {$this->table} WHERE role = ?";
+		$results = $this->db->fetchAll($sql, [$role]);
+		return array_column($results, 'id');
+	}
 }

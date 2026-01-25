@@ -42,6 +42,48 @@ class Notification extends BaseModel
         return $this->db->insert($sql, [$userId, $content, $type]);
     }
 
+    /**
+     * Tạo thông báo hàng loạt cho nhiều users (bulk insert)
+     * 
+     * @param array<int> $userIds Array of user IDs
+     * @param string $content Nội dung thông báo
+     * @param string $type Loại thông báo
+     * @param int $batchSize Số records mỗi lần insert
+     * @return int Số thông báo đã tạo
+     */
+    public function createBulkNotifications(array $userIds, string $content, string $type = 'system', int $batchSize = 1000): int
+    {
+        if (empty($userIds)) {
+            return 0;
+        }
+
+        $total = 0;
+        $chunks = array_chunk($userIds, $batchSize);
+
+        foreach ($chunks as $chunk) {
+            $placeholders = [];
+            $values = [];
+
+            foreach ($chunk as $userId) {
+                $placeholders[] = '(?, ?, ?)';
+                $values[] = $userId;
+                $values[] = $content;
+                $values[] = $type;
+            }
+
+            $sql = "INSERT INTO {$this->table} (user_id, content, type) VALUES " . implode(', ', $placeholders);
+            
+            try {
+                $this->db->execute($sql, $values);
+                $total += count($chunk);
+            } catch (\Exception $e) {
+                error_log("Bulk notification insert failed: " . $e->getMessage());
+            }
+        }
+
+        return $total;
+    }
+
     // =========================================================================
     // QUERY METHODS
     // =========================================================================
