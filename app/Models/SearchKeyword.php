@@ -120,9 +120,21 @@ class SearchKeyword extends BaseModel
      */
     public function getTrending(int $days = 7, int $limit = 5): array
     {
+        // Filter out invalid keywords containing query params
         $sql = "SELECT keyword, search_count 
                 FROM {$this->table} 
                 WHERE updated_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                  AND keyword NOT LIKE '%?%'
+                  AND keyword NOT LIKE '%=%'
+                  AND keyword NOT LIKE '%sort%'
+                  AND keyword NOT LIKE '%condition%'
+                  AND keyword NOT LIKE '%price_%'
+                  AND keyword NOT LIKE '%page%'
+                  AND keyword NOT LIKE '%category%'
+                  AND keyword NOT LIKE '%rating%'
+                  AND keyword NOT LIKE '%popular%'
+                  AND keyword NOT LIKE '%best_selling%'
+                  AND LENGTH(keyword) >= 2
                 ORDER BY search_count DESC 
                 LIMIT ?";
 
@@ -159,7 +171,11 @@ class SearchKeyword extends BaseModel
                    OR keyword LIKE '%condition%'
                    OR keyword LIKE '%price_%'
                    OR keyword LIKE '%page%'
-                   OR keyword LIKE '%category%'";
+                   OR keyword LIKE '%category%'
+                   OR keyword LIKE '%rating%'
+                   OR keyword LIKE '%popular%'
+                   OR keyword LIKE '%best_selling%'
+                   OR keyword LIKE '%newest%'";
         return $this->db->execute($sql, []);
     }
 
@@ -204,6 +220,12 @@ class SearchKeyword extends BaseModel
             'price_max',
             'page=',
             'category=',
+            'rating=',
+            'popular',
+            'best_selling',
+            'newest',
+            'price_asc',
+            'price_desc',
         ];
 
         foreach ($invalidPatterns as $pattern) {
