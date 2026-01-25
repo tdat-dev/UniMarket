@@ -152,6 +152,14 @@ include __DIR__ . '/../partials/head.php';
 
             <!-- Right Column: Info & Summary -->
             <div class="w-full md:w-80 flex-shrink-0 flex flex-col gap-6">
+                <?php
+                $itemsSubtotal = 0;
+                foreach ($order['items'] as $item) {
+                    $itemsSubtotal += (float) $item['price_at_purchase'] * (int) $item['quantity'];
+                }
+                $shippingFee = (float) ($order['shipping_fee'] ?? 0);
+                $totalPayable = (float) ($order['total_amount'] ?? ($itemsSubtotal + $shippingFee));
+                ?>
 
                 <!-- Helper Actions for Shop -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -199,11 +207,13 @@ include __DIR__ . '/../partials/head.php';
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between text-gray-600">
                             <span>Tổng tiền hàng</span>
-                            <span><?= number_format($order['total_amount'], 0, ',', '.') ?>đ</span>
+                            <span><?= number_format($itemsSubtotal, 0, ',', '.') ?>đ</span>
                         </div>
                         <div class="flex justify-between text-gray-600">
                             <span>Phí vận chuyển</span>
-                            <span>0đ</span>
+                            <span>
+                                <?= $shippingFee <= 0 ? 'Miễn phí' : number_format($shippingFee, 0, ',', '.') . 'đ' ?>
+                            </span>
                         </div>
                         <div class="flex justify-between text-gray-600">
                             <span>Chiết khấu</span>
@@ -212,7 +222,7 @@ include __DIR__ . '/../partials/head.php';
                         <div class="border-t border-gray-100 pt-2 flex justify-between items-center">
                             <span class="font-bold text-gray-900">Tổng thu</span>
                             <span
-                                class="font-bold text-xl text-green-600"><?= number_format($order['total_amount'], 0, ',', '.') ?>đ</span>
+                                class="font-bold text-xl text-green-600"><?= number_format($totalPayable, 0, ',', '.') ?>đ</span>
                         </div>
                     </div>
                 </div>

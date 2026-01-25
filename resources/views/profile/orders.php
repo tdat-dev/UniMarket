@@ -111,9 +111,8 @@ if (!isset($_SESSION['user'])) {
                             <span
                                 class="text-xs text-gray-500"><?= TimeHelper::formatDatetime($order['created_at']) ?></span>
                             <span class="px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                        <?= $order['status'] == 'pending' ? 'bg-yellow-100 text-yellow-800' : '' ?>
+                                        <?= ($order['status'] == 'pending' || $order['status'] == 'paid') ? 'bg-yellow-100 text-yellow-800' : '' ?>
                                         <?= $order['status'] == 'pending_payment' ? 'bg-orange-100 text-orange-800' : '' ?>
-                                        <?= $order['status'] == 'paid' ? 'bg-green-100 text-green-800' : '' ?>
                                         <?= $order['status'] == 'shipping' ? 'bg-blue-100 text-blue-800' : '' ?>
                                         <?= $order['status'] == 'completed' ? 'bg-green-100 text-green-800' : '' ?>
                                         <?= $order['status'] == 'cancelled' ? 'bg-red-100 text-red-800' : '' ?>
@@ -122,7 +121,7 @@ if (!isset($_SESSION['user'])) {
                                         $statusMap = [
                                             'pending' => 'Chờ xác nhận',
                                             'pending_payment' => 'Chờ thanh toán',
-                                            'paid' => 'Đã thanh toán',
+                                            'paid' => 'Chờ xác nhận',
                                             'shipping' => 'Đang giao',
                                             'completed' => 'Đã giao',
                                             'cancelled' => 'Đã hủy'
