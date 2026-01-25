@@ -206,6 +206,19 @@ class Review extends BaseModel
     }
 
     /**
+     * Đếm số review của user
+     * 
+     * @param int $userId
+     * @return int
+     */
+    public function countByUserId(int $userId): int
+    {
+        $sql = "SELECT COUNT(*) AS total FROM {$this->table} WHERE reviewer_id = ?";
+        $result = $this->db->fetchOne($sql, [$userId]);
+        return (int) ($result['total'] ?? 0);
+    }
+
+    /**
      * Thống kê theo rating cho admin
      * 
      * @return array<int, array{rating: int, count: int}>
