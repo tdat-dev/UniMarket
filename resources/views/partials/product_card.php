@@ -10,8 +10,8 @@ $productUrl = SlugHelper::productUrl($item['name'], (int) ($item['user_id'] ?? 0
         <img src="<?= ImageHelper::url('uploads/' . ($item['image'] ?? '')) ?>"
             class="w-full h-full object-cover transition-transform group-hover:scale-105" loading="lazy">
         <?php
-        // Freeship badge - chỉ hiện khi giá >= 200k VND
-        $showFreeship = ((float) ($item['price'] ?? 0)) >= 200000;
+        // Freeship badge - dựa trên setting của người bán
+        $showFreeship = !empty($item['is_freeship']);
         if ($showFreeship):
             ?>
             <div
