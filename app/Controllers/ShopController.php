@@ -203,7 +203,11 @@ class ShopController extends BaseController
 
                 // Nếu chuyển sang shipping, tạo đơn GHN
                 if ($status === 'shipping') {
-                    $this->createGHNOrder($order, $orderModel);
+                    if (GHNService::isEnabled()) {
+                        $this->createGHNOrder($order, $orderModel);
+                    } else {
+                        $_SESSION['warning'] = 'GHN đang tạm tắt, không tạo vận đơn.';
+                    }
                 }
 
                 $orderModel->updateStatus($orderId, $status);
@@ -222,6 +226,10 @@ class ShopController extends BaseController
     private function createGHNOrder(array $order, Order $orderModel): void
     {
         try {
+            if (!GHNService::isEnabled()) {
+                return;
+            }
+
             $ghnService = new GHNService();
             $addressModel = new UserAddress();
 
