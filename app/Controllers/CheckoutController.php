@@ -362,29 +362,33 @@ class CheckoutController extends BaseController
 
             $shippingFee = 0;
             if (!$allFreeShip) {
-                if ($ghnService === null) {
-                    $ghnService = new GHNService();
+                if (!GHNService::isEnabled()) {
+                    $shippingFee = 0;
+                } else {
+                    if ($ghnService === null) {
+                        $ghnService = new GHNService();
+                    }
+
+                    $sellerAddress = $addressModel->getDefaultAddress((int) $orderData['seller_id']);
+                    if (!$sellerAddress || empty($sellerAddress['ghn_district_id']) || empty($sellerAddress['ghn_ward_code'])) {
+                        throw new \Exception('Shop chưa cập nhật địa chỉ GHN. Vui lòng chọn sản phẩm khác hoặc báo shop cập nhật.');
+                    }
+
+                    if (empty($shippingAddress['ghn_district_id']) || empty($shippingAddress['ghn_ward_code'])) {
+                        throw new \Exception('Địa chỉ nhận hàng chưa có mã GHN. Vui lòng cập nhật địa chỉ nhận hàng.');
+                    }
+
+                    $feeData = $ghnService->calculateFee([
+                        'from_district_id' => (int) $sellerAddress['ghn_district_id'],
+                        'from_ward_code' => $sellerAddress['ghn_ward_code'],
+                        'to_district_id' => (int) $shippingAddress['ghn_district_id'],
+                        'to_ward_code' => (string) $shippingAddress['ghn_ward_code'],
+                        'weight' => max(200, $totalWeight),
+                        'insurance_value' => (int) $orderData['total'],
+                    ]);
+
+                    $shippingFee = (int) ($feeData['total'] ?? $feeData['total_fee'] ?? $feeData['service_fee'] ?? 0);
                 }
-
-                $sellerAddress = $addressModel->getDefaultAddress((int) $orderData['seller_id']);
-                if (!$sellerAddress || empty($sellerAddress['ghn_district_id']) || empty($sellerAddress['ghn_ward_code'])) {
-                    throw new \Exception('Shop chưa cập nhật địa chỉ GHN. Vui lòng chọn sản phẩm khác hoặc báo shop cập nhật.');
-                }
-
-                if (empty($shippingAddress['ghn_district_id']) || empty($shippingAddress['ghn_ward_code'])) {
-                    throw new \Exception('Địa chỉ nhận hàng chưa có mã GHN. Vui lòng cập nhật địa chỉ nhận hàng.');
-                }
-
-                $feeData = $ghnService->calculateFee([
-                    'from_district_id' => (int) $sellerAddress['ghn_district_id'],
-                    'from_ward_code' => $sellerAddress['ghn_ward_code'],
-                    'to_district_id' => (int) $shippingAddress['ghn_district_id'],
-                    'to_ward_code' => (string) $shippingAddress['ghn_ward_code'],
-                    'weight' => max(200, $totalWeight),
-                    'insurance_value' => (int) $orderData['total'],
-                ]);
-
-                $shippingFee = (int) ($feeData['total'] ?? $feeData['total_fee'] ?? $feeData['service_fee'] ?? 0);
             }
 
             $totalAmount = (float) $orderData['total'] + (float) $shippingFee;
