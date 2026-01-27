@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <strong>Nền Tảng Thương Mại Điện Tử Dành Cho Sinh Viên</strong>
+  <strong>Nền Tảng Thương Mại Điện Tử</strong>
 </p>
 
 <p align="center">
@@ -30,7 +30,7 @@
 
 ## 🎯 Giới thiệu
 
-**UniMarket** là nền tảng mua bán đồ cũ dành cho sinh viên - một dự án môn học tâm huyết giúp kết nối sinh viên có nhu cầu mua bán, trao đổi đồ dùng học tập, giáo trình và thiết bị cũ.
+**Zoldify** là nền tảng mua bán đồ cũ dành cho sinh viên - một dự án môn học tâm huyết giúp kết nối sinh viên có nhu cầu mua bán, trao đổi đồ dùng học tập, giáo trình và thiết bị cũ.
 
 Với khẩu hiệu _"Đồ Cũ, Vẫn CHẤT"_, chúng tôi mong muốn tạo ra một môi trường giao dịch an toàn, tiết kiệm và thân thiện.
 
