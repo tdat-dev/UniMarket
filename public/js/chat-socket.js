@@ -267,12 +267,24 @@ class ChatSocket {
         body: formData,
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Upload failed");
+      // Get response text first to handle potential HTML error responses
+      const responseText = await response.text();
+
+      // Try to parse as JSON
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        _chatDebug.error(
+          "[ChatSocket] Server returned invalid JSON:",
+          responseText.substring(0, 200),
+        );
+        throw new Error("Server error - please try again");
       }
 
-      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Upload failed");
+      }
 
       // 2. Gửi tin nhắn kèm attachment qua Socket
       return this.sendMessage(receiverId, caption, result.file);

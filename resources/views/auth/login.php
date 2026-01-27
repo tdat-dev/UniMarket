@@ -24,20 +24,20 @@ ob_start();
 
         <form action="/login" method="post" class="space-y-4">
             <?php if (isset($_SESSION['success'])): ?>
-                <div class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded-r-lg" role="alert">
-                    <p class="font-bold"><i class="fa-solid fa-circle-check mr-2"></i>Thành công</p>
-                    <p class="text-sm">
-                        <?= htmlspecialchars($_SESSION['success']) ?>
-                    </p>
-                </div>
-                <?php unset($_SESSION['success']); ?>
+            <div class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded-r-lg" role="alert">
+                <p class="font-bold"><i class="fa-solid fa-circle-check mr-2"></i>Thành công</p>
+                <p class="text-sm">
+                    <?= htmlspecialchars($_SESSION['success']) ?>
+                </p>
+            </div>
+            <?php unset($_SESSION['success']); ?>
             <?php endif; ?>
             <!-- (Giữ nguyên code hiển thị lỗi PHP cũ của em ở đây) -->
             <?php if (isset($errors['login'])): ?>
-                <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-r-lg" role="alert">
-                    <p class="font-bold"><i class="fa-solid fa-circle-exclamation mr-2"></i>Đăng nhập thất bại</p>
-                    <p class="text-sm"><?= htmlspecialchars($errors['login']) ?></p>
-                </div>
+            <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-r-lg" role="alert">
+                <p class="font-bold"><i class="fa-solid fa-circle-exclamation mr-2"></i>Đăng nhập thất bại</p>
+                <p class="text-sm"><?= htmlspecialchars($errors['login']) ?></p>
+            </div>
             <?php endif; ?>
 
             <div>
@@ -94,92 +94,103 @@ ob_start();
 ?>
 <!-- Firebase SDK -->
 <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-    import { getAuth, signInWithPopup, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+import {
+    initializeApp
+} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+import {
+    getAuth,
+    signInWithPopup,
+    GoogleAuthProvider
+} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
-    // Firebase config - lấy từ .env qua PHP
-    const firebaseConfig = {
-        apiKey: "<?= $_ENV['FIREBASE_API_KEY'] ?? '' ?>",
-        authDomain: "<?= $_ENV['FIREBASE_AUTH_DOMAIN'] ?? '' ?>",
-        projectId: "<?= $_ENV['FIREBASE_PROJECT_ID'] ?? '' ?>",
-        storageBucket: "<?= $_ENV['FIREBASE_STORAGE_BUCKET'] ?? '' ?>",
-        messagingSenderId: "<?= $_ENV['FIREBASE_MESSAGING_SENDER_ID'] ?? '' ?>",
-        appId: "<?= $_ENV['FIREBASE_APP_ID'] ?? '' ?>",
-        measurementId: "<?= $_ENV['FIREBASE_MEASUREMENT_ID'] ?? '' ?>"
-    };
+// Firebase config - lấy từ .env qua PHP
+const firebaseConfig = {
+    apiKey: "<?= $_ENV['FIREBASE_API_KEY'] ?? '' ?>",
+    authDomain: "<?= $_ENV['FIREBASE_AUTH_DOMAIN'] ?? '' ?>",
+    projectId: "<?= $_ENV['FIREBASE_PROJECT_ID'] ?? '' ?>",
+    storageBucket: "<?= $_ENV['FIREBASE_STORAGE_BUCKET'] ?? '' ?>",
+    messagingSenderId: "<?= $_ENV['FIREBASE_MESSAGING_SENDER_ID'] ?? '' ?>",
+    appId: "<?= $_ENV['FIREBASE_APP_ID'] ?? '' ?>",
+    measurementId: "<?= $_ENV['FIREBASE_MEASUREMENT_ID'] ?? '' ?>"
+};
 
-    // Khởi tạo Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
+// Khởi tạo Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 
-    // Xử lý click nút Google Login
-    document.getElementById('googleLoginBtn').addEventListener('click', async function () {
-        const btn = this;
-        const originalText = btn.querySelector('span').textContent;
+// Xử lý click nút Google Login
+document.getElementById('googleLoginBtn').addEventListener('click', async function() {
+    const btn = this;
+    const originalText = btn.querySelector('span').textContent;
 
-        try {
-            // Hiển thị loading
-            btn.disabled = true;
-            btn.querySelector('span').textContent = 'Đang xử lý...';
+    try {
+        // Hiển thị loading
+        btn.disabled = true;
+        btn.querySelector('span').textContent = 'Đang xử lý...';
 
-            // Mở popup Google Sign-In
-            const result = await signInWithPopup(auth, provider);
+        // Mở popup Google Sign-In
+        const result = await signInWithPopup(auth, provider);
 
-            // Lấy ID token từ Firebase
-            const idToken = await result.user.getIdToken();
+        // Lấy ID token từ Firebase
+        const idToken = await result.user.getIdToken();
 
-            // Gửi token về backend để xác thực
-            const response = await fetch('/auth/firebase', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ idToken: idToken })
-            });
+        // Gửi token về backend để xác thực
+        const response = await fetch('/auth/firebase', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                idToken: idToken
+            })
+        });
 
-            const data = await response.json();
+        const data = await response.json();
 
-            if (data.success) {
-                // Đăng nhập thành công → redirect
-                window.location.href = data.redirect || '/';
-            } else {
-                // Hiển thị lỗi
-                alert(data.message || 'Đăng nhập thất bại');
-                btn.disabled = false;
-                btn.querySelector('span').textContent = originalText;
-            }
-
-        } catch (error) {
-            console.error('Google Sign-In Error:', error);
-
-            // Xử lý các loại lỗi
-            if (error.code === 'auth/popup-closed-by-user') {
-                // User đóng popup, không cần thông báo
-            } else if (error.code === 'auth/cancelled-popup-request') {
-                // Popup bị cancel
-            } else {
-                alert('Đăng nhập Google thất bại. Vui lòng thử lại.');
-            }
-
+        if (data.success) {
+            // Đăng nhập thành công → redirect
+            window.location.href = data.redirect || '/';
+        } else {
+            // Hiển thị lỗi
+            alert(data.message || 'Đăng nhập thất bại');
             btn.disabled = false;
             btn.querySelector('span').textContent = originalText;
         }
-    });
+
+    } catch (error) {
+        console.error('Google Sign-In Error:', error);
+
+        // Xử lý các loại lỗi
+        if (error.code === 'auth/popup-closed-by-user') {
+            // User đóng popup, không cần thông báo
+        } else if (error.code === 'auth/cancelled-popup-request') {
+            // Popup bị cancel
+        } else if (error.code === 'auth/unauthorized-domain') {
+            alert('Lỗi Cấu Hình Firebase: Tên miền "' + window.location.hostname +
+                '" chưa được thêm vào Authorized Domains trong Firebase Console.');
+        } else {
+            alert('Đăng nhập Google thất bại. Vui lòng thử lại. Lỗi: ' + error.message);
+        }
+
+        btn.disabled = false;
+        btn.querySelector('span').textContent = originalText;
+    }
+});
 </script>
 
 <script>
-    // Toggle password visibility
-    const togglePassword = document.getElementById('togglePassword');
-    const password = document.getElementById('password');
-    if (togglePassword && password) {
-        togglePassword.addEventListener('click', function () {
-            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-            password.setAttribute('type', type);
-            this.querySelector('i').classList.toggle('fa-eye');
-            this.querySelector('i').classList.toggle('fa-eye-slash');
-        });
-    }
+// Toggle password visibility
+const togglePassword = document.getElementById('togglePassword');
+const password = document.getElementById('password');
+if (togglePassword && password) {
+    togglePassword.addEventListener('click', function() {
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        this.querySelector('i').classList.toggle('fa-eye');
+        this.querySelector('i').classList.toggle('fa-eye-slash');
+    });
+}
 </script>
 <?php
 $scripts = ob_get_clean();

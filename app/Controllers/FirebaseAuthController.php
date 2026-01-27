@@ -41,28 +41,37 @@ class FirebaseAuthController extends BaseController
      */
     public function handleFirebaseLogin(): void
     {
-        // Chỉ chấp nhận POST request
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->jsonResponse(['success' => false, 'message' => 'Method not allowed'], 405);
-            return;
-        }
+        // Xóa mọi output trước đó và tắt hiển thị lỗi PHP
+        ob_clean();
+        @ini_set('display_errors', '0');
+        header('Content-Type: application/json');
+        
+        // Đảm bảo luôn trả về JSON
+        try {
+            // Chỉ chấp nhận POST request
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                $this->jsonResponse(['success' => false, 'message' => 'Method not allowed'], 405);
+                return;
+            }
 
-        // Lấy ID token từ request body
-        $input = json_decode(file_get_contents('php://input'), true);
-        $idToken = $input['idToken'] ?? null;
+            // Lấy ID token từ request body
+            $rawInput = file_get_contents('php://input');
+            $input = json_decode($rawInput, true);
+            $idToken = $input['idToken'] ?? null;
 
-        if (empty($idToken)) {
-            $this->jsonResponse(['success' => false, 'message' => 'ID Token không được cung cấp'], 400);
-            return;
-        }
+            if (empty($idToken)) {
+                $this->jsonResponse(['success' => false, 'message' => 'ID Token không được cung cấp'], 400);
+                return;
+            }
 
-        // Verify token với Firebase
-        $firebaseUser = $this->firebaseService->verifyIdToken($idToken);
+            // Verify token với Firebase
+            $firebaseUser = $this->firebaseService->verifyIdToken($idToken);
 
-        if ($firebaseUser === null) {
-            $this->jsonResponse(['success' => false, 'message' => 'Token không hợp lệ hoặc đã hết hạn'], 401);
-            return;
-        }
+            if ($firebaseUser === null) {
+                $errorMessage = $this->firebaseService->getLastError() ?? 'Token không hợp lệ hoặc đã hết hạn';
+                $this->jsonResponse(['success' => false, 'message' => $errorMessage], 401);
+                return;
+            }
 
         // Kiểm tra email có tồn tại không
         if (empty($firebaseUser['email'])) {
@@ -79,6 +88,15 @@ class FirebaseAuthController extends BaseController
         } else {
             // User mới → đăng ký rồi đăng nhập
             $this->registerAndLoginNewUser($firebaseUser);
+        }
+        
+        } catch (\Throwable $e) {
+            // Log lỗi và trả về JSON
+            error_log('Firebase Login Error: ' . $e->getMessage());
+            $this->jsonResponse([
+                'success' => false, 
+                'message' => 'Lỗi hệ thống: ' . $e->getMessage()
+            ], 500);
         }
     }
 
