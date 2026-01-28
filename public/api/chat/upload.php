@@ -4,7 +4,39 @@
  * POST /api/chat/upload
  */
 
+// Suppress error display for clean JSON output
+ini_set('display_errors', 0);
+error_reporting(0);
+
 header('Content-Type: application/json');
+
+// Custom error handler to return JSON errors
+set_error_handler(function($severity, $message, $file, $line) {
+    http_response_code(500);
+    echo json_encode([
+        'error' => 'Server error',
+        'debug' => [
+            'message' => $message,
+            'file' => basename($file),
+            'line' => $line
+        ]
+    ]);
+    exit;
+});
+
+// Custom exception handler
+set_exception_handler(function($e) {
+    http_response_code(500);
+    echo json_encode([
+        'error' => 'Server error',
+        'debug' => [
+            'message' => $e->getMessage(),
+            'file' => basename($e->getFile()),
+            'line' => $e->getLine()
+        ]
+    ]);
+    exit;
+});
 
 // Start session
 if (session_status() == PHP_SESSION_NONE) {
@@ -56,8 +88,37 @@ $allowedTypes = [
 // Max file size: 10MB
 $maxSize = 10 * 1024 * 1024;
 
-// Check file type
-$fileType = mime_content_type($file['tmp_name']);
+// Check if temp file exists and is readable
+if (!is_uploaded_file($file['tmp_name']) || !file_exists($file['tmp_name'])) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Upload failed - temp file not found']);
+    exit;
+}
+
+// Check file type with fallback
+$fileType = false;
+if (function_exists('mime_content_type')) {
+    $fileType = @mime_content_type($file['tmp_name']);
+}
+
+// Fallback to finfo if mime_content_type fails
+if (!$fileType && class_exists('finfo')) {
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $fileType = $finfo->file($file['tmp_name']);
+}
+
+// Final fallback to file extension
+if (!$fileType) {
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $extToMime = [
+        'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg',
+        'png' => 'image/png', 'gif' => 'image/gif',
+        'webp' => 'image/webp', 'pdf' => 'application/pdf',
+        'doc' => 'application/msword', 'txt' => 'text/plain'
+    ];
+    $fileType = $extToMime[$ext] ?? 'application/octet-stream';
+}
+
 if (!isset($allowedTypes[$fileType])) {
     http_response_code(400);
     echo json_encode(['error' => 'File type not allowed']);
