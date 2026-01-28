@@ -17,8 +17,7 @@ include __DIR__ . '/../partials/header.php';
                     ? ImageHelper::url('uploads/avatars/' . $seller['avatar'])
                     : 'https://ui-avatars.com/api/?name=' . urlencode($seller['full_name']) . '&background=random&size=128';
                 ?>
-                <img src="<?= htmlspecialchars($avatarUrl) ?>"
-                    alt="<?= htmlspecialchars($seller['full_name']) ?>"
+                <img src="<?= htmlspecialchars($avatarUrl) ?>" alt="<?= htmlspecialchars($seller['full_name']) ?>"
                     class="w-20 h-20 rounded-full border-2 border-gray-100 object-cover">
                 <div class="absolute bottom-0 right-0 w-5 h-5 bg-green-500 rounded-full border-2 border-white"></div>
             </div>
@@ -47,9 +46,12 @@ include __DIR__ . '/../partials/header.php';
                 <?php
                 $currentUserId = $_SESSION['user']['id'] ?? null;
                 if ($currentUserId != $seller['id']):
+                    $followBtnClass = !empty($isFollowing)
+                        ? 'bg-gray-100 text-gray-600 border-gray-300'
+                        : 'border-[#2C67C8] text-[#2C67C8] hover:bg-blue-50';
                     ?>
                     <button id="btn-follow" data-shop-id="<?= $seller['id'] ?>"
-                        class="px-6 py-2 border border-[#2C67C8] text-[#2C67C8] font-medium rounded-sm hover:bg-blue-50 transition-colors w-[160px]">
+                        class="px-6 py-2 border font-medium rounded-sm transition-colors w-[160px] <?= $followBtnClass ?>">
                         <?php if (!empty($isFollowing)): ?>
                             <i class="fa-solid fa-check mr-1"></i> Đang theo dõi
                         <?php else: ?>
@@ -86,9 +88,16 @@ include __DIR__ . '/../partials/header.php';
                         class="block">
                         <!-- Image -->
                         <div class="relative pt-[100%] overflow-hidden bg-gray-100">
-                            <img src="/uploads/<?= htmlspecialchars($item['image']) ?>"
+                            <img src="/uploads/<?= htmlspecialchars($item['image'] ?? '') ?>"
                                 alt="<?= htmlspecialchars($item['name']) ?>"
                                 class="absolute top-0 left-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            
+                            <?php if (!empty($item['is_freeship'])): ?>
+                                <div class="absolute top-0 left-0 bg-[#00bfa5] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-br-sm">
+                                    Freeship
+                                </div>
+                            <?php endif; ?>
+                            
                             <?php if ($item['quantity'] <= 0): ?>
                                 <div
                                     class="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-xs font-bold uppercase tracking-wider">
@@ -174,41 +183,61 @@ include __DIR__ . '/../partials/header.php';
 <?php include __DIR__ . '/../partials/footer.php'; ?>
 
 <script>
-    document.getElementById('btn-follow').addEventListener('click', function () {
-        const btn = this;
-        const shopId = btn.getAttribute('data-shop-id');
-        const countSpan = document.getElementById('follower-count');
+    // Follow button - only attach if element exists
+    const btnFollow = document.getElementById('btn-follow');
+    if (btnFollow) {
+        btnFollow.addEventListener('click', function (e) {
+            e.preventDefault();
+            const btn = this;
+            const shopId = btn.getAttribute('data-shop-id');
+            const countSpan = document.getElementById('follower-count');
 
-        fetch('/shop/follow', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ shop_id: shopId })
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Update button UI
-                    if (data.status === 'followed') {
-                        btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Đang theo dõi';
-                    } else {
-                        btn.innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Theo dõi';
-                    }
-                    // Update count
-                    if (countSpan) {
-                        countSpan.innerText = data.new_count;
-                    }
-                } else {
-                    alert(data.message);
-                    if (data.message.includes('đăng nhập')) {
-                        window.location.href = '/login';
-                    }
-                }
+            // Disable button while processing
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
+            fetch('/shop/follow', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ shop_id: shopId })
             })
-            .catch(error => console.error('Error:', error));
-    });
-</script>
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update button UI
+                        if (data.status === 'followed') {
+                            btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Đang theo dõi';
+                            btn.classList.remove('border-[#2C67C8]', 'text-[#2C67C8]', 'hover:bg-blue-50');
+                            btn.classList.add('bg-gray-100', 'text-gray-600', 'border-gray-300');
+                        } else {
+                            btn.innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Theo dõi';
+                            btn.classList.add('border-[#2C67C8]', 'text-[#2C67C8]', 'hover:bg-blue-50');
+                            btn.classList.remove('bg-gray-100', 'text-gray-600', 'border-gray-300');
+                        }
+                        // Update count
+                        if (countSpan) {
+                            countSpan.innerText = data.new_count;
+                        }
+                    } else {
+                        alert(data.message || 'Có lỗi xảy ra');
+                        if (data.message && data.message.includes('đăng nhập')) {
+                            window.location.href = '/login';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra, vui lòng thử lại');
+                })
+                .finally(() => {
+                    // Re-enable button
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50');
+                });
+        });
+    }
 </script>
 <script>
     let currentProductId = null;

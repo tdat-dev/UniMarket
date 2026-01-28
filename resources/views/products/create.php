@@ -48,19 +48,19 @@ include __DIR__ . '/../partials/header.php';
 
             <!-- Alert Errors -->
             <?php if (isset($errors) && !empty($errors)): ?>
-                <div class="bg-red-50/80 border border-red-100 rounded-xl p-4 mb-6 shadow-sm">
-                    <div class="flex">
-                        <i class="fa-solid fa-circle-exclamation text-red-500 text-lg"></i>
-                        <div class="ml-3">
-                            <h3 class="text-sm font-semibold text-red-800">Vui lòng kiểm tra lại:</h3>
-                            <ul class="mt-1 text-sm text-red-600 list-disc list-inside">
-                                <?php foreach ($errors as $error): ?>
-                                    <li><?= htmlspecialchars($error) ?></li>
-                                <?php endforeach; ?>
-                            </ul>
-                        </div>
+            <div class="bg-red-50/80 border border-red-100 rounded-xl p-4 mb-6 shadow-sm">
+                <div class="flex">
+                    <i class="fa-solid fa-circle-exclamation text-red-500 text-lg"></i>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-semibold text-red-800">Vui lòng kiểm tra lại:</h3>
+                        <ul class="mt-1 text-sm text-red-600 list-disc list-inside">
+                            <?php foreach ($errors as $error): ?>
+                            <li><?= htmlspecialchars($error) ?></li>
+                            <?php endforeach; ?>
+                        </ul>
                     </div>
                 </div>
+            </div>
             <?php endif; ?>
 
             <!-- ============================================== -->
@@ -101,7 +101,6 @@ include __DIR__ . '/../partials/header.php';
                     <p class="text-sm text-red-500 mt-3 hidden font-medium" id="imgError">
                         <i class="fa-solid fa-circle-xmark"></i> Vui lòng chọn ít nhất 1 ảnh sản phẩm.
                     </p>
-                </div>
 
                 <!-- Section: Tên sản phẩm -->
                 <div class="p-6 sm:p-8 border-b border-slate-100">
@@ -130,26 +129,27 @@ include __DIR__ . '/../partials/header.php';
                             <i class="fa-solid fa-chevron-down text-xs" id="categoryArrow"></i>
                         </div>
                         <input type="hidden" name="category_id" id="inputCategoryId" required>
-                    </div>
 
-                    <!-- Category Dropdown Panel -->
-                    <div id="categoryPanel"
-                        class="hidden absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-2xl z-[100] overflow-hidden mx-6 sm:mx-8">
-                        <div class="flex">
-                            <div class="w-1/2 border-r border-slate-100">
-                                <div class="p-3 border-b border-slate-100">
-                                    <span class="text-xs font-bold text-slate-400 uppercase">Danh mục chính</span>
+                        <!-- Category Dropdown Panel - inside trigger for proper positioning -->
+                        <div id="categoryPanel"
+                            class="hidden absolute left-0 right-0 top-full mt-2 bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden z-[9999]">
+                            <div class="flex">
+                                <div class="w-1/2 border-r border-slate-100 bg-white">
+                                    <div class="p-3 border-b border-slate-100 bg-white">
+                                        <span class="text-xs font-bold text-slate-400 uppercase">Danh mục chính</span>
+                                    </div>
+                                    <div id="parentCategoryList" class="max-h-[300px] overflow-y-auto bg-white"></div>
                                 </div>
-                                <div id="parentCategoryList" class="max-h-[250px] overflow-y-auto"></div>
-                            </div>
-                            <div class="w-1/2 bg-slate-50/50">
-                                <div class="p-3 border-b border-slate-100">
-                                    <span class="text-xs font-bold text-slate-400 uppercase">Danh mục con</span>
-                                </div>
-                                <div id="childCategoryList" class="max-h-[250px] overflow-y-auto p-2">
-                                    <div class="h-full flex flex-col items-center justify-center text-slate-300 py-8">
-                                        <i class="fa-solid fa-arrow-left text-xl mb-2"></i>
-                                        <span class="text-sm">Chọn danh mục bên trái</span>
+                                <div class="w-1/2 bg-slate-50">
+                                    <div class="p-3 border-b border-slate-100 bg-slate-50">
+                                        <span class="text-xs font-bold text-slate-400 uppercase">Danh mục con</span>
+                                    </div>
+                                    <div id="childCategoryList" class="max-h-[300px] overflow-y-auto p-2 bg-slate-50">
+                                        <div
+                                            class="h-full flex flex-col items-center justify-center text-slate-300 py-8">
+                                            <i class="fa-solid fa-arrow-left text-xl mb-2"></i>
+                                            <span class="text-sm">Chọn danh mục bên trái</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -158,25 +158,25 @@ include __DIR__ . '/../partials/header.php';
                 </div>
 
                 <!-- Section: Tình trạng -->
-                <div class="p-6 sm:p-8">
+                <div class="p-6 sm:p-8 relative z-10">
                     <label class="block text-sm font-bold text-slate-700 mb-4">Tình trạng sản phẩm <span
                             class="text-red-500">*</span></label>
-                    <input type="hidden" name="condition" id="inputCondition" required>
+                    <input type="hidden" name="product_condition" id="inputCondition" required>
 
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                         <?php
                         $conditions = \App\Models\Product::getConditions();
                         foreach ($conditions as $key => $cond):
                             ?>
-                            <div class="condition-card group cursor-pointer border border-slate-200 rounded-xl p-3 flex flex-col items-center text-center gap-2 hover:border-indigo-500 hover:shadow-lg transition-all bg-white"
-                                onclick="selectCondition(this, '<?= $key ?>')">
-                                <div
-                                    class="w-9 h-9 rounded-full <?= $cond['color_bg'] ?> <?= $cond['color_text'] ?> flex items-center justify-center <?= $cond['hover_bg'] ?> group-hover:text-white transition-colors">
-                                    <i class="<?= $cond['icon'] ?>"></i>
-                                </div>
-                                <span class="text-sm font-bold text-slate-700"><?= $cond['label'] ?></span>
-                                <span class="text-[10px] text-slate-400 leading-relaxed"><?= $cond['description'] ?></span>
+                        <div class="condition-card group cursor-pointer border border-slate-200 rounded-xl p-3 flex flex-col items-center text-center gap-2 hover:border-indigo-500 hover:shadow-lg transition-all bg-white relative"
+                            data-condition="<?= $key ?>" onclick="selectCondition(this, '<?= $key ?>')">
+                            <div
+                                class="w-9 h-9 rounded-full <?= $cond['color_bg'] ?> <?= $cond['color_text'] ?> flex items-center justify-center <?= $cond['hover_bg'] ?> group-hover:text-white transition-colors">
+                                <i class="<?= $cond['icon'] ?>"></i>
                             </div>
+                            <span class="text-sm font-bold text-slate-700"><?= $cond['label'] ?></span>
+                            <span class="text-[10px] text-slate-400 leading-relaxed"><?= $cond['description'] ?></span>
+                        </div>
                         <?php endforeach; ?>
                     </div>
                 </div>
@@ -192,8 +192,8 @@ include __DIR__ . '/../partials/header.php';
                         Tiếp tục <i class="fa-solid fa-arrow-right"></i>
                     </button>
                 </div>
-            </div>
-    </div>
+                </div> <!-- End bg-white -->
+            </div> <!-- End step1 -->
 
     <!-- ============================================== -->
     <!-- STEP 2: CHI TIẾT BÁN HÀNG -->
@@ -252,6 +252,71 @@ include __DIR__ . '/../partials/header.php';
                         </div>
                     </div>
                 </div>
+
+                <!-- Shipping Fee Payer -->
+                <div class="mt-6 border-t border-slate-100 pt-6">
+                    <label class="block text-sm font-bold text-slate-700 mb-4">Phí vận chuyển <span class="text-red-500">*</span></label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Option: Buyer Pays -->
+                        <div id="shipOption0" onclick="selectShipping(0)" 
+                             class="cursor-pointer p-4 rounded-xl border-2 border-indigo-500 bg-indigo-50/50 hover:bg-slate-50 transition-all flex items-start gap-3">
+                            <input type="radio" name="is_freeship" value="0" id="radioShip0" class="hidden" checked>
+                            <div id="shipTick0" class="w-5 h-5 rounded-full border border-indigo-500 bg-indigo-500 flex items-center justify-center mt-0.5">
+                                <i class="fa-solid fa-check text-white text-[10px]"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-bold text-slate-700">Người mua trả phí</div>
+                                <div class="text-xs text-slate-500 mt-1">Người mua sẽ thanh toán phí ship khi nhận hàng.</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Option: Seller Pays -->
+                        <div id="shipOption1" onclick="selectShipping(1)" 
+                             class="cursor-pointer p-4 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all flex items-start gap-3 group">
+                            <input type="radio" name="is_freeship" value="1" id="radioShip1" class="hidden">
+                            <div id="shipTick1" class="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center mt-0.5">
+                                <i class="fa-solid fa-check text-white text-[10px] hidden"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <div class="text-sm font-bold text-slate-700">Người bán trả phí</div>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700">Freeship</span>
+                                </div>
+                                <div class="text-xs text-slate-500 mt-1">Bạn sẽ chịu phí ship. Thu hút người mua hơn!</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                function selectShipping(val) {
+                    // Set radio value
+                    document.getElementById('radioShip' + val).checked = true;
+
+                    // Reset styling
+                    [0, 1].forEach(v => {
+                        const opt = document.getElementById('shipOption' + v);
+                        const tick = document.getElementById('shipTick' + v);
+                        const icon = tick.querySelector('i');
+
+                        if (v === val) {
+                            // Active state
+                            opt.classList.remove('border-slate-200');
+                            opt.classList.add('border-2', 'border-indigo-500', 'bg-indigo-50/50');
+                            tick.classList.remove('border-slate-300');
+                            tick.classList.add('border-indigo-500', 'bg-indigo-500');
+                            icon.classList.remove('hidden');
+                        } else {
+                            // Inactive state
+                            opt.classList.add('border-slate-200');
+                            opt.classList.remove('border-2', 'border-indigo-500', 'bg-indigo-50/50');
+                            tick.classList.add('border-slate-300');
+                            tick.classList.remove('border-indigo-500', 'bg-indigo-500');
+                            icon.classList.add('hidden');
+                        }
+                    });
+                }
+                </script>
 
                 <!-- Fee Calculator -->
                 <div id="feeCalculator"
@@ -378,52 +443,53 @@ include __DIR__ . '/../partials/header.php';
                 </div>
 
                 <?php if (!empty($addresses)): ?>
-                    <div class="space-y-3">
-                        <?php foreach ($addresses as $addr):
+                <div class="space-y-3">
+                    <?php foreach ($addresses as $addr):
                             $hasGHN = !empty($addr['ghn_district_id']) && !empty($addr['ghn_ward_code']);
                             ?>
-                            <label
-                                class="flex items-start gap-3 p-4 border rounded-xl cursor-pointer hover:border-indigo-400 transition-all <?= $addr['is_default'] ? 'border-indigo-500 bg-indigo-50/50' : 'border-slate-200' ?> <?= !$hasGHN ? 'opacity-60' : '' ?>">
-                                <input type="radio" name="pickup_address_id" value="<?= $addr['id'] ?>"
-                                    class="mt-1 text-indigo-600" <?= $addr['is_default'] ? 'checked' : '' ?>         <?= !$hasGHN ? 'disabled' : '' ?>>
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-2 mb-1 flex-wrap">
-                                        <span
-                                            class="font-semibold text-slate-800"><?= htmlspecialchars($addr['recipient_name']) ?></span>
-                                        <span class="text-slate-400">|</span>
-                                        <span
-                                            class="text-slate-600 text-sm"><?= htmlspecialchars($addr['phone_number']) ?></span>
-                                        <?php if ($addr['is_default']): ?>
-                                            <span class="px-2 py-0.5 text-xs bg-indigo-600 text-white rounded-full">Mặc
-                                                định</span>
-                                        <?php endif; ?>
-                                        <?php if (!$hasGHN): ?>
-                                            <span class="px-2 py-0.5 text-xs bg-amber-100 text-amber-700 rounded-full">Chưa
-                                                có mã GHN</span>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="text-sm text-slate-600">
-                                        <?= htmlspecialchars($addr['full_address'] ?: $addr['street_address']) ?>
-                                    </div>
-                                </div>
-                            </label>
-                        <?php endforeach; ?>
-                    </div>
-                    <div class="mt-4">
-                        <a href="/addresses/create?redirect_to=<?= urlencode('/products/create') ?>"
-                            class="inline-flex items-center gap-2 text-sm text-indigo-600 hover:underline font-medium">
-                            <i class="fa-solid fa-plus"></i> Thêm địa chỉ mới
-                        </a>
-                    </div>
+                    <label
+                        class="flex items-start gap-3 p-4 border rounded-xl cursor-pointer hover:border-indigo-400 transition-all <?= $addr['is_default'] ? 'border-indigo-500 bg-indigo-50/50' : 'border-slate-200' ?> <?= !$hasGHN ? 'opacity-60' : '' ?>">
+                        <input type="radio" name="pickup_address_id" value="<?= $addr['id'] ?>"
+                            class="mt-1 text-indigo-600" <?= $addr['is_default'] ? 'checked' : '' ?>
+                            <?= !$hasGHN ? 'disabled' : '' ?>>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                <span
+                                    class="font-semibold text-slate-800"><?= htmlspecialchars($addr['recipient_name']) ?></span>
+                                <span class="text-slate-400">|</span>
+                                <span
+                                    class="text-slate-600 text-sm"><?= htmlspecialchars($addr['phone_number']) ?></span>
+                                <?php if ($addr['is_default']): ?>
+                                <span class="px-2 py-0.5 text-xs bg-indigo-600 text-white rounded-full">Mặc
+                                    định</span>
+                                <?php endif; ?>
+                                <?php if (!$hasGHN): ?>
+                                <span class="px-2 py-0.5 text-xs bg-amber-100 text-amber-700 rounded-full">Chưa
+                                    có mã GHN</span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="text-sm text-slate-600">
+                                <?= htmlspecialchars($addr['full_address'] ?: $addr['street_address']) ?>
+                            </div>
+                        </div>
+                    </label>
+                    <?php endforeach; ?>
+                </div>
+                <div class="mt-4">
+                    <a href="/addresses/create?redirect_to=<?= urlencode('/products/create') ?>"
+                        class="inline-flex items-center gap-2 text-sm text-indigo-600 hover:underline font-medium">
+                        <i class="fa-solid fa-plus"></i> Thêm địa chỉ mới
+                    </a>
+                </div>
                 <?php else: ?>
-                    <div class="text-center py-8 bg-slate-50/50 rounded-xl border-2 border-dashed border-slate-200">
-                        <i class="fa-solid fa-location-dot text-3xl text-slate-300 mb-3"></i>
-                        <p class="text-slate-600 font-medium mb-2">Chưa có địa chỉ lấy hàng</p>
-                        <a href="/addresses/create?redirect_to=<?= urlencode('/products/create') ?>"
-                            class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors text-sm font-medium">
-                            <i class="fa-solid fa-plus"></i> Thêm địa chỉ
-                        </a>
-                    </div>
+                <div class="text-center py-8 bg-slate-50/50 rounded-xl border-2 border-dashed border-slate-200">
+                    <i class="fa-solid fa-location-dot text-3xl text-slate-300 mb-3"></i>
+                    <p class="text-slate-600 font-medium mb-2">Chưa có địa chỉ lấy hàng</p>
+                    <a href="/addresses/create?redirect_to=<?= urlencode('/products/create') ?>"
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors text-sm font-medium">
+                        <i class="fa-solid fa-plus"></i> Thêm địa chỉ
+                    </a>
+                </div>
                 <?php endif; ?>
             </div>
 
@@ -447,100 +513,110 @@ include __DIR__ . '/../partials/header.php';
 
 <!-- JS -->
 <script>
-    window.categoryData = <?= json_encode($categories) ?>;
+window.categoryData = <?= json_encode($categories) ?>;
 </script>
 <script src="/js/product-create.js?v=<?= time() ?>"></script>
 
 <script>
-    // ===== STEP NAVIGATION =====
-    function goToStep2() {
-        // Validate Step 1
-        const images = document.getElementById('imageInput').files;
-        const name = document.getElementById('inputName').value.trim();
-        const category = document.getElementById('inputCategoryId').value;
-        const condition = document.getElementById('inputCondition').value;
+// ===== STEP NAVIGATION =====
+function goToStep2() {
+    // Validate Step 1
+    const images = document.getElementById('imageInput').files;
+    const name = document.getElementById('inputName').value.trim();
+    const category = document.getElementById('inputCategoryId').value;
+    const condition = document.getElementById('inputCondition').value;
 
-        if (images.length === 0) {
-            document.getElementById('imgError').classList.remove('hidden');
-            return;
-        }
-        document.getElementById('imgError').classList.add('hidden');
+    if (images.length === 0) {
+        document.getElementById('imgError').classList.remove('hidden');
+        return;
+    }
+    document.getElementById('imgError').classList.add('hidden');
 
-        if (!name) {
-            alert('Vui lòng nhập tên sản phẩm');
-            document.getElementById('inputName').focus();
-            return;
-        }
-
-        if (!category) {
-            alert('Vui lòng chọn danh mục sản phẩm');
-            return;
-        }
-
-        if (!condition) {
-            alert('Vui lòng chọn tình trạng sản phẩm');
-            return;
-        }
-
-        // Switch to Step 2
-        document.getElementById('step1').classList.add('hidden');
-        document.getElementById('step2').classList.remove('hidden');
-
-        // Update indicators
-        document.getElementById('stepIndicator1').classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/30');
-        document.getElementById('stepIndicator1').classList.add('bg-green-500', 'text-white');
-        document.getElementById('stepIndicator1').innerHTML = '<i class="fa-solid fa-check"></i>';
-
-        document.getElementById('stepIndicator2').classList.remove('bg-slate-200', 'text-slate-500');
-        document.getElementById('stepIndicator2').classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/30');
-
-        document.getElementById('stepLabel1').classList.remove('text-indigo-600');
-        document.getElementById('stepLabel1').classList.add('text-green-600');
-
-        document.getElementById('stepLabel2').classList.remove('text-slate-400');
-        document.getElementById('stepLabel2').classList.add('text-indigo-600', 'font-semibold');
-
-        document.getElementById('stepLine').classList.add('bg-green-500');
-
-        // Update header
-        document.getElementById('pageTitle').textContent = 'Chi tiết bán hàng';
-        document.getElementById('pageSubtitle').textContent = 'Đặt giá và thông tin vận chuyển';
-
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!name) {
+        alert('Vui lòng nhập tên sản phẩm');
+        document.getElementById('inputName').focus();
+        return;
     }
 
-    function goToStep1() {
-        // Switch to Step 1
-        document.getElementById('step2').classList.add('hidden');
-        document.getElementById('step1').classList.remove('hidden');
-
-        // Reset indicators
-        document.getElementById('stepIndicator1').classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/30');
-        document.getElementById('stepIndicator1').classList.remove('bg-green-500');
-        document.getElementById('stepIndicator1').innerHTML = '1';
-
-        document.getElementById('stepIndicator2').classList.add('bg-slate-200', 'text-slate-500');
-        document.getElementById('stepIndicator2').classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/30');
-
-        document.getElementById('stepLabel1').classList.add('text-indigo-600');
-        document.getElementById('stepLabel1').classList.remove('text-green-600');
-
-        document.getElementById('stepLabel2').classList.add('text-slate-400');
-        document.getElementById('stepLabel2').classList.remove('text-indigo-600', 'font-semibold');
-
-        document.getElementById('stepLine').classList.remove('bg-green-500');
-
-        // Update header
-        document.getElementById('pageTitle').textContent = 'Thông tin sản phẩm';
-        document.getElementById('pageSubtitle').textContent = 'Điền thông tin cơ bản về sản phẩm của bạn';
-
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!category) {
+        alert('Vui lòng chọn danh mục sản phẩm');
+        return;
     }
 
-    // ===== DESCRIPTION COUNTER =====
-    document.getElementById('inputDescription')?.addEventListener('input', function (e) {
-        document.getElementById('descCount').textContent = e.target.value.length;
+    if (!condition) {
+        alert('Vui lòng chọn tình trạng sản phẩm');
+        return;
+    }
+
+    // Switch to Step 2
+    document.getElementById('step1').classList.add('hidden');
+    document.getElementById('step2').classList.remove('hidden');
+
+    // Update indicators
+    document.getElementById('stepIndicator1').classList.remove('bg-indigo-600', 'text-white', 'shadow-lg',
+        'shadow-indigo-500/30');
+    document.getElementById('stepIndicator1').classList.add('bg-green-500', 'text-white');
+    document.getElementById('stepIndicator1').innerHTML = '<i class="fa-solid fa-check"></i>';
+
+    document.getElementById('stepIndicator2').classList.remove('bg-slate-200', 'text-slate-500');
+    document.getElementById('stepIndicator2').classList.add('bg-indigo-600', 'text-white', 'shadow-lg',
+        'shadow-indigo-500/30');
+
+    document.getElementById('stepLabel1').classList.remove('text-indigo-600');
+    document.getElementById('stepLabel1').classList.add('text-green-600');
+
+    document.getElementById('stepLabel2').classList.remove('text-slate-400');
+    document.getElementById('stepLabel2').classList.add('text-indigo-600', 'font-semibold');
+
+    document.getElementById('stepLine').classList.add('bg-green-500');
+
+    // Update header
+    document.getElementById('pageTitle').textContent = 'Chi tiết bán hàng';
+    document.getElementById('pageSubtitle').textContent = 'Đặt giá và thông tin vận chuyển';
+
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
     });
+}
+
+function goToStep1() {
+    // Switch to Step 1
+    document.getElementById('step2').classList.add('hidden');
+    document.getElementById('step1').classList.remove('hidden');
+
+    // Reset indicators
+    document.getElementById('stepIndicator1').classList.add('bg-indigo-600', 'text-white', 'shadow-lg',
+        'shadow-indigo-500/30');
+    document.getElementById('stepIndicator1').classList.remove('bg-green-500');
+    document.getElementById('stepIndicator1').innerHTML = '1';
+
+    document.getElementById('stepIndicator2').classList.add('bg-slate-200', 'text-slate-500');
+    document.getElementById('stepIndicator2').classList.remove('bg-indigo-600', 'text-white', 'shadow-lg',
+        'shadow-indigo-500/30');
+
+    document.getElementById('stepLabel1').classList.add('text-indigo-600');
+    document.getElementById('stepLabel1').classList.remove('text-green-600');
+
+    document.getElementById('stepLabel2').classList.add('text-slate-400');
+    document.getElementById('stepLabel2').classList.remove('text-indigo-600', 'font-semibold');
+
+    document.getElementById('stepLine').classList.remove('bg-green-500');
+
+    // Update header
+    document.getElementById('pageTitle').textContent = 'Thông tin sản phẩm';
+    document.getElementById('pageSubtitle').textContent = 'Điền thông tin cơ bản về sản phẩm của bạn';
+
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+// ===== DESCRIPTION COUNTER =====
+document.getElementById('inputDescription')?.addEventListener('input', function(e) {
+    document.getElementById('descCount').textContent = e.target.value.length;
+});
 </script>
 
 <?php include __DIR__ . '/../partials/footer.php'; ?>

@@ -72,7 +72,7 @@ class OrderItem extends BaseModel
                 JOIN products p ON od.product_id = p.id
                 LEFT JOIN reviews r ON r.product_id = od.product_id AND r.reviewer_id = ?
                 WHERE o.buyer_id = ? 
-                AND o.status = 'completed'
+                AND o.status = '" . Order::STATUS_COMPLETED . "'
                 AND r.id IS NULL
                 ORDER BY o.created_at DESC";
 
@@ -92,7 +92,7 @@ class OrderItem extends BaseModel
                 JOIN orders o ON od.order_id = o.id
                 WHERE o.buyer_id = ? 
                 AND od.product_id = ? 
-                AND o.status = 'completed'
+                AND o.status = '" . Order::STATUS_COMPLETED . "'
                 LIMIT 1";
 
         return $this->db->fetchOne($sql, [$userId, $productId]) !== null;
@@ -110,7 +110,7 @@ class OrderItem extends BaseModel
                 FROM {$this->table} od
                 JOIN orders o ON od.order_id = o.id
                 WHERE od.product_id = ? 
-                AND o.status IN ('completed', 'delivered', 'in_trial')";
+                AND o.status IN ('" . Order::STATUS_COMPLETED . "', '" . Order::STATUS_RECEIVED . "', '" . Order::STATUS_TRIAL_PERIOD . "')";
 
         $result = $this->db->fetchOne($sql, [$productId]);
         return (int) ($result['total'] ?? 0);
@@ -134,7 +134,7 @@ class OrderItem extends BaseModel
                 FROM {$this->table} od
                 JOIN orders o ON od.order_id = o.id
                 JOIN products p ON od.product_id = p.id
-                WHERE o.status IN ('completed', 'delivered', 'in_trial')
+                WHERE o.status IN ('" . Order::STATUS_COMPLETED . "', '" . Order::STATUS_RECEIVED . "', '" . Order::STATUS_TRIAL_PERIOD . "')
                 GROUP BY p.id
                 ORDER BY total_sold DESC
                 LIMIT ?";

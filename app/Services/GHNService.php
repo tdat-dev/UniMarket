@@ -42,6 +42,11 @@ class GHNService
     private string $environment;
 
     /**
+     * Bật/tắt GHN service (tạm thời)
+     */
+    private bool $enabled;
+
+    /**
      * Service type mặc định
      * 1 = Express (Nhanh)
      * 2 = Standard (Chuẩn) - Recommended
@@ -66,6 +71,7 @@ class GHNService
 
     public function __construct()
     {
+        $this->enabled = self::isEnabled();
         $this->token = $_ENV['GHN_TOKEN'] ?? '';
         $this->shopId = (int) ($_ENV['GHN_SHOP_ID'] ?? 0);
         $this->environment = $_ENV['GHN_ENV'] ?? 'sandbox';
@@ -75,9 +81,27 @@ class GHNService
             ? 'https://online-gateway.ghn.vn/shiip/public-api'
             : 'https://dev-online-gateway.ghn.vn/shiip/public-api';
 
+        if (!$this->enabled) {
+            return;
+        }
+
         if (empty($this->token) || $this->shopId === 0) {
             throw new \Exception('GHN credentials chưa được cấu hình trong .env (GHN_TOKEN, GHN_SHOP_ID)');
         }
+    }
+
+    /**
+     * Kiểm tra GHN service có đang bật hay không
+     */
+    public static function isEnabled(): bool
+    {
+        $value = $_ENV['GHN_ENABLED'] ?? null;
+        if ($value === null || $value === '') {
+            return true;
+        }
+
+        $parsed = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+        return $parsed ?? true;
     }
 
     // ========================================
@@ -164,12 +188,57 @@ class GHNService
      */
     public function calculateFee(array $data): array
     {
+        if (!$this->enabled) {
+            return [
+                'total' => 0,
+                'service_fee' => 0,
+                'insurance_fee' => 0,
+                'cod_fee' => 0,
+            ];
+        }
+
         // Gán giá trị mặc định
         $payload = array_merge([
             'service_type_id' => self::SERVICE_TYPE_STANDARD,
             'insurance_value' => 0,
             'weight' => 500, // 500g default
         ], $data);
+
+        // GHN fee API hiện yêu cầu service_id (not just service_type_id)
+        if (empty($payload['service_id'])) {
+            $fromDistrictId = (int) ($payload['from_district_id'] ?? 0);
+            $toDistrictId = (int) ($payload['to_district_id'] ?? 0);
+
+            if ($fromDistrictId <= 0 || $toDistrictId <= 0) {
+                throw new \InvalidArgumentException('Missing from_district_id/to_district_id for GHN fee calculation.');
+            }
+
+            $services = $this->getAvailableServices($fromDistrictId, $toDistrictId);
+            if (empty($services)) {
+                throw new \Exception('GHN: No available services for these districts.');
+            }
+
+            $serviceId = null;
+            $serviceTypeId = (int) ($payload['service_type_id'] ?? 0);
+            if ($serviceTypeId > 0) {
+                foreach ($services as $service) {
+                    if ((int) ($service['service_type_id'] ?? 0) === $serviceTypeId) {
+                        $serviceId = $service['service_id'] ?? null;
+                        break;
+                    }
+                }
+            }
+
+            if (empty($serviceId)) {
+                $serviceId = $services[0]['service_id'] ?? null;
+            }
+
+            if (empty($serviceId)) {
+                throw new \Exception('GHN: Could not resolve service_id for fee calculation.');
+            }
+
+            $payload['service_id'] = (int) $serviceId;
+        }
 
         $response = $this->request('POST', '/v2/shipping-order/fee', $payload, true);
         return $response['data'] ?? [];
@@ -211,6 +280,10 @@ class GHNService
      */
     public function createOrder(array $data): array
     {
+        if (!$this->enabled) {
+            throw new \Exception('GHN service is disabled.');
+        }
+
         // Validate required fields
         $required = ['to_name', 'to_phone', 'to_address', 'to_ward_code', 'to_district_id', 'weight'];
         foreach ($required as $field) {
@@ -261,6 +334,10 @@ class GHNService
      */
     public function getOrderInfo(string $orderCode): array
     {
+        if (!$this->enabled) {
+            throw new \Exception('GHN service is disabled.');
+        }
+
         $response = $this->request('POST', '/v2/shipping-order/detail', [
             'order_code' => $orderCode,
         ]);
@@ -277,6 +354,10 @@ class GHNService
      */
     public function cancelOrder(array $orderCodes): array
     {
+        if (!$this->enabled) {
+            throw new \Exception('GHN service is disabled.');
+        }
+
         $response = $this->request('POST', '/v2/switch-status/cancel', [
             'order_codes' => $orderCodes,
         ], true);
@@ -291,6 +372,10 @@ class GHNService
      */
     public function getPrintUrl(string $orderCode): string
     {
+        if (!$this->enabled) {
+            throw new \Exception('GHN service is disabled.');
+        }
+
         // API print trả về URL trực tiếp
         $response = $this->request('POST', '/v2/a5/gen-token', [
             'order_codes' => [$orderCode],
@@ -314,6 +399,10 @@ class GHNService
      */
     private function request(string $method, string $endpoint, array $data = [], bool $includeShopId = false): array
     {
+        if (!$this->enabled) {
+            throw new \Exception('GHN service is disabled.');
+        }
+
         $url = $this->baseUrl . $endpoint;
 
         $headers = [

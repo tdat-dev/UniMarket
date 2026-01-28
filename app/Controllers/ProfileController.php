@@ -6,6 +6,23 @@ namespace App\Controllers;
 
 class ProfileController extends BaseController
 {
+    /**
+     * Lấy thống kê cho profile card (dùng chung cho tất cả các trang profile)
+     * 
+     * @return array{orderCount: int, reviewCount: int}
+     */
+    private function getProfileStats(): array
+    {
+        $userId = $_SESSION['user']['id'];
+        $orderModel = new \App\Models\Order();
+        $reviewModel = new \App\Models\Review();
+        
+        return [
+            'orderCount' => $orderModel->countByBuyerId($userId),
+            'reviewCount' => $reviewModel->countByUserId($userId),
+        ];
+    }
+
     public function index()
     {
         if (session_status() == PHP_SESSION_NONE) {
@@ -24,14 +41,15 @@ class ProfileController extends BaseController
         // Update session to keep it fresh
         if ($user) {
             $_SESSION['user'] = array_merge($_SESSION['user'], $user);
-            // Fix phone key mismatch for view compatibility if needed, but better to fix view.
-            // For now, let's just pass $user to view.
         }
 
-        $this->view('profile/index', [
+        // Lấy thống kê cho profile card
+        $stats = $this->getProfileStats();
+
+        $this->view('profile/index', array_merge([
             'pageTitle' => 'Hồ sơ của tôi',
-            'user' => $user // Pass 'user' variable for view to use if we update view, but view uses $_SESSION
-        ]);
+            'user' => $user,
+        ], $stats));
     }
 
     public function update()
@@ -154,11 +172,14 @@ class ProfileController extends BaseController
         $transModel = new \App\Models\Transaction();
         $transactions = $transModel->getByUserId($userId);
 
-        $this->view('profile/wallet', [
+        // Lấy thống kê cho profile card
+        $stats = $this->getProfileStats();
+
+        $this->view('profile/wallet', array_merge([
             'pageTitle' => 'Ví của tôi',
             'balance' => $balance,
             'transactions' => $transactions
-        ]);
+        ], $stats));
     }
 
     public function processWallet()
@@ -220,11 +241,14 @@ class ProfileController extends BaseController
         $orderItemModel = new \App\Models\OrderItem();
         $unreviewed = $orderItemModel->getUnreviewedItems($userId);
 
-        $this->view('profile/reviews', [
+        // Lấy thống kê cho profile card
+        $stats = $this->getProfileStats();
+
+        $this->view('profile/reviews', array_merge([
             'pageTitle' => 'Đánh giá của tôi',
             'reviews' => $reviews,
             'unreviewed' => $unreviewed
-        ]);
+        ], $stats));
     }
 
     public function orders()
@@ -257,11 +281,22 @@ class ProfileController extends BaseController
         ];
 
         foreach ($allOrders as $o) {
-            if (isset($counts[$o['status']])) {
-                $counts[$o['status']]++;
+            $orderStatus = $o['status'];
+
+            if (isset($counts[$orderStatus])) {
+                $counts[$orderStatus]++;
             }
 
-            if ($status == 'all' || $o['status'] == $status) {
+            // Gộp paid vào pending (Chờ xác nhận)
+            if ($orderStatus === 'paid') {
+                $counts['pending']++;
+            }
+
+            if ($status == 'all') {
+                $orders[] = $o;
+            } elseif ($status === 'pending' && ($orderStatus === 'pending' || $orderStatus === 'paid')) {
+                $orders[] = $o;
+            } elseif ($orderStatus == $status) {
                 $orders[] = $o;
             }
         }
@@ -272,12 +307,15 @@ class ProfileController extends BaseController
             $order['items'] = $orderItemModel->getByOrderId($order['id']);
         }
 
-        $this->view('profile/orders', [
+        // Lấy thống kê cho profile card
+        $stats = $this->getProfileStats();
+
+        $this->view('profile/orders', array_merge([
             'pageTitle' => 'Đơn mua của tôi',
             'orders' => $orders,
             'currentStatus' => $status,
             'counts' => $counts
-        ]);
+        ], $stats));
     }
 
     public function storeReview()
@@ -599,7 +637,9 @@ class ProfileController extends BaseController
             header('Location: /login');
             exit;
         }
-        $this->view('profile/change_password', ['pageTitle' => 'Đổi mật khẩu']);
+        
+        $stats = $this->getProfileStats();
+        $this->view('profile/change_password', array_merge(['pageTitle' => 'Đổi mật khẩu'], $stats));
     }
 
     public function updatePassword()

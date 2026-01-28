@@ -309,7 +309,7 @@ class PaymentController extends BaseController
         if (!empty($orderDetails)) {
             $productModel = new Product();
             $product = $productModel->find($orderDetails[0]['product_id']);
-            $productCondition = $product['condition'] ?? 'new';
+            $productCondition = $product['product_condition'] ?? 'new';
         }
 
         // Lấy trial days và cập nhật order
@@ -322,16 +322,18 @@ class PaymentController extends BaseController
         // 3. Cập nhật payment transaction
         $trans = $this->transModel->findByPayosOrderCode($data['orderCode']);
         if ($trans) {
-            $this->transModel->updateStatus($trans['id'], 'success', json_encode([
-                'reference' => $reference,
-                'transaction_datetime' => $data['transactionDateTime'] ?? null,
-                'counter_account' => [
-                    'bank_id' => $data['counterAccountBankId'] ?? '',
-                    'bank_name' => $data['counterAccountBankName'] ?? '',
-                    'account_name' => $data['counterAccountName'] ?? '',
-                    'account_number' => $data['counterAccountNumber'] ?? '',
+            $this->transModel->updateStatus($trans['id'], 'success', [
+                'metadata' => [
+                    'reference' => $reference,
+                    'transaction_datetime' => $data['transactionDateTime'] ?? null,
+                    'counter_account' => [
+                        'bank_id' => $data['counterAccountBankId'] ?? '',
+                        'bank_name' => $data['counterAccountBankName'] ?? '',
+                        'account_name' => $data['counterAccountName'] ?? '',
+                        'account_number' => $data['counterAccountNumber'] ?? '',
+                    ],
                 ],
-            ]));
+            ]);
         }
 
         error_log("[PayOS Webhook] Payment success for order #{$orderId}");
@@ -347,10 +349,12 @@ class PaymentController extends BaseController
         // Cập nhật payment transaction
         $trans = $this->transModel->findByPayosOrderCode($data['orderCode']);
         if ($trans) {
-            $this->transModel->updateStatus($trans['id'], 'failed', json_encode([
-                'error_code' => $data['code'] ?? '',
-                'error_desc' => $data['desc'] ?? '',
-            ]));
+            $this->transModel->updateStatus($trans['id'], 'failed', [
+                'metadata' => [
+                    'error_code' => $data['code'] ?? '',
+                    'error_desc' => $data['desc'] ?? '',
+                ],
+            ]);
         }
 
         error_log("[PayOS Webhook] Payment failed for order #{$orderId}: " . ($data['desc'] ?? 'Unknown'));

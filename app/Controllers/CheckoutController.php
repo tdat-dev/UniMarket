@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Middleware\VerificationMiddleware;
+use App\Middleware\PhoneVerificationMiddleware;
 use App\Models\Product;
 use App\Models\Cart;
 use App\Models\User;
@@ -12,6 +13,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\UserAddress;
 use App\Services\EscrowService;
+use App\Services\GHNService;
 
 /**
  * Checkout Controller
@@ -28,6 +30,7 @@ class CheckoutController extends BaseController
     public function process(): void
     {
         VerificationMiddleware::requireVerified();
+        PhoneVerificationMiddleware::requireVerified();
         $user = $this->requireAuth();
         $userId = (int) $user['id'];
 
@@ -93,12 +96,19 @@ class CheckoutController extends BaseController
 
         $addressModel = new UserAddress();
 
+        $errors = [];
+        if (!empty($_SESSION['error'])) {
+            $errors[] = (string) $_SESSION['error'];
+            unset($_SESSION['error']);
+        }
+
         $this->view('cart/checkout', [
             'products' => $products,
             'selected_ids' => $selectedIds,
             'user' => (new User())->find($userId),
             'addresses' => $addressModel->getByUserId($userId),
             'defaultAddress' => $addressModel->getDefaultAddress($userId),
+            'errors' => $errors,
         ]);
     }
 
@@ -108,6 +118,7 @@ class CheckoutController extends BaseController
     public function confirm(): void
     {
         VerificationMiddleware::requireVerified();
+        PhoneVerificationMiddleware::requireVerified();
         $user = $this->requireAuth();
         $userId = (int) $user['id'];
 
@@ -140,7 +151,12 @@ class CheckoutController extends BaseController
 
         // Group by seller and create orders
         $ordersBySeller = $this->groupBySeller($result['products']);
-        $createdOrderIds = $this->createOrders($ordersBySeller, $userId, $paymentMethod, $productModel);
+        try {
+            $createdOrderIds = $this->createOrders($ordersBySeller, $userId, $paymentMethod, $productModel, $shippingAddress);
+        } catch (\Exception $e) {
+            $_SESSION['error'] = $e->getMessage();
+            $this->redirect('/checkout');
+        }
 
         // Handle PayOS payment
         if ($paymentMethod === 'payos' && !empty($createdOrderIds)) {
@@ -307,12 +323,20 @@ class CheckoutController extends BaseController
      * 
      * @return array<int> Order IDs
      */
-    private function createOrders(array $ordersBySeller, int $buyerId, string $paymentMethod, Product $productModel): array
+    private function createOrders(
+        array $ordersBySeller,
+        int $buyerId,
+        string $paymentMethod,
+        Product $productModel,
+        array $shippingAddress
+    ): array
     {
         $orderModel = new Order();
         $orderItemModel = new OrderItem();
         $cartModel = new Cart();
         $escrowService = new EscrowService();
+        $addressModel = new UserAddress();
+        $ghnService = null;
 
         $createdOrderIds = [];
 
@@ -323,22 +347,71 @@ class CheckoutController extends BaseController
             // Tính phí sàn và số tiền seller nhận
             $fees = $escrowService->calculateFees($orderData['total']);
 
+            // Tính phí vận chuyển (freeship nếu tất cả sản phẩm có badge)
+            $allFreeShip = true;
+            $totalWeight = 0;
+            foreach ($orderData['items'] as $item) {
+                $product = $item['product'];
+                $qty = (int) $item['quantity'];
+                $totalWeight += 500 * max(1, $qty);
+
+                if ((int) ($product['is_freeship'] ?? Product::SHIP_PAYER_BUYER) !== Product::SHIP_PAYER_SELLER) {
+                    $allFreeShip = false;
+                }
+            }
+
+            $shippingFee = 0;
+            if (!$allFreeShip) {
+                if (!GHNService::isEnabled()) {
+                    $shippingFee = 0;
+                } else {
+                    if ($ghnService === null) {
+                        $ghnService = new GHNService();
+                    }
+
+                    $sellerAddress = $addressModel->getDefaultAddress((int) $orderData['seller_id']);
+                    if (!$sellerAddress || empty($sellerAddress['ghn_district_id']) || empty($sellerAddress['ghn_ward_code'])) {
+                        throw new \Exception('Shop chưa cập nhật địa chỉ GHN. Vui lòng chọn sản phẩm khác hoặc báo shop cập nhật.');
+                    }
+
+                    if (empty($shippingAddress['ghn_district_id']) || empty($shippingAddress['ghn_ward_code'])) {
+                        throw new \Exception('Địa chỉ nhận hàng chưa có mã GHN. Vui lòng cập nhật địa chỉ nhận hàng.');
+                    }
+
+                    $feeData = $ghnService->calculateFee([
+                        'from_district_id' => (int) $sellerAddress['ghn_district_id'],
+                        'from_ward_code' => $sellerAddress['ghn_ward_code'],
+                        'to_district_id' => (int) $shippingAddress['ghn_district_id'],
+                        'to_ward_code' => (string) $shippingAddress['ghn_ward_code'],
+                        'weight' => max(200, $totalWeight),
+                        'insurance_value' => (int) $orderData['total'],
+                    ]);
+
+                    $shippingFee = (int) ($feeData['total'] ?? $feeData['total_fee'] ?? $feeData['service_fee'] ?? 0);
+                }
+            }
+
+            $totalAmount = (float) $orderData['total'] + (float) $shippingFee;
+
             // Create order với platform_fee và seller_amount
             $orderId = $orderModel->createOrder([
                 'buyer_id' => $buyerId,
                 'seller_id' => $orderData['seller_id'],
-                'total_amount' => $orderData['total'],
+                'total_amount' => $totalAmount,
                 'platform_fee' => $fees['platform_fee'],
                 'seller_amount' => $fees['seller_amount'],
                 'status' => $orderStatus,
                 'payment_method' => $paymentMethod,
+                'payment_status' => Order::PAYMENT_PENDING,
+                'shipping_fee' => $shippingFee,
+                'shipping_address_id' => $shippingAddress['id'] ?? null,
             ]);
 
             $createdOrderIds[] = $orderId;
 
             // Set trial days based on product condition
             $firstProduct = $orderData['items'][0]['product'] ?? null;
-            $condition = $firstProduct['condition'] ?? 'new';
+            $condition = $firstProduct['product_condition'] ?? 'new';
             $trialDays = $escrowService->getTrialDays($condition);
             $orderModel->update($orderId, ['trial_days' => $trialDays]);
 

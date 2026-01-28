@@ -5,7 +5,7 @@ use App\Controllers\HomeController;
 use App\Controllers\ProductController;
 use App\Controllers\SearchController;
 use App\Controllers\CategoryController;
-use App\Controllers\GoogleAuthController;
+use App\Controllers\FirebaseAuthController;
 use App\Controllers\VerificationController;
 use App\Controllers\PaymentController;
 use App\Controllers\PasswordResetController;
@@ -15,8 +15,13 @@ use App\Controllers\ProfileController;
 use App\Controllers\ShopController;
 use App\Controllers\ChatController;
 use App\Controllers\AddressController;
+use App\Controllers\PhoneVerificationController;
+use App\Controllers\SitemapController;
 
 /** @var \App\Core\Router $router */
+
+// ======================= SEO =======================
+$router->get('sitemap.xml', [SitemapController::class, 'index']);
 
 // ======================= HOME & SUPPORT =======================
 $router->get('/', [HomeController::class, 'index']);
@@ -31,9 +36,9 @@ $router->get('register', [AuthController::class, 'register']);
 $router->post('register', [AuthController::class, 'processRegister']);
 $router->post('logout', [AuthController::class, 'logout']);
 
-// Google OAuth
-$router->get('auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
-$router->get('auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
+// Firebase Auth (Google Sign-In)
+$router->post('auth/firebase', [FirebaseAuthController::class, 'handleFirebaseLogin']);
+$router->get('api/firebase/config', [FirebaseAuthController::class, 'getConfig']);
 
 // Password & Email Verification
 $router->get('forgot-password', [PasswordResetController::class, 'showForgotForm']);
@@ -46,6 +51,10 @@ $router->get('verify-email', [VerificationController::class, 'showVerifyForm']);
 $router->post('verify-email', [VerificationController::class, 'verifyByOtp']);
 $router->get('verify-email/token', [VerificationController::class, 'verifyByToken']);
 $router->post('verify-email/resend', [VerificationController::class, 'resendVerification']);
+
+// Phone Verification (Firebase Phone Auth)
+$router->get('verify-phone', [PhoneVerificationController::class, 'show']);
+$router->post('verify-phone/confirm', [PhoneVerificationController::class, 'confirm']);
 
 // ======================= CATEGORIES (Zoldify SEO URLs) =======================
 // Format: /dm/ten-danh-muc.c123

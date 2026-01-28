@@ -167,4 +167,69 @@ class Review extends BaseModel
 
         return $distribution;
     }
+
+    // =========================================================================
+    // ADMIN METHODS
+    // =========================================================================
+
+    /**
+     * Lấy tất cả reviews cho admin panel
+     * 
+     * @param int $limit
+     * @param int $offset
+     * @param int|null $rating Filter theo rating
+     * @return array<int, array<string, mixed>>
+     */
+    public function getAllForAdmin(int $limit = 20, int $offset = 0, ?int $rating = null): array
+    {
+        $sql = "SELECT r.*, 
+                    p.name AS product_name, 
+                    p.image AS product_image,
+                    u.full_name AS reviewer_name,
+                    u.avatar AS reviewer_avatar
+                FROM {$this->table} r 
+                JOIN products p ON r.product_id = p.id 
+                JOIN users u ON r.reviewer_id = u.id";
+
+        $params = [];
+
+        if ($rating !== null) {
+            $sql .= " WHERE r.rating = ?";
+            $params[] = $rating;
+        }
+
+        $sql .= " ORDER BY r.created_at DESC LIMIT ? OFFSET ?";
+        $params[] = $limit;
+        $params[] = $offset;
+
+        return $this->db->fetchAll($sql, $params);
+    }
+
+    /**
+     * Đếm số review của user
+     * 
+     * @param int $userId
+     * @return int
+     */
+    public function countByUserId(int $userId): int
+    {
+        $sql = "SELECT COUNT(*) AS total FROM {$this->table} WHERE reviewer_id = ?";
+        $result = $this->db->fetchOne($sql, [$userId]);
+        return (int) ($result['total'] ?? 0);
+    }
+
+    /**
+     * Thống kê theo rating cho admin
+     * 
+     * @return array<int, array{rating: int, count: int}>
+     */
+    public function getRatingStats(): array
+    {
+        $sql = "SELECT rating, COUNT(*) AS count 
+                FROM {$this->table} 
+                GROUP BY rating 
+                ORDER BY rating DESC";
+
+        return $this->db->fetchAll($sql);
+    }
 }

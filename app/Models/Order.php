@@ -230,6 +230,10 @@ class Order extends BaseModel
      *     total_amount: float,
      *     status?: string,
      *     payment_method?: string,
+     *     payment_status?: string,
+     *     platform_fee?: float,
+     *     seller_amount?: float,
+     *     shipping_fee?: float,
      *     shipping_address_id?: int,
      *     shipping_note?: string
      * } $data
@@ -238,9 +242,9 @@ class Order extends BaseModel
     public function createOrder(array $data): int
     {
         $sql = "INSERT INTO {$this->table} 
-                (buyer_id, seller_id, total_amount, status, payment_method, 
-                 shipping_address_id, shipping_note) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)";
+                (buyer_id, seller_id, total_amount, status, payment_method, payment_status,
+                 platform_fee, seller_amount, shipping_fee, shipping_address_id, shipping_note) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         return $this->db->insert($sql, [
             $data['buyer_id'],
@@ -248,6 +252,10 @@ class Order extends BaseModel
             $data['total_amount'],
             $data['status'] ?? self::STATUS_PENDING,
             $data['payment_method'] ?? 'cod',
+            $data['payment_status'] ?? self::PAYMENT_PENDING,
+            $data['platform_fee'] ?? 0,
+            $data['seller_amount'] ?? 0,
+            $data['shipping_fee'] ?? 0,
             $data['shipping_address_id'] ?? null,
             $data['shipping_note'] ?? null,
         ]);
@@ -440,6 +448,19 @@ class Order extends BaseModel
     // =========================================================================
 
     /**
+     * Đếm số đơn hàng của buyer
+     * 
+     * @param int $buyerId
+     * @return int
+     */
+    public function countByBuyerId(int $buyerId): int
+    {
+        $sql = "SELECT COUNT(*) AS total FROM {$this->table} WHERE buyer_id = ?";
+        $result = $this->db->fetchOne($sql, [$buyerId]);
+        return (int) ($result['total'] ?? 0);
+    }
+
+    /**
      * Đếm theo trạng thái
      * 
      * @return array<string, int>
@@ -496,6 +517,77 @@ class Order extends BaseModel
             'total_orders' => (int) ($result['total_orders'] ?? 0),
             'total_revenue' => (float) ($result['total_revenue'] ?? 0),
             'completed_orders' => (int) ($result['completed_orders'] ?? 0),
+        ];
+    }
+
+    // =========================================================================
+    // AUTO-CANCEL EXPIRED ORDERS
+    // =========================================================================
+
+    /** @var int Thời gian tối đa chờ thanh toán (phút) */
+    public const PAYMENT_TIMEOUT_MINUTES = 15;
+
+    /**
+     * Lấy các đơn hàng pending quá hạn thanh toán
+     * 
+     * @param int $minutes Số phút timeout (mặc định 15)
+     * @return array<int, array<string, mixed>>
+     */
+    public function getExpiredPendingOrders(int $minutes = self::PAYMENT_TIMEOUT_MINUTES): array
+    {
+        $sql = "SELECT o.*, GROUP_CONCAT(od.product_id, ':', od.quantity) AS items_data
+                FROM {$this->table} o
+                LEFT JOIN order_details od ON od.order_id = o.id
+                WHERE o.status = ?
+                AND o.payment_method != 'cod'
+                AND o.created_at < DATE_SUB(NOW(), INTERVAL ? MINUTE)
+                GROUP BY o.id";
+
+        return $this->db->fetchAll($sql, [self::STATUS_PENDING, $minutes]);
+    }
+
+    /**
+     * Tự động hủy các đơn hàng quá hạn và hoàn lại stock
+     * 
+     * @return array{cancelled: int, restored_items: int}
+     */
+    public function cancelExpiredOrders(): array
+    {
+        $expiredOrders = $this->getExpiredPendingOrders();
+        $cancelledCount = 0;
+        $restoredItems = 0;
+
+        $productModel = new Product();
+
+        foreach ($expiredOrders as $order) {
+            // Parse items_data: "1:2,3:1" => [product_id => quantity]
+            $itemsRaw = $order['items_data'] ?? '';
+            $items = [];
+            if (!empty($itemsRaw)) {
+                foreach (explode(',', $itemsRaw) as $pair) {
+                    [$productId, $qty] = explode(':', $pair);
+                    $items[(int) $productId] = (int) $qty;
+                }
+            }
+
+            // Hoàn lại stock cho từng sản phẩm
+            foreach ($items as $productId => $quantity) {
+                $productModel->increaseQuantity($productId, $quantity);
+                $restoredItems++;
+            }
+
+            // Hủy đơn hàng
+            $this->updateStatus(
+                (int) $order['id'],
+                self::STATUS_CANCELLED,
+                'Tự động hủy do quá hạn thanh toán (' . self::PAYMENT_TIMEOUT_MINUTES . ' phút)'
+            );
+            $cancelledCount++;
+        }
+
+        return [
+            'cancelled' => $cancelledCount,
+            'restored_items' => $restoredItems,
         ];
     }
 
