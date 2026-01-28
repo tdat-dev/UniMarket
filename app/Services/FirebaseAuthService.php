@@ -24,12 +24,13 @@ class FirebaseAuthService
 {
     private Client $httpClient;
     private array $config;
+    private ?string $lastError = null;
 
     /**
-     * Google's token verification endpoint
+     * Firebase Identity Toolkit endpoint
      * Dùng để verify Firebase ID token
      */
-    private const TOKEN_INFO_URL = 'https://oauth2.googleapis.com/tokeninfo';
+    private const VERIFY_TOKEN_URL = 'https://identitytoolkit.googleapis.com/v1/accounts:lookup';
 
     public function __construct()
     {
@@ -57,51 +58,62 @@ class FirebaseAuthService
     public function verifyIdToken(string $idToken): ?array
     {
         try {
-            // Gọi Google tokeninfo endpoint để verify token
-            $response = $this->httpClient->get(self::TOKEN_INFO_URL, [
-                'query' => ['id_token' => $idToken]
+            $apiKey = $this->config['api_key'] ?? '';
+            
+            if (empty($apiKey)) {
+                $this->lastError = 'Firebase API Key chưa được cấu hình';
+                return null;
+            }
+
+            // Gọi Firebase Identity Toolkit để verify token
+            $response = $this->httpClient->post(self::VERIFY_TOKEN_URL . '?key=' . $apiKey, [
+                'json' => ['idToken' => $idToken],
+                'headers' => ['Content-Type' => 'application/json']
             ]);
 
             $data = json_decode($response->getBody()->getContents(), true);
 
-            // Kiểm tra token có thuộc về project của mình không
-            // aud (audience) phải match với Firebase project ID
-            if (!$this->isValidAudience($data['aud'] ?? '')) {
-                error_log("Firebase Auth: Invalid audience - " . ($data['aud'] ?? 'null'));
+            // Debug log
+            $debugLog = date('Y-m-d H:i:s') . " - Token Info: " . json_encode($data) . "\n";
+            file_put_contents(__DIR__ . '/../../storage/logs/firebase_debug.log', $debugLog, FILE_APPEND);
+
+            // Kiểm tra response có chứa users không
+            if (empty($data['users']) || !is_array($data['users'])) {
+                $this->lastError = 'Token không hợp lệ hoặc đã hết hạn';
                 return null;
             }
 
+            $user = $data['users'][0];
+
             // Token hợp lệ, trả về user info
             return [
-                'email' => $data['email'] ?? null,
-                'full_name' => $data['name'] ?? $data['email'] ?? 'User',
-                'avatar' => $data['picture'] ?? null,
-                'email_verified' => ($data['email_verified'] ?? 'false') === 'true'
+                'email' => $user['email'] ?? null,
+                'full_name' => $user['displayName'] ?? $user['email'] ?? 'User',
+                'avatar' => $user['photoUrl'] ?? null,
+                'email_verified' => $user['emailVerified'] ?? false
             ];
 
         } catch (GuzzleException $e) {
+            $this->lastError = 'Lỗi kết nối tới Google: ' . $e->getMessage();
+            $errorLog = date('Y-m-d H:i:s') . " - Guzzle Error: " . $e->getMessage() . "\n";
+            file_put_contents(__DIR__ . '/../../storage/logs/firebase_debug.log', $errorLog, FILE_APPEND);
             error_log("Firebase Auth Error: " . $e->getMessage());
             return null;
         } catch (\Exception $e) {
+            $this->lastError = 'Lỗi xác thực: ' . $e->getMessage();
+            $errorLog = date('Y-m-d H:i:s') . " - Exception: " . $e->getMessage() . "\n";
+            file_put_contents(__DIR__ . '/../../storage/logs/firebase_debug.log', $errorLog, FILE_APPEND);
             error_log("Firebase Auth Exception: " . $e->getMessage());
             return null;
         }
     }
 
     /**
-     * Kiểm tra audience có hợp lệ không
-     * 
-     * Audience phải là Firebase App ID của project
-     * Điều này đảm bảo token được tạo từ app của mình
+     * Lấy thông báo lỗi cuối cùng
      */
-    private function isValidAudience(string $audience): bool
+    public function getLastError(): ?string
     {
-        $validAudiences = [
-            $this->config['app_id'] ?? '',
-            $this->config['project_id'] ?? '',
-        ];
-
-        return in_array($audience, $validAudiences, true);
+        return $this->lastError;
     }
 
     /**
